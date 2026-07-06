@@ -45,7 +45,7 @@ const Index = () => {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Icon name="Bus" size={18} className="text-primary-foreground" />
             </span>
-            <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span className="text-muted-foreground">.РФ</span></span>
+            <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
           </a>
           <a href={ICQR_URL} target="_blank" rel="noopener noreferrer">
             <Button size="sm" className="h-9 gap-1.5 px-3">
