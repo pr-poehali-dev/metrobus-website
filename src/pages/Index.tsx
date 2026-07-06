@@ -125,7 +125,7 @@ const Index = () => {
                 {[
                   { n: 1, icon: 'ScanLine', title: 'Видишь короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
                   { n: 2, icon: 'Map', title: 'Вводишь его в QR-поиск на ICQR.RU', text: 'Получаешь трассу маршрута в связке с транспортом.' },
-                  { n: 3, icon: 'MessageSquare', title: 'Ставишь оценку', text: 'И при желании пишешь короткий комментарий.' },
+                  { n: 3, icon: 'MessageSquare', title: 'Проверяешь данные и ставишь оценку', text: 'И при желании пишешь короткий комментарий.' },
                 ].map((s) => (
                   <div key={s.n} className="flex items-start gap-4 rounded-xl border border-border p-4 sm:p-5">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-mono text-sm font-semibold text-primary-foreground">
