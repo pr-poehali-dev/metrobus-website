@@ -105,7 +105,7 @@ const Index = () => {
                 {[
                   { icon: 'Timer', title: 'Оцени за 30 секунд', text: 'Без анкет и лишних шагов. Ввёл бортовой номер — поставил оценку.' },
                   { icon: 'UserX', title: 'Без регистрации', text: 'Не нужны аккаунты и пароли. Оставляешь мнение анонимно.' },
-                  { icon: 'Megaphone', title: 'Твой голос слышат', text: 'Оценки видят перевозчики и город. Это влияет на решения.' },
+                  { icon: 'Megaphone', title: 'Твой голос слышат', text: 'Оценки видят перевозчики и город. Это влияет на их решения.' },
                 ].map((b) => (
                   <div key={b.title} className="rounded-xl border border-border p-5">
                     <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
