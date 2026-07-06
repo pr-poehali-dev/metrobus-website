@@ -102,7 +102,7 @@ const Index = () => {
               <div className="grid gap-4 sm:grid-cols-3">
                 {[
                   { icon: 'Timer', title: 'Оцени за 30 секунд', text: 'Без приложения. Ввёл на сайте бортовой номер — поставил оценку.' },
-                  { icon: 'UserX', title: 'Без регистрации', text: 'Не нужны аккаунты и пароли. Оставляешь мнение анонимно.' },
+                  { icon: 'UserX', title: 'Без регистрации', text: 'Не нужны аккаунты и пароли. Сообщаешь свое мнение анонимно.' },
                   { icon: 'Megaphone', title: 'Твой голос слышат', text: 'Оценки увидят перевозчики и город. Это повлияет на их решения.' },
                 ].map((b) => (
                   <div key={b.title} className="rounded-xl border border-border p-5">
