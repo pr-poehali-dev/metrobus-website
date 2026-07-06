@@ -91,7 +91,7 @@ const Index = () => {
               <Icon name="Building2" size={15} />Перевозчику
             </TabsTrigger>
             <TabsTrigger value="regulator" className="h-10 gap-1.5 text-[13px] sm:text-sm">
-              <Icon name="Landmark" size={15} />Регулятор
+              <Icon name="Landmark" size={15} />Регулятору
             </TabsTrigger>
           </TabsList>
 
