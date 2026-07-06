@@ -60,7 +60,7 @@ const Index = () => {
       <main id="top" className="mx-auto max-w-5xl px-4">
         {/* HERO */}
         <section className="pt-10 pb-8 sm:pt-16 sm:pb-12">
-          <p className="mb-3 text-sm font-medium text-muted-foreground">Наземный транспорт Санкт-Петербурга</p>
+          <p className="mb-3 text-sm font-medium text-muted-foreground">Наземный городской пассажирский транспорт Санкт-Петербурга</p>
           <h1 className="text-3xl font-bold leading-tight sm:text-5xl">
             Оцени поездку<br />без регистрации
           </h1>
