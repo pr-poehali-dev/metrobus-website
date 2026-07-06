@@ -85,7 +85,7 @@ const Index = () => {
         <Tabs defaultValue="passengers" className="pb-16">
           <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
             <TabsTrigger value="passengers" className="h-10 gap-1.5 text-[13px] sm:text-sm">
-              <Icon name="Users" size={15} />Пассажиры
+              <Icon name="Users" size={15} />Пассажирам
             </TabsTrigger>
             <TabsTrigger value="carrier" className="h-10 gap-1.5 text-[13px] sm:text-sm">
               <Icon name="Building2" size={15} />Перевозчик
