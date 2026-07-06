@@ -314,9 +314,7 @@ const Index = () => {
                 </span>
                 <span className="font-bold">МЕТРОБУС.РФ</span>
               </div>
-              <p className="mt-3 max-w-md text-sm text-muted-foreground">
-                Сервис оценки поездок на наземном транспорте Санкт-Петербурга.
-              </p>
+              <p className="mt-3 max-w-md text-sm text-muted-foreground">Цифровые сервисы пассажира</p>
             </div>
             <div className="space-y-2 text-sm text-muted-foreground">
               <a href="mailto:support@icqr.ru" className="flex items-center gap-2 hover:text-foreground">
