@@ -1,10 +1,11 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AccessForm from '@/components/metrobus/AccessForm';
-import { summary, timelineFor, months, clusters, TransportType } from '@/lib/mockData';
+import { TransportType } from '@/lib/mockData';
+import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashboardApi';
 
 const RatingChart = lazy(() => import('@/components/metrobus/RatingChart'));
 
@@ -29,9 +30,36 @@ const transportBg: Record<TransportType, string> = {
 const Index = () => {
   const isMobile = useIsMobile();
   const [monthOffset, setMonthOffset] = useState(0);
-  const now = new Date();
-  const monthIndex = (now.getMonth() + monthOffset + 1200) % 12;
-  const timeline = timelineFor(monthOffset);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    triggerIcqrSync();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchDashboardStats(monthOffset)
+      .then((res) => {
+        if (!cancelled) setData(res);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [monthOffset]);
+
+  const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, byType: [
+    { type: 'bus' as TransportType, label: 'Автобус', average: 0, count: 0 },
+    { type: 'tram' as TransportType, label: 'Трамвай', average: 0, count: 0 },
+    { type: 'trolley' as TransportType, label: 'Троллейбус', average: 0, count: 0 },
+  ] };
+  const timeline = data?.timeline ?? [];
+  const clusters = data?.clusters ?? [];
+  const currentMonthLabel = data?.month ?? '';
 
   const trend = summary.average - summary.prevAverage;
   const trendUp = trend >= 0;
@@ -206,7 +234,7 @@ const Index = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold">Оценки по дням</h3>
-                    <p className="text-sm text-muted-foreground">{months[monthIndex]}</p>
+                    <p className="text-sm text-muted-foreground">{currentMonthLabel}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -227,9 +255,13 @@ const Index = () => {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <Suspense fallback={<div className="h-[180px] animate-pulse rounded-lg bg-secondary" />}>
-                    <RatingChart data={timeline} detailed={!isMobile} />
-                  </Suspense>
+                  {loading || timeline.length === 0 ? (
+                    <div className="h-[180px] animate-pulse rounded-lg bg-secondary" />
+                  ) : (
+                    <Suspense fallback={<div className="h-[180px] animate-pulse rounded-lg bg-secondary" />}>
+                      <RatingChart data={timeline} detailed={!isMobile} />
+                    </Suspense>
+                  )}
                 </div>
               </div>
 
@@ -242,6 +274,9 @@ const Index = () => {
                 <p className="mt-1 text-sm text-muted-foreground">
                   Комментарии сгруппированы автоматически. Примеры обезличены.
                 </p>
+                {clusters.length === 0 && !loading && (
+                  <p className="mt-4 text-sm text-muted-foreground">Пока нет отзывов с комментариями.</p>
+                )}
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {clusters.map((c) => (
                     <div key={c.key} className="rounded-xl border border-border p-5">
