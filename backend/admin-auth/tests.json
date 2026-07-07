@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Wrong PIN rejected",
+      "method": "POST",
+      "path": "/",
+      "body": {"pin": "0000"},
+      "expectedStatus": 401
+    }
+  ]
+}
