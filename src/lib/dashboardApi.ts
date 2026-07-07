@@ -5,6 +5,7 @@ export interface DashboardSummary {
   average: number;
   prevAverage: number;
   monthCount: number;
+  routesCount: number;
   byType: { type: TransportType; label: string; average: number; count: number }[];
 }
 

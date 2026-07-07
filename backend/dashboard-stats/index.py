@@ -147,6 +147,11 @@ def handler(event: dict, context) -> dict:
         by_type = [by_type_map['bus'], by_type_map['tram'], by_type_map['trolley']]
 
         cur.execute(
+            "SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_passenger_ratings WHERE route_number IS NOT NULL"
+        )
+        routes_count = int(cur.fetchone()['cnt'])
+
+        cur.execute(
             """
             SELECT EXTRACT(DAY FROM rated_at)::int AS day, AVG(rating) AS value, COUNT(*) AS cnt
             FROM transport_passenger_ratings
@@ -204,6 +209,7 @@ def handler(event: dict, context) -> dict:
                 'prevAverage': round(prev_average, 2),
                 'monthCount': month_count,
                 'byType': by_type,
+                'routesCount': routes_count,
             },
             'timeline': timeline,
             'month': MONTHS[month - 1],

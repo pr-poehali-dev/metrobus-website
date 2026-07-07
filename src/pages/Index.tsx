@@ -52,7 +52,7 @@ const Index = () => {
     };
   }, [monthOffset]);
 
-  const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, byType: [
+  const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, routesCount: 0, byType: [
     { type: 'bus' as TransportType, label: 'Автобус', average: 0, count: 0 },
     { type: 'tram' as TransportType, label: 'Трамвай', average: 0, count: 0 },
     { type: 'trolley' as TransportType, label: 'Троллейбус', average: 0, count: 0 },
@@ -199,9 +199,9 @@ const Index = () => {
                   <p className="mt-2 text-sm text-muted-foreground">от пассажиров города</p>
                 </div>
                 <div className="rounded-xl border border-border p-5">
-                  <p className="text-sm text-muted-foreground">Охват</p>
-                  <div className="mt-2 font-mono-num text-4xl font-bold leading-none">3</div>
-                  <p className="mt-2 text-sm text-muted-foreground">вида наземного транспорта</p>
+                  <p className="text-sm text-muted-foreground">Оценено маршрутов</p>
+                  <div className="mt-2 font-mono-num text-4xl font-bold leading-none">{summary.routesCount}</div>
+                  <p className="mt-2 text-sm text-muted-foreground">разных маршрутов города</p>
                 </div>
               </div>
 
