@@ -11,8 +11,12 @@ export interface DashboardSummary {
 
 export interface TimelinePoint {
   day: number;
-  value: number;
-  count: number;
+  bus: number | null;
+  tram: number | null;
+  trolley: number | null;
+  busCount: number;
+  tramCount: number;
+  trolleyCount: number;
 }
 
 export interface Cluster {

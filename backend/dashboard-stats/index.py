@@ -153,27 +153,36 @@ def handler(event: dict, context) -> dict:
 
         cur.execute(
             """
-            SELECT EXTRACT(DAY FROM rated_at)::int AS day, AVG(rating) AS value, COUNT(*) AS cnt
+            SELECT EXTRACT(DAY FROM rated_at)::int AS day, transport_type,
+                   AVG(rating) AS value, COUNT(*) AS cnt
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
-            GROUP BY day
+            GROUP BY day, transport_type
             ORDER BY day
             """,
             (date(year, month, 1),),
         )
-        timeline_rows = {r['day']: r for r in cur.fetchall()}
+        timeline_rows: dict[int, dict] = {}
+        for r in cur.fetchall():
+            key = normalize_transport(r['transport_type'])
+            if key not in ('bus', 'tram', 'trolley'):
+                continue
+            day_bucket = timeline_rows.setdefault(r['day'], {})
+            day_bucket[key] = {'value': float(r['value']), 'count': int(r['cnt'])}
+
         if month == 12:
             days_in_month = 31
         else:
             days_in_month = (date(year, month + 1, 1) - date(year, month, 1)).days
         timeline = []
         for d in range(1, days_in_month + 1):
-            row = timeline_rows.get(d)
-            timeline.append({
-                'day': d,
-                'value': round(float(row['value']), 2) if row else 0,
-                'count': int(row['cnt']) if row else 0,
-            })
+            day_bucket = timeline_rows.get(d, {})
+            point = {'day': d}
+            for key in ('bus', 'tram', 'trolley'):
+                entry = day_bucket.get(key)
+                point[key] = round(entry['value'], 2) if entry else None
+                point[f'{key}Count'] = entry['count'] if entry else 0
+            timeline.append(point)
 
         cur.execute(
             "SELECT comment FROM transport_passenger_ratings WHERE comment IS NOT NULL AND comment != ''"

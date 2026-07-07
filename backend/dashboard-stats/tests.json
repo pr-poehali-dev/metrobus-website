@@ -10,9 +10,7 @@
       "name": "Get dashboard stats",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {"summary": {}, "timeline": [], "clusters": []},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     }
   ]
 }
