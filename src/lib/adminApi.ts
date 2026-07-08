@@ -102,3 +102,109 @@ export async function fetchAdminReviews(query: AdminReviewsQuery): Promise<Admin
   if (!res.ok) throw new Error('admin_reviews_failed');
   return res.json();
 }
+
+export interface ModerationListItem {
+  id: number;
+  created_at: string;
+  rating: number;
+  comment: string | null;
+  moderation_status: 'pending' | 'approved' | 'rejected';
+  moderation_passed: boolean | null;
+  route_number: string | null;
+  vehicle_number: string | null;
+  transport_type: string | null;
+  direction: string | null;
+  nearest_stop_name: string | null;
+  stop_to_name: string | null;
+  result_false: boolean | null;
+}
+
+export interface ModerationPagination {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface ModerationListResponse {
+  items: ModerationListItem[];
+  pagination: ModerationPagination;
+}
+
+export interface ModerationListQuery {
+  status?: 'pending' | 'approved' | 'rejected' | 'all';
+  routeNumber?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  hasComment?: boolean;
+  page?: number;
+  perPage?: number;
+}
+
+export type ModerationApiError = { error: string; message?: string };
+
+export async function fetchModerationList(query: ModerationListQuery): Promise<ModerationListResponse | ModerationApiError | null> {
+  const token = getAdminToken();
+  if (!token) return null;
+
+  const params = new URLSearchParams();
+  params.set('status', query.status ?? 'pending');
+  if (query.routeNumber) params.set('route_number', query.routeNumber);
+  if (query.dateFrom) params.set('date_from', query.dateFrom);
+  if (query.dateTo) params.set('date_to', query.dateTo);
+  if (query.hasComment !== undefined) params.set('has_comment', String(query.hasComment));
+  params.set('page', String(query.page ?? 1));
+  params.set('per_page', String(query.perPage ?? 20));
+
+  const res = await fetch(`${func2url['icqr-moderation']}?${params.toString()}`, {
+    headers: { 'X-Admin-Token': token },
+  });
+
+  if (res.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+  return res.json();
+}
+
+export async function fetchModerationItem(ratingId: number): Promise<{ item: Record<string, unknown> } | ModerationApiError | null> {
+  const token = getAdminToken();
+  if (!token) return null;
+
+  const params = new URLSearchParams({ action: 'get', rating_id: String(ratingId) });
+  const res = await fetch(`${func2url['icqr-moderation']}?${params.toString()}`, {
+    headers: { 'X-Admin-Token': token },
+  });
+
+  if (res.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+  return res.json();
+}
+
+export async function moderateRating(
+  ratingId: number,
+  action: 'approve' | 'reject' | 'reset',
+  moderationNote?: string,
+): Promise<{ item: Record<string, unknown> } | ModerationApiError | null> {
+  const token = getAdminToken();
+  if (!token) return null;
+
+  const res = await fetch(func2url['icqr-moderation'], {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify({
+      rating_id: ratingId,
+      action,
+      moderation_note: moderationNote,
+      moderator_id: 'mb-console',
+    }),
+  });
+
+  if (res.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+  return res.json();
+}

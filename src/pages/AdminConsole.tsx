@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
+import ModerationQueue from '@/components/admin/ModerationQueue';
 import {
   loginWithPin,
   verifySession,
@@ -178,6 +180,19 @@ export default function AdminConsole() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
+        <Tabs defaultValue="registry">
+          <TabsList className="mb-4">
+            <TabsTrigger value="registry" className="gap-1.5">
+              <Icon name="List" size={14} />
+              Реестр отзывов
+            </TabsTrigger>
+            <TabsTrigger value="moderation" className="gap-1.5">
+              <Icon name="ShieldQuestion" size={14} />
+              Модерация ICQR
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="registry">
         {anomalyTotal > 0 && (
           <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
             <Icon name="TriangleAlert" size={16} className="text-amber-600 shrink-0" />
@@ -286,6 +301,12 @@ export default function AdminConsole() {
             </Button>
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="moderation">
+            <ModerationQueue />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
