@@ -406,17 +406,24 @@ function RoleSection({
         </ul>
 
         {showCarrierActions && (
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button variant="outline" className="h-11 gap-2" onClick={() => setLoginOpen(true)}>
-              <Icon name="LogIn" size={16} />
-              Вход
-            </Button>
-            <Link to="/carrier-demo">
-              <Button variant="secondary" className="h-11 w-full gap-2 sm:w-auto">
-                <Icon name="FlaskConical" size={16} />
-                Демо-режим
+          <div className="mt-6 rounded-2xl border-2 border-primary/20 bg-primary/5 p-4 sm:p-5">
+            <p className="text-sm font-medium text-foreground">Уже подключены к сервису?</p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto" onClick={() => setLoginOpen(true)}>
+                <Icon name="LogIn" size={18} />
+                Вход в кабинет
               </Button>
-            </Link>
+              <Link to="/carrier-demo" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 w-full gap-2 border-2 border-primary text-base text-primary hover:bg-primary hover:text-primary-foreground sm:w-auto"
+                >
+                  <Icon name="FlaskConical" size={18} />
+                  Демо-режим
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
       </div>
