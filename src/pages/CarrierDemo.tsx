@@ -101,7 +101,7 @@ export default function CarrierDemo() {
         </div>
 
         {/* Разбивка по типам */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {carrierDemoByType.map((t) => (
             <div key={t.type} className="rounded-xl border border-border p-5">
               <div className="flex items-center gap-2.5">
@@ -130,7 +130,7 @@ export default function CarrierDemo() {
           <p className="text-sm text-muted-foreground">Текущий месяц (демо)</p>
           <div className="mt-4">
             <Suspense fallback={<div className="h-[180px] animate-pulse rounded-lg bg-secondary" />}>
-              <RatingChart data={timeline} detailed />
+              <RatingChart data={timeline} detailed series={['tram', 'trolley']} />
             </Suspense>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function CarrierDemo() {
                     <TableCell>
                       <span className="flex items-center gap-1.5">
                         <Icon name={transportIcon[r.type]} size={15} className={transportClass[r.type]} />
-                        {r.type === 'bus' ? 'Автобус' : r.type === 'tram' ? 'Трамвай' : 'Троллейбус'}
+                        {r.type === 'tram' ? 'Трамвай' : 'Троллейбус'}
                       </span>
                     </TableCell>
                     <TableCell className="font-mono-num">{r.average.toFixed(2)}</TableCell>

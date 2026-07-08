@@ -10,21 +10,26 @@ export interface MultiPoint {
   trolleyCount?: number;
 }
 
+type SeriesKey = 'bus' | 'tram' | 'trolley';
+
 interface Props {
   data: MultiPoint[];
   detailed?: boolean;
+  series?: SeriesKey[];
 }
 
-const SERIES = [
+const ALL_SERIES = [
   { key: 'bus' as const, label: 'Автобус', color: 'hsl(var(--tr-bus))' },
   { key: 'tram' as const, label: 'Трамвай', color: 'hsl(var(--tr-tram))' },
   { key: 'trolley' as const, label: 'Троллейбус', color: 'hsl(var(--tr-trolley))' },
 ];
 
 // Лёгкий SVG-график без внешних зависимостей.
-// Показывает три линии (автобус/трамвай/троллейбус) одновременно, с легендой.
+// Показывает линии по видам транспорта одновременно, с легендой.
+// series — какие виды транспорта отображать (по умолчанию все три).
 // detailed=false — упрощённый (мобильный), detailed=true — с сеткой и точками (десктоп).
-export default function RatingChart({ data, detailed = false }: Props) {
+export default function RatingChart({ data, detailed = false, series }: Props) {
+  const SERIES = series ? ALL_SERIES.filter((s) => series.includes(s.key)) : ALL_SERIES;
   const W = 640;
   const H = 220;
   const padX = 8;
@@ -55,7 +60,8 @@ export default function RatingChart({ data, detailed = false }: Props) {
 
       return { ...s, linePath: line.trim(), points: pts.map((p) => ({ x: p.x, y: scaleY(p.y), day: p.day })) };
     });
-  }, [data, stepX]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, stepX, series]);
 
   const gridLines = [4.0, 4.5, 5.0];
 
