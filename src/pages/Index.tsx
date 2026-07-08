@@ -1,9 +1,11 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AccessForm from '@/components/metrobus/AccessForm';
+import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
 import { TransportType } from '@/lib/mockData';
 import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashboardApi';
 
@@ -316,6 +318,7 @@ const Index = () => {
                 'Данные для управленческих решений',
               ]}
               role="carrier"
+              showCarrierActions
             />
           </TabsContent>
 
@@ -374,14 +377,17 @@ const Index = () => {
 };
 
 function RoleSection({
-  icon, title, value, bullets, role,
+  icon, title, value, bullets, role, showCarrierActions,
 }: {
   icon: string;
   title: string;
   value: string;
   bullets: string[];
   role: 'carrier' | 'regulator';
+  showCarrierActions?: boolean;
 }) {
+  const [loginOpen, setLoginOpen] = useState(false);
+
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div>
@@ -398,14 +404,33 @@ function RoleSection({
             </li>
           ))}
         </ul>
+
+        {showCarrierActions && (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button variant="outline" className="h-11 gap-2" onClick={() => setLoginOpen(true)}>
+              <Icon name="LogIn" size={16} />
+              Вход
+            </Button>
+            <Link to="/carrier-demo">
+              <Button variant="secondary" className="h-11 w-full gap-2 sm:w-auto">
+                <Icon name="FlaskConical" size={16} />
+                Демо-режим
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
-      <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+      <div id={role === 'carrier' ? 'carrier-form' : undefined} className="scroll-mt-20 rounded-2xl border border-border bg-card p-5 sm:p-6">
         <h3 className="font-semibold">Заявка на подключение</h3>
         <p className="mt-1 mb-5 text-sm text-muted-foreground">
           Оставьте контакты — мы расскажем о доступе к данным.
         </p>
         <AccessForm role={role} />
       </div>
+
+      {showCarrierActions && (
+        <CarrierLoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+      )}
     </div>
   );
 }
