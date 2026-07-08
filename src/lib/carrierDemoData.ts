@@ -5,7 +5,7 @@
 import { MultiPoint } from '@/components/metrobus/RatingChart';
 
 export const carrierDemoSummary = {
-  fleetName: 'ГУП «Горэлектротранс» (демо-парк)',
+  fleetName: 'ГУП «Горэлектротранс»',
   average: 4.28,
   prevAverage: 4.14,
   monthCount: 3478,
