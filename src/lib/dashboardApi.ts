@@ -49,3 +49,20 @@ export async function triggerIcqrSync(): Promise<void> {
     // best-effort, ошибки синхронизации не должны ломать отображение дашборда
   }
 }
+
+export interface IcqrSyncStatus {
+  status: 'ok' | 'error' | null;
+  syncedCount: number;
+  errorMessage: string | null;
+  lastSyncAt: string | null;
+}
+
+export async function fetchIcqrSyncStatus(): Promise<IcqrSyncStatus | null> {
+  try {
+    const res = await fetch(`${func2url['icqr-sync']}?status=1`);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}

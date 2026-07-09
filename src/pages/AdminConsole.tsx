@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import ModerationQueue from '@/components/admin/ModerationQueue';
+import IcqrSyncStatus from '@/components/admin/IcqrSyncStatus';
 import {
   loginWithPin,
   verifySession,
@@ -164,7 +165,7 @@ export default function AdminConsole() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Icon name="ShieldCheck" size={16} className="text-primary-foreground" />
@@ -172,10 +173,13 @@ export default function AdminConsole() {
             <span className="font-semibold">Реестр отзывов</span>
             <Badge variant="secondary">{total.toLocaleString('ru-RU')}</Badge>
           </div>
-          <Button variant="outline" size="sm" onClick={logout} className="gap-1.5">
-            <Icon name="LogOut" size={14} />
-            Выйти
-          </Button>
+          <div className="flex items-center gap-3">
+            <IcqrSyncStatus />
+            <Button variant="outline" size="sm" onClick={logout} className="gap-1.5">
+              <Icon name="LogOut" size={14} />
+              Выйти
+            </Button>
+          </div>
         </div>
       </header>
 

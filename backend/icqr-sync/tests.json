@@ -5,6 +5,12 @@
       "method": "OPTIONS",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "Get last sync status",
+      "method": "GET",
+      "path": "/?status=1",
+      "expectedStatus": 200
     }
   ]
 }

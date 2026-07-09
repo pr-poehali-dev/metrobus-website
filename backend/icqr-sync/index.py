@@ -2,6 +2,7 @@ import json
 import os
 import urllib.request
 import urllib.parse
+import urllib.error
 from datetime import datetime
 import psycopg2
 
@@ -21,10 +22,18 @@ def fetch_page(page: int, per_page: int = 100):
         return json.loads(resp.read().decode('utf-8'))
 
 
+def log_sync_result(cur, status: str, synced_count: int, error_message: str = None):
+    cur.execute(
+        "INSERT INTO icqr_sync_log (status, synced_count, error_message) VALUES (%s, %s, %s)",
+        (status, synced_count, error_message),
+    )
+
+
 def handler(event: dict, context) -> dict:
     '''Синхронизирует одобренные отзывы пассажиров с ICQR Public API в локальную таблицу transport_passenger_ratings.
-    Args: event - dict с httpMethod; context - объект с request_id.
-    Returns: HTTP response с количеством загруженных/обновлённых отзывов.
+    При GET с параметром status=1 возвращает статус последней синхронизации без запуска новой.
+    Args: event - dict с httpMethod, queryStringParameters (status); context - объект с request_id.
+    Returns: HTTP response с количеством загруженных/обновлённых отзывов или статусом последней синхронизации.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -47,14 +56,52 @@ def handler(event: dict, context) -> dict:
     conn.autocommit = True
     cur = conn.cursor()
 
+    params = event.get('queryStringParameters') or {}
+    if method == 'GET' and params.get('status') == '1':
+        try:
+            cur.execute(
+                "SELECT status, synced_count, error_message, created_at FROM icqr_sync_log ORDER BY created_at DESC LIMIT 1"
+            )
+            row = cur.fetchone()
+            if not row:
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'status': None, 'syncedCount': 0, 'errorMessage': None, 'lastSyncAt': None}),
+                }
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({
+                    'status': row[0],
+                    'syncedCount': row[1],
+                    'errorMessage': row[2],
+                    'lastSyncAt': row[3].isoformat() if row[3] else None,
+                }),
+            }
+        finally:
+            cur.close()
+            conn.close()
+
     total_upserted = 0
     page = 1
     total_pages = 1
 
     try:
         while page <= total_pages:
-            data = fetch_page(page)
+            try:
+                data = fetch_page(page)
+            except (urllib.error.URLError, TimeoutError) as e:
+                log_sync_result(cur, 'error', total_upserted, f'Ошибка соединения с ICQR API: {e}')
+                return {
+                    'statusCode': 502,
+                    'headers': headers,
+                    'body': json.dumps({'error': 'icqr_connection_error'}),
+                }
+
             if data.get('Request_status', {}).get('Code') != 'Ok':
+                message = data.get('Request_status', {}).get('Message', 'icqr_upstream_error')
+                log_sync_result(cur, 'error', total_upserted, message)
                 return {
                     'statusCode': 502,
                     'headers': headers,
@@ -99,10 +146,18 @@ def handler(event: dict, context) -> dict:
 
             page += 1
 
+        log_sync_result(cur, 'ok', total_upserted)
         return {
             'statusCode': 200,
             'headers': headers,
             'body': json.dumps({'synced': total_upserted}),
+        }
+    except Exception as e:
+        log_sync_result(cur, 'error', total_upserted, str(e))
+        return {
+            'statusCode': 500,
+            'headers': headers,
+            'body': json.dumps({'error': 'internal_error'}),
         }
     finally:
         cur.close()
