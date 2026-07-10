@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -34,6 +35,7 @@ const Index = () => {
   const [monthOffset, setMonthOffset] = useState(0);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     triggerIcqrSync();
@@ -93,7 +95,13 @@ const Index = () => {
       <main id="top" className="mx-auto max-w-5xl px-4">
         {/* HERO */}
         <section className="pt-10 pb-8 sm:pt-16 sm:pb-12">
-          <p className="mb-3 text-sm font-medium text-muted-foreground">Проект компании ООО "Медиа-Инкод"</p>
+          <button
+            type="button"
+            onClick={() => setAboutOpen(true)}
+            className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-foreground"
+          >
+            Проект компании ООО "Медиа-Инкод"
+          </button>
           <h1 className="text-xl font-bold leading-tight sm:text-4xl">
             Оценивай свои поездки — без приложения, без регистрации и без сканирования QR-кода
           </h1>
@@ -375,6 +383,31 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>О компании</DialogTitle>
+            <DialogDescription className="pt-2 text-left text-foreground">
+              В 2023 году мы стали агентами СПб ГКУ «Организатор перевозок» по приему безналичных
+              интернет-платежей в оплату разовых поездок в наземном городском пассажирском
+              транспорте Санкт-Петербурга.
+              <br />
+              <br />
+              С декабря 2023 года по январь 2026 год наши пользователи оплатили свои разовые
+              поездки 30 000 раз — без мобильного приложения, без регистрации, без комиссии.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <a href={ICQR_URL} target="_blank" rel="noopener noreferrer" className="w-full">
+              <Button className="w-full gap-2">
+                Хочу узнать больше
+                <Icon name="ArrowUpRight" size={16} />
+              </Button>
+            </a>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
