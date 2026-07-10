@@ -74,6 +74,9 @@ def handler(event: dict, context) -> dict:
 
     headers = {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}
 
+    params = event.get('queryStringParameters') or {}
+    action_route = params.get('action', 'list')
+
     secret = os.environ['DATABASE_URL']
     req_headers = event.get('headers', {}) or {}
     token = req_headers.get('X-Admin-Token') or req_headers.get('x-admin-token', '')
@@ -83,9 +86,6 @@ def handler(event: dict, context) -> dict:
             'headers': headers,
             'body': json.dumps({'error': 'unauthorized'}),
         }
-
-    params = event.get('queryStringParameters') or {}
-    action_route = params.get('action', 'list')
 
     if method == 'GET' and action_route == 'get':
         rating_id = params.get('rating_id')
