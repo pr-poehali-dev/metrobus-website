@@ -244,14 +244,20 @@ export default function AdminConsole() {
           </Select>
 
           <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
-          <div className="flex gap-2">
-            <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
-            {hasActiveFilters && (
-              <Button variant="outline" size="icon" onClick={resetFilters} className="shrink-0" aria-label="Сбросить фильтры">
-                <Icon name="X" size={15} />
-              </Button>
-            )}
-          </div>
+          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
+        </div>
+
+        <div className="mb-4 flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={resetFilters}
+            disabled={!hasActiveFilters}
+            className="gap-1.5"
+          >
+            <Icon name="X" size={14} />
+            Сбросить фильтры
+          </Button>
         </div>
 
         <div className="rounded-xl border border-border">
