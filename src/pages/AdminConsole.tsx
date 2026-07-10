@@ -184,7 +184,12 @@ export default function AdminConsole() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <Tabs defaultValue="registry">
+        <Tabs
+          defaultValue="registry"
+          onValueChange={(value) => {
+            if (value === 'registry') load();
+          }}
+        >
           <TabsList className="mb-4">
             <TabsTrigger value="registry" className="gap-1.5">
               <Icon name="List" size={14} />
