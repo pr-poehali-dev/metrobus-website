@@ -370,7 +370,7 @@ const Index = () => {
               </a>
               <p className="flex items-center gap-2">
                 <Icon name="ShieldCheck" size={15} />
-                Патент №0000000 (заглушка)
+                Патент на изобретение способа № 2803701
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="BadgeCheck" size={15} />
