@@ -106,7 +106,7 @@ def handler(event: dict, context) -> dict:
         values.append(date_from)
 
     if date_to:
-        conditions.append("rated_at <= %s")
+        conditions.append("rated_at < (%s::date + INTERVAL '1 day')")
         values.append(date_to)
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
