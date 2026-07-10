@@ -374,7 +374,7 @@ const Index = () => {
               </p>
               <p className="flex items-center gap-2">
                 <Icon name="BadgeCheck" size={15} />
-                Реестр Минцифры (заглушка)
+                Реестр Минцифры № 19406 от 04.10.2023 г.
               </p>
             </div>
           </div>
