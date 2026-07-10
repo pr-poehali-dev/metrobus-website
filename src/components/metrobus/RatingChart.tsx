@@ -90,7 +90,7 @@ export default function RatingChart({ data, detailed = false, series }: Props) {
   const countAreaBottom = H - padBottom;
   const scaleCountY = (v: number) =>
     countAreaBottom - (v / niceMax) * (countAreaBottom - countAreaTop);
-  const barWidth = Math.max(2, stepX * 0.5);
+  const barWidth = Math.max(1, stepX * 0.15);
   const countTicks = [0, niceMax / 2, niceMax];
 
   // Хронология по оси X — подписи дней
