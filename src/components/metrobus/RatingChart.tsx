@@ -92,6 +92,7 @@ export default function RatingChart({ data, detailed = false, series }: Props) {
     countAreaBottom - (v / niceMax) * (countAreaBottom - countAreaTop);
   const barWidth = Math.max(1, stepX * 0.15);
   const countTicks = [0, niceMax / 2, niceMax];
+  const barColor = 'hsl(var(--muted-foreground))';
 
   // Хронология по оси X — подписи дней
   const dayTickEvery = data.length > 20 ? 5 : data.length > 10 ? 2 : 1;
@@ -101,13 +102,21 @@ export default function RatingChart({ data, detailed = false, series }: Props) {
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-        {SERIES.map((s) => (
-          <div key={s.key} className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-            {s.label}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          {SERIES.map((s) => (
+            <div key={s.key} className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+              {s.label}
+            </div>
+          ))}
+        </div>
+        {detailed && (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <span className="h-2.5 w-1.5 rounded-sm" style={{ backgroundColor: barColor, opacity: 0.4 }} />
+            Кол-во оценок
           </div>
-        ))}
+        )}
       </div>
 
       <svg
@@ -182,8 +191,8 @@ export default function RatingChart({ data, detailed = false, series }: Props) {
                 y={y}
                 width={barWidth}
                 height={countAreaBottom - y}
-                fill="hsl(var(--muted-foreground))"
-                opacity={0.15}
+                fill={barColor}
+                opacity={0.4}
                 rx={1}
               />
             );
@@ -196,7 +205,7 @@ export default function RatingChart({ data, detailed = false, series }: Props) {
                 x={W - padRight + 6}
                 y={scaleCountY(t) + 3}
                 fontSize="10"
-                fill="hsl(var(--muted-foreground))"
+                fill={barColor}
                 className="font-mono"
               >
                 {Math.round(t)}
