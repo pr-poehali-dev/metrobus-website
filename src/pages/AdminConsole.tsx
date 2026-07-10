@@ -233,17 +233,6 @@ export default function AdminConsole() {
             </SelectContent>
           </Select>
 
-          <Select value={ratingMin} onValueChange={(v) => { setRatingMin(v); setPage(1); }}>
-            <SelectTrigger><SelectValue placeholder="Оценка" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Любая оценка</SelectItem>
-              <SelectItem value="5">5 звёзд</SelectItem>
-              <SelectItem value="4">4 звезды и выше</SelectItem>
-              <SelectItem value="3">3 звезды и выше</SelectItem>
-              <SelectItem value="1">Все негативные (≤2)</SelectItem>
-            </SelectContent>
-          </Select>
-
           <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
           <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
         </div>
