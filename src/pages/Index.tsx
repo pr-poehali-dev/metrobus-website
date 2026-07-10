@@ -399,7 +399,7 @@ const Index = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <a href={ICQR_URL} target="_blank" rel="noopener noreferrer" className="w-full">
+            <a href="https://qr-number.ru" target="_blank" rel="noopener noreferrer" className="w-full">
               <Button className="w-full gap-2">
                 Хочу узнать больше
                 <Icon name="ArrowUpRight" size={16} />
