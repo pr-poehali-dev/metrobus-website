@@ -221,7 +221,7 @@ def handler(event: dict, context) -> dict:
                 'routesCount': routes_count,
             },
             'timeline': timeline,
-            'month': MONTHS[month - 1],
+            'month': f'{MONTHS[month - 1]}, {year}',
             'clusters': clusters,
         }
 
