@@ -152,6 +152,16 @@ export default function AdminConsole() {
     setAuthed(false);
   };
 
+  const hasActiveFilters = Boolean(search || transportType !== 'all' || dateFrom || dateTo);
+
+  const resetFilters = () => {
+    setSearch('');
+    setTransportType('all');
+    setDateFrom('');
+    setDateTo('');
+    setPage(1);
+  };
+
   if (authed === null) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Загрузка…</div>;
   }
@@ -234,7 +244,14 @@ export default function AdminConsole() {
           </Select>
 
           <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
-          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
+          <div className="flex gap-2">
+            <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
+            {hasActiveFilters && (
+              <Button variant="outline" size="icon" onClick={resetFilters} className="shrink-0" aria-label="Сбросить фильтры">
+                <Icon name="X" size={15} />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border border-border">
