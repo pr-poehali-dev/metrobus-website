@@ -183,6 +183,74 @@ export async function fetchModerationItem(ratingId: number): Promise<{ item: Rec
   return res.json();
 }
 
+export interface SalesSummary {
+  revenue: number;
+  commission: number;
+  ticketsCount: number;
+  avgTicket: number;
+  refundsCount: number;
+  refundsSum: number;
+}
+
+export interface SalesTimelinePoint {
+  day: string;
+  revenue: number;
+  count: number;
+}
+
+export interface SalesByRoute {
+  routeNumber: string;
+  revenue: number;
+  count: number;
+}
+
+export interface SalesByCarrier {
+  carrierName: string;
+  revenue: number;
+  commission: number;
+  count: number;
+}
+
+export interface SalesByPaymentStatus {
+  status: string;
+  count: number;
+}
+
+export interface SalesPromocode {
+  promokod: string;
+  count: number;
+  revenue: number;
+}
+
+export interface SalesStatsResponse {
+  summary: SalesSummary;
+  timeline: SalesTimelinePoint[];
+  byRoute: SalesByRoute[];
+  byCarrier: SalesByCarrier[];
+  byPaymentStatus: SalesByPaymentStatus[];
+  topPromocodes: SalesPromocode[];
+}
+
+export async function fetchSalesStats(dateFrom?: string, dateTo?: string): Promise<SalesStatsResponse | null> {
+  const token = getAdminToken();
+  if (!token) return null;
+
+  const params = new URLSearchParams();
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
+
+  const res = await fetch(`${func2url['sales-stats']}?${params.toString()}`, {
+    headers: { 'X-Admin-Token': token },
+  });
+
+  if (res.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+  if (!res.ok) throw new Error('sales_stats_failed');
+  return res.json();
+}
+
 export async function moderateRating(
   ratingId: number,
   action: 'approve' | 'reject' | 'reset',

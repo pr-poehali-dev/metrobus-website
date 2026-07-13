@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import ModerationQueue from '@/components/admin/ModerationQueue';
+import SalesStats from '@/components/admin/SalesStats';
 import IcqrSyncStatus from '@/components/admin/IcqrSyncStatus';
 import {
   loginWithPin,
@@ -209,6 +210,10 @@ export default function AdminConsole() {
               <Icon name="ShieldQuestion" size={14} />
               Модерация ICQR
             </TabsTrigger>
+            <TabsTrigger value="sales" className="gap-1.5">
+              <Icon name="Wallet" size={14} />
+              Касса и продажи
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="registry">
@@ -326,6 +331,10 @@ export default function AdminConsole() {
 
           <TabsContent value="moderation">
             <ModerationQueue />
+          </TabsContent>
+
+          <TabsContent value="sales">
+            <SalesStats />
           </TabsContent>
         </Tabs>
       </main>
