@@ -50,6 +50,17 @@ def to_float(v):
         return None
 
 
+def to_bool(v):
+    if v is None:
+        return None
+    if isinstance(v, bool):
+        return v
+    try:
+        return bool(int(v))
+    except (TypeError, ValueError):
+        return None
+
+
 def haversine_m(lat1, lng1, lat2, lng2):
     '''Расстояние между двумя точками в метрах по формуле гаверсинуса.'''
     if None in (lat1, lng1, lat2, lng2):
@@ -84,6 +95,11 @@ def enrich_geo(cur, limit: int = 30):
         submit_lng = to_float(details.get('submit_clicked_lng'))
         movement_m = haversine_m(page_lat, page_lng, submit_lat, submit_lng)
 
+        transport_opened_lat = to_float(details.get('transport_opened_lat'))
+        transport_opened_lng = to_float(details.get('transport_opened_lng'))
+        transport_submit_lat = to_float(details.get('transport_submit_lat'))
+        transport_submit_lng = to_float(details.get('transport_submit_lng'))
+
         cur.execute(
             """
             UPDATE transport_passenger_ratings SET
@@ -97,6 +113,18 @@ def enrich_geo(cur, limit: int = 30):
                 submit_lng = %s,
                 submit_accuracy_m = %s,
                 movement_distance_m = %s,
+                uuid = %s,
+                result_false = %s,
+                ip = %s,
+                is_passenger = %s,
+                operator_id = %s,
+                operator_title = %s,
+                transport_opened_lat = %s,
+                transport_opened_lng = %s,
+                transport_opened_dist = %s,
+                transport_submit_lat = %s,
+                transport_submit_lng = %s,
+                transport_submit_dist = %s,
                 geo_enriched_at = now()
             WHERE id = %s
             """,
@@ -111,6 +139,18 @@ def enrich_geo(cur, limit: int = 30):
                 submit_lng,
                 details.get('submit_clicked_accuracy_m'),
                 movement_m,
+                details.get('uuid'),
+                details.get('result_false'),
+                details.get('ip'),
+                to_bool(details.get('is_passanger')),
+                details.get('operator_id'),
+                details.get('operator_title'),
+                transport_opened_lat,
+                transport_opened_lng,
+                details.get('transport_opened_dist'),
+                transport_submit_lat,
+                transport_submit_lng,
+                details.get('transport_submit_dist'),
                 row_id,
             ),
         )
@@ -245,12 +285,13 @@ def handler(event: dict, context) -> dict:
             page += 1
 
         geo_enriched = 0
+        geo_error = None
         try:
             geo_enriched = enrich_geo(cur)
-        except Exception:
-            pass
+        except Exception as ge:
+            geo_error = str(ge)
 
-        log_sync_result(cur, 'ok', total_upserted)
+        log_sync_result(cur, 'ok', total_upserted, geo_error)
         return {
             'statusCode': 200,
             'headers': headers,

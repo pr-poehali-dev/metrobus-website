@@ -9,6 +9,7 @@ import Icon from '@/components/ui/icon';
 import ModerationQueue from '@/components/admin/ModerationQueue';
 import SalesStats from '@/components/admin/SalesStats';
 import IcqrSyncStatus from '@/components/admin/IcqrSyncStatus';
+import ReviewDetailDialog from '@/components/admin/ReviewDetailDialog';
 import {
   loginWithPin,
   verifySession,
@@ -105,6 +106,7 @@ export default function AdminConsole() {
   const [dateTo, setDateTo] = useState('');
   const [sort, setSort] = useState('rated_at');
   const [order, setOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [selectedItem, setSelectedItem] = useState<AdminReviewItem | null>(null);
 
   useEffect(() => {
     verifySession().then((ok) => setAuthed(ok));
@@ -283,17 +285,22 @@ export default function AdminConsole() {
                 </TableHead>
                 <TableHead>Остановки</TableHead>
                 <TableHead>Комментарий</TableHead>
+                <TableHead>Доверие</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading && (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
               )}
               {!loading && items.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
               )}
               {!loading && items.map((item) => (
-                <TableRow key={item.id} className={sentimentRowClass(item.sentiment)}>
+                <TableRow
+                  key={item.id}
+                  className={`cursor-pointer ${sentimentRowClass(item.sentiment)}`}
+                  onClick={() => setSelectedItem(item)}
+                >
                   <TableCell className="whitespace-nowrap text-sm">{formatDate(item.ratedAt)}</TableCell>
                   <TableCell>
                     <span className="flex items-center gap-1 font-mono-num font-semibold">
@@ -310,6 +317,19 @@ export default function AdminConsole() {
                       : '—'}
                   </TableCell>
                   <TableCell className="max-w-[320px] text-sm text-muted-foreground">{item.comment || '—'}</TableCell>
+                  <TableCell>
+                    {item.trustLevel === 'low' ? (
+                      <Badge variant="destructive" className="gap-1 whitespace-nowrap">
+                        <Icon name="ShieldX" size={12} />
+                        Подозрительно
+                      </Badge>
+                    ) : (
+                      <Badge variant="default" className="gap-1 whitespace-nowrap">
+                        <Icon name="ShieldCheck" size={12} />
+                        Проверено
+                      </Badge>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -327,6 +347,8 @@ export default function AdminConsole() {
             </Button>
           </div>
         </div>
+
+        <ReviewDetailDialog item={selectedItem} onClose={() => setSelectedItem(null)} />
           </TabsContent>
 
           <TabsContent value="moderation">

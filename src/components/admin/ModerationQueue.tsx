@@ -39,6 +39,41 @@ function formatDate(iso: string | null) {
   return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function toBoolLike(v: unknown): boolean | null {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v !== 0;
+  return null;
+}
+
+interface TrustCheck {
+  level: 'high' | 'medium' | 'low';
+  reasons: string[];
+}
+
+function computeTrust(item: Record<string, unknown>): TrustCheck {
+  const reasons: string[] = [];
+  const isPassenger = toBoolLike(item.is_passanger);
+  const resultFalse = item.result_false as string | null;
+  const openedDist = item.transport_opened_dist as number | null;
+  const submitDist = item.transport_submit_dist as number | null;
+
+  if (resultFalse) reasons.push(`Отклонено ICQR: ${resultFalse}`);
+  if (isPassenger === false) reasons.push('Система ICQR не подтвердила, что это пассажир');
+  if (typeof openedDist === 'number' && openedDist > 300) reasons.push(`Далеко от ТС при открытии (${openedDist} м)`);
+  if (typeof submitDist === 'number' && submitDist > 300) reasons.push(`Далеко от ТС при отправке (${submitDist} м)`);
+
+  if (reasons.length === 0) return { level: 'high', reasons: [] };
+  if (resultFalse || isPassenger === false) return { level: 'low', reasons };
+  return { level: 'medium', reasons };
+}
+
+const TRUST_BADGE: Record<TrustCheck['level'], { label: string; variant: 'default' | 'secondary' | 'destructive'; icon: string }> = {
+  high: { label: 'Проверено', variant: 'default', icon: 'ShieldCheck' },
+  medium: { label: 'Есть отклонения', variant: 'secondary', icon: 'ShieldAlert' },
+  low: { label: 'Подозрительно', variant: 'destructive', icon: 'ShieldX' },
+};
+
 export default function ModerationQueue() {
   const { toast } = useToast();
   const [items, setItems] = useState<ModerationListItem[]>([]);
@@ -175,17 +210,21 @@ export default function ModerationQueue() {
               <TableHead>Остановки</TableHead>
               <TableHead>Комментарий</TableHead>
               <TableHead>Статус</TableHead>
+              <TableHead>Доверие</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && (
-              <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
             )}
             {!loading && items.length === 0 && !errorMsg && (
-              <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
             )}
-            {!loading && items.map((item) => (
+            {!loading && items.map((item) => {
+              const trust = computeTrust(item as unknown as Record<string, unknown>);
+              const trustBadge = TRUST_BADGE[trust.level];
+              return (
               <TableRow key={item.id} className="cursor-pointer hover:bg-secondary/50" onClick={() => openItem(item.id)}>
                 <TableCell className="whitespace-nowrap text-sm">{formatDate(item.created_at)}</TableCell>
                 <TableCell>
@@ -208,10 +247,17 @@ export default function ModerationQueue() {
                   </Badge>
                 </TableCell>
                 <TableCell>
+                  <Badge variant={trustBadge.variant} className="gap-1 whitespace-nowrap">
+                    <Icon name={trustBadge.icon} size={12} />
+                    {trustBadge.label}
+                  </Badge>
+                </TableCell>
+                <TableCell>
                   <Icon name="ChevronRight" size={16} className="text-muted-foreground" />
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>
@@ -284,6 +330,59 @@ export default function ModerationQueue() {
                   <p className="rounded-lg bg-secondary p-3">{String(selected.comment)}</p>
                 </div>
               )}
+
+              {(() => {
+                const trust = computeTrust(selected);
+                const trustBadge = TRUST_BADGE[trust.level];
+                const isPassenger = toBoolLike(selected.is_passanger);
+                const openedDist = selected.transport_opened_dist as number | null;
+                const submitDist = selected.transport_submit_dist as number | null;
+                const operatorTitle = selected.operator_title as string | null;
+                const ip = selected.ip as string | null;
+                const isModerated = String(selected.moderation_status) !== 'pending';
+
+                return (
+                  <div className="rounded-lg border border-border p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="font-medium">Проверка подлинности</p>
+                      <Badge variant={trustBadge.variant} className="gap-1">
+                        <Icon name={trustBadge.icon} size={12} />
+                        {trustBadge.label}
+                      </Badge>
+                    </div>
+
+                    {trust.reasons.length > 0 && (
+                      <ul className="mb-2 space-y-1 text-xs text-muted-foreground">
+                        {trust.reasons.map((r, i) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <Icon name="AlertTriangle" size={12} className="mt-0.5 shrink-0 text-amber-500" />
+                            {r}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                      <span className="text-muted-foreground">Пассажир (ICQR)</span>
+                      <span className="text-right">
+                        {isPassenger === null ? '—' : isPassenger ? 'Подтверждено' : 'Не подтверждено'}
+                      </span>
+                      <span className="text-muted-foreground">До ТС при открытии</span>
+                      <span className="text-right">{typeof openedDist === 'number' ? `${openedDist} м` : '—'}</span>
+                      <span className="text-muted-foreground">До ТС при отправке</span>
+                      <span className="text-right">{typeof submitDist === 'number' ? `${submitDist} м` : '—'}</span>
+                      {isModerated && (
+                        <>
+                          <span className="text-muted-foreground">Оператор парка</span>
+                          <span className="text-right">{operatorTitle || '—'}</span>
+                          <span className="text-muted-foreground">IP пассажира</span>
+                          <span className="text-right font-mono-num">{ip || '—'}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div>
                 <p className="mb-1 text-muted-foreground">Заметка модератора (необязательно)</p>

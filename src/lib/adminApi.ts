@@ -52,6 +52,28 @@ export interface AdminReviewItem {
   syncedAt: string | null;
   sentiment: 'positive' | 'negative' | 'neutral' | 'anomaly';
   isAnomaly: boolean;
+  vehicleNumber: number | null;
+  nearestStopDistanceM: number | null;
+  distanceToRouteM: number | null;
+  pageOpenedLat: number | null;
+  pageOpenedLng: number | null;
+  submitLat: number | null;
+  submitLng: number | null;
+  movementDistanceM: number | null;
+  uuid: string | null;
+  resultFalse: string | null;
+  ip: string | null;
+  isPassenger: boolean | null;
+  operatorId: number | null;
+  operatorTitle: string | null;
+  transportOpenedLat: number | null;
+  transportOpenedLng: number | null;
+  transportOpenedDist: number | null;
+  transportSubmitLat: number | null;
+  transportSubmitLng: number | null;
+  transportSubmitDist: number | null;
+  trustLevel: 'high' | 'low';
+  trustFlags: string[];
 }
 
 export interface AdminReviewsResponse {
@@ -116,7 +138,10 @@ export interface ModerationListItem {
   direction: string | null;
   nearest_stop_name: string | null;
   stop_to_name: string | null;
-  result_false: boolean | null;
+  result_false: string | null;
+  is_passanger?: boolean | number | null;
+  transport_opened_dist?: number | null;
+  transport_submit_dist?: number | null;
 }
 
 export interface ModerationPagination {

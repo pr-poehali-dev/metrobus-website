@@ -131,7 +131,12 @@ def handler(event: dict, context) -> dict:
 
         list_query = f"""
             SELECT id, icqr_id, rating, comment, route_number, transport_type,
-                   direction_name, nearest_stop_name, stop_to_name, rated_at, synced_at
+                   direction_name, nearest_stop_name, stop_to_name, rated_at, synced_at,
+                   vehicle_number, nearest_stop_distance_m, distance_to_route_m,
+                   page_opened_lat, page_opened_lng, submit_lat, submit_lng, movement_distance_m,
+                   uuid, result_false, ip, is_passenger, operator_id, operator_title,
+                   transport_opened_lat, transport_opened_lng, transport_opened_dist,
+                   transport_submit_lat, transport_submit_lng, transport_submit_dist
             FROM transport_passenger_ratings
             {where_clause}
             ORDER BY {sort} {order}
@@ -156,6 +161,19 @@ def handler(event: dict, context) -> dict:
             else:
                 sentiment = 'neutral'
 
+            trust_flags = []
+            if r['result_false']:
+                trust_flags.append('result_false')
+            if r['is_passenger'] is False:
+                trust_flags.append('not_passenger')
+            if r['transport_opened_dist'] is not None and r['transport_opened_dist'] > 300:
+                trust_flags.append('far_from_vehicle_open')
+            if r['transport_submit_dist'] is not None and r['transport_submit_dist'] > 300:
+                trust_flags.append('far_from_vehicle_submit')
+            if r['movement_distance_m'] is not None and r['movement_distance_m'] > 2000:
+                trust_flags.append('excessive_movement')
+            trust_level = 'low' if trust_flags else 'high'
+
             items.append({
                 'id': r['id'],
                 'icqrId': r['icqr_id'],
@@ -170,6 +188,28 @@ def handler(event: dict, context) -> dict:
                 'syncedAt': r['synced_at'].isoformat() if r['synced_at'] else None,
                 'sentiment': sentiment,
                 'isAnomaly': is_anomaly,
+                'vehicleNumber': r['vehicle_number'],
+                'nearestStopDistanceM': r['nearest_stop_distance_m'],
+                'distanceToRouteM': r['distance_to_route_m'],
+                'pageOpenedLat': r['page_opened_lat'],
+                'pageOpenedLng': r['page_opened_lng'],
+                'submitLat': r['submit_lat'],
+                'submitLng': r['submit_lng'],
+                'movementDistanceM': r['movement_distance_m'],
+                'uuid': r['uuid'],
+                'resultFalse': r['result_false'],
+                'ip': r['ip'],
+                'isPassenger': r['is_passenger'],
+                'operatorId': r['operator_id'],
+                'operatorTitle': r['operator_title'],
+                'transportOpenedLat': r['transport_opened_lat'],
+                'transportOpenedLng': r['transport_opened_lng'],
+                'transportOpenedDist': r['transport_opened_dist'],
+                'transportSubmitLat': r['transport_submit_lat'],
+                'transportSubmitLng': r['transport_submit_lng'],
+                'transportSubmitDist': r['transport_submit_dist'],
+                'trustLevel': trust_level,
+                'trustFlags': trust_flags,
             })
 
         return {
