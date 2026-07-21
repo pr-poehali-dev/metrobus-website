@@ -24,7 +24,10 @@ export default function SiteFooter() {
                 <Icon name="ShieldCheck" size={15} />
                 Патент на изобретение способа № 2803701
               </p>
-              <p className="flex items-center gap-2 sm:justify-end">Реестр Минцифры № 19406</p>
+              <p className="flex items-center gap-2 sm:justify-end">
+                <Icon name="BadgeCheck" size={15} />
+                Реестр Минцифры № 19406
+              </p>
             </div>
           </div>
         </div>
