@@ -106,6 +106,7 @@ def handler(event: dict, context) -> dict:
             SELECT COALESCE(AVG(rating), 0) AS average, COUNT(*) AS cnt
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
+              AND is_draft = false AND is_passenger IS DISTINCT FROM false
             """,
             (date(year, month, 1),),
         )
@@ -118,6 +119,7 @@ def handler(event: dict, context) -> dict:
             SELECT COALESCE(AVG(rating), 0) AS average
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
+              AND is_draft = false AND is_passenger IS DISTINCT FROM false
             """,
             (date(prev_year, prev_month, 1),),
         )
@@ -127,6 +129,7 @@ def handler(event: dict, context) -> dict:
             """
             SELECT transport_type, COALESCE(AVG(rating), 0) AS average, COUNT(*) AS cnt
             FROM transport_passenger_ratings
+            WHERE is_draft = false AND is_passenger IS DISTINCT FROM false
             GROUP BY transport_type
             """
         )
@@ -147,7 +150,10 @@ def handler(event: dict, context) -> dict:
         by_type = [by_type_map['bus'], by_type_map['tram'], by_type_map['trolley']]
 
         cur.execute(
-            "SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_passenger_ratings WHERE route_number IS NOT NULL"
+            """
+            SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_passenger_ratings
+            WHERE route_number IS NOT NULL AND is_draft = false AND is_passenger IS DISTINCT FROM false
+            """
         )
         routes_count = int(cur.fetchone()['cnt'])
 
@@ -157,6 +163,7 @@ def handler(event: dict, context) -> dict:
                    AVG(rating) AS value, COUNT(*) AS cnt
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
+              AND is_draft = false AND is_passenger IS DISTINCT FROM false
             GROUP BY day, transport_type
             ORDER BY day
             """,
@@ -185,7 +192,10 @@ def handler(event: dict, context) -> dict:
             timeline.append(point)
 
         cur.execute(
-            "SELECT comment FROM transport_passenger_ratings WHERE comment IS NOT NULL AND comment != ''"
+            """
+            SELECT comment FROM transport_passenger_ratings
+            WHERE comment IS NOT NULL AND comment != '' AND is_draft = false AND is_passenger IS DISTINCT FROM false
+            """
         )
         comments = [r['comment'] for r in cur.fetchall()]
         cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in CLUSTER_RULES}
