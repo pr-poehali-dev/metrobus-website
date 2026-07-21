@@ -14,19 +14,21 @@ export default function SiteFooter() {
             </div>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">Цифровые сервисы пассажира.<br />Оплата проезда. Смарт-информирование. Обратная связь.</p>
           </div>
-          <div className="space-y-2 text-sm text-muted-foreground sm:mt-10">
+          <div className="space-y-4 text-sm text-muted-foreground sm:mt-10">
             <a href="mailto:support@icqr.ru" className="flex items-center gap-2 hover:text-foreground">
               <Icon name="Mail" size={15} />
               support@icqr.ru
             </a>
-            <p className="flex items-center gap-2">
-              <Icon name="ShieldCheck" size={15} />
-              Патент на изобретение способа № 2803701
-            </p>
-            <p className="flex items-center gap-2">
-              <Icon name="BadgeCheck" size={15} />
-              Реестр Минцифры № 19406 от 04.10.2023 г.
-            </p>
+            <div className="space-y-2">
+              <p className="flex items-center gap-2">
+                <Icon name="ShieldCheck" size={15} />
+                Патент на изобретение способа № 2803701
+              </p>
+              <p className="flex items-center gap-2">
+                <Icon name="BadgeCheck" size={15} />
+                Реестр Минцифры № 19406 от 04.10.2023 г.
+              </p>
+            </div>
           </div>
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
