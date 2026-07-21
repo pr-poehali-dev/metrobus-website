@@ -32,7 +32,7 @@
     --input: 214 20% 91%;
     --ring: 220 20% 12%;
 
-    --radius: 0.75rem;
+    --radius: 2px;
 
     /* Transport palette */
     --tr-bus: 214 80% 48%;
