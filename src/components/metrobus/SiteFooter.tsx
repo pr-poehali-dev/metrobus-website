@@ -31,10 +31,12 @@ export default function SiteFooter() {
             </div>
           </div>
         </div>
-        <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <a href="/terms" className="underline hover:text-foreground">Пользовательское соглашение</a>
+            <a href="/privacy" className="underline hover:text-foreground">Политика конфиденциальности</a>
+          </div>
           <span>© {new Date().getFullYear()} МЕТРОБУС.РФ.</span>
-          <a href="/terms" className="underline hover:text-foreground">Пользовательское соглашение</a>
-          <a href="/privacy" className="underline hover:text-foreground">Политика конфиденциальности</a>
         </div>
       </div>
     </footer>
