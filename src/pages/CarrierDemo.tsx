@@ -39,8 +39,8 @@ export default function CarrierDemo() {
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Icon name="Bus" size={18} className="text-primary-foreground" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary">
+              <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
             </span>
             <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
           </Link>
