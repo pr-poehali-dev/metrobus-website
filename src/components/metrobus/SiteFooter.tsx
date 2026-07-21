@@ -7,8 +7,8 @@ export default function SiteFooter() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-                <Icon name="Bus" size={16} className="text-primary-foreground" />
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-primary">
+                <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
               </span>
               <span className="font-bold">МЕТРОБУС.РФ</span>
             </div>
