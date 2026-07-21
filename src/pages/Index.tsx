@@ -371,7 +371,7 @@ const Index = () => {
               </div>
               <p className="mt-3 max-w-md text-sm text-muted-foreground">Цифровые сервисы пассажира.<br />Оплата проезда. Смарт-информирование. Обратная связь.</p>
             </div>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-muted-foreground sm:mt-10">
               <a href="mailto:support@icqr.ru" className="flex items-center gap-2 hover:text-foreground">
                 <Icon name="Mail" size={15} />
                 support@icqr.ru
