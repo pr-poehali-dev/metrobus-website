@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import Icon from '@/components/ui/icon';
 
 interface Props {
@@ -11,10 +12,12 @@ interface Props {
 
 export default function AccessForm({ role }: Props) {
   const [sent, setSent] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   // Первая версия: форма собирает данные, но отправка на backend ещё не подключена.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreed) return;
     setSent(true);
   };
 
@@ -61,13 +64,28 @@ export default function AccessForm({ role }: Props) {
         />
       </div>
       <input type="hidden" name="role" value={role} />
-      <Button type="submit" className="h-11 w-full text-base">
+      <div className="flex items-start gap-2">
+        <Checkbox
+          id={`${role}-agree`}
+          checked={agreed}
+          onCheckedChange={(v) => setAgreed(v === true)}
+          className="mt-0.5"
+        />
+        <Label htmlFor={`${role}-agree`} className="text-xs font-normal leading-relaxed text-muted-foreground">
+          Я согласен с{' '}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+            Пользовательским соглашением
+          </a>{' '}
+          и{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+            Политикой конфиденциальности
+          </a>
+        </Label>
+      </div>
+      <Button type="submit" disabled={!agreed} className="h-11 w-full text-base">
         Отправить заявку
         <Icon name="Send" size={16} className="ml-2" />
       </Button>
-      <p className="text-xs text-muted-foreground">
-        Отправляя заявку, вы соглашаетесь на обработку контактных данных.
-      </p>
     </form>
   );
 }
