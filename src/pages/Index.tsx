@@ -104,9 +104,7 @@ const Index = () => {
           >
             Проект компании ООО "Медиа-Инкод"
           </button>
-          <h1 className="text-xl font-bold leading-tight sm:text-4xl">
-            Оценивай свои поездки — без приложения, без регистрации и без сканирования QR-кода
-          </h1>
+          <h1 className="text-xl font-bold leading-tight sm:text-4xl">Оценивай свои поездки и маршруты</h1>
           <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">Без приложения. Без регистрации. Без сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={ICQR_URL} target="_blank" rel="noopener noreferrer" className="sm:w-auto">
