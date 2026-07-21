@@ -15,9 +15,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, children }: TopSectio
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <a href="#top" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-primary">
-              <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
-            </span>
+            <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-8 w-8" />
             <span className="flex flex-col leading-tight">
               <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
               <span className="text-[11px] font-medium text-muted-foreground">Цифровые сервисы пассажира</span>
