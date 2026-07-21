@@ -186,7 +186,9 @@ const Index = () => {
             <section id="dashboard" className="scroll-mt-20">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold sm:text-3xl">Дашборд пассажира</h2>
+                  <h2 className="text-2xl font-bold sm:text-3xl">
+                    {viewMode === 'passengers' ? 'Дашборд пассажира' : 'Дашборд наблюдателя'}
+                  </h2>
                   <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                     обновляется ежедневно
                   </span>
