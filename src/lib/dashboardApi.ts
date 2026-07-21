@@ -69,3 +69,32 @@ export async function fetchIcqrSyncStatus(): Promise<IcqrSyncStatus | null> {
     return null;
   }
 }
+
+export interface CityGeo {
+  city: string | null;
+  region: string | null;
+}
+
+export async function fetchCityByIp(): Promise<CityGeo | null> {
+  try {
+    const res = await fetch(func2url['city-vote']);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function submitCityVote(city: string, region?: string): Promise<{ success: boolean; votes: number } | null> {
+  try {
+    const res = await fetch(func2url['city-vote'], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city, region }),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
