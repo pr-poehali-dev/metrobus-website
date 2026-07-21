@@ -33,7 +33,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, children }: TopSectio
         </div>
       </header>
 
-      <main id="top" className="mx-auto max-w-5xl px-4">
+      <main id="top" className="mx-auto max-w-5xl scroll-mt-16 px-4">
         {/* HERO */}
         <section className="pt-10 pb-8 sm:pt-16 sm:pb-12">
           <button
