@@ -42,7 +42,10 @@ export default function CarrierDemo() {
             <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary">
               <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
             </span>
-            <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
+              <span className="text-[11px] font-medium text-muted-foreground">Личный кабинет перевозчика</span>
+            </span>
           </Link>
           <Link to="/">
             <Button variant="outline" size="sm" className="h-9 gap-1.5 px-3">
