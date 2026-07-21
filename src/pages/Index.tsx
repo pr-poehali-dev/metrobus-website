@@ -7,6 +7,7 @@ import Icon from '@/components/ui/icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AccessForm from '@/components/metrobus/AccessForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
+import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
 import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashboardApi';
 
@@ -33,6 +34,7 @@ const transportBg: Record<TransportType, string> = {
 const Index = () => {
   const isMobile = useIsMobile();
   const [monthOffset, setMonthOffset] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('passengers');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -44,7 +46,7 @@ const Index = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchDashboardStats(monthOffset)
+    fetchDashboardStats(monthOffset, viewMode)
       .then((res) => {
         if (!cancelled) setData(res);
       })
@@ -54,7 +56,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [monthOffset]);
+  }, [monthOffset, viewMode]);
 
   const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, routesCount: 0, byType: [
     { type: 'bus' as TransportType, label: 'Автобус', average: 0, count: 0 },
@@ -184,12 +186,20 @@ const Index = () => {
 
             {/* С.3 — Дашборд */}
             <section id="dashboard" className="scroll-mt-20">
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold sm:text-3xl">Дашборд пассажира</h2>
-                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                  обновляется ежедневно
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold sm:text-3xl">Дашборд пассажира</h2>
+                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                    обновляется ежедневно
+                  </span>
+                </div>
+                <ViewModeToggle value={viewMode} onChange={setViewMode} />
               </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {viewMode === 'passengers'
+                  ? 'Оценки от людей, которые ехали в транспорте.'
+                  : 'Оценки от людей, наблюдавших за транспортом со стороны (не в салоне). Показаны отдельно и не входят в основной рейтинг.'}
+              </p>
 
               {/* KPI: средняя + счётчик */}
               <div className="mt-6 grid gap-4 sm:grid-cols-3">

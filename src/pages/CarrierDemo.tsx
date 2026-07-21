@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
+import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import {
   carrierDemoSummary,
   carrierDemoByType,
@@ -23,11 +24,15 @@ const transportBg: Record<string, string> = {
 };
 
 export default function CarrierDemo() {
-  const summary = carrierDemoSummary;
-  const timeline = carrierDemoTimeline();
+  const [viewMode, setViewMode] = useState<ViewMode>('passengers');
+  const summary = carrierDemoSummary(viewMode);
+  const byType = carrierDemoByType(viewMode);
+  const routes = carrierDemoRoutes(viewMode);
+  const clusters = carrierDemoClusters(viewMode);
+  const timeline = carrierDemoTimeline(viewMode);
   const trend = summary.average - summary.prevAverage;
   const trendUp = trend >= 0;
-  const worstRoutes = [...carrierDemoRoutes].sort((a, b) => a.average - b.average).slice(0, 3);
+  const worstRoutes = [...routes].sort((a, b) => a.average - b.average).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,12 +62,17 @@ export default function CarrierDemo() {
         </div>
 
         <section className="pt-6 pb-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold sm:text-2xl">{summary.fleetName}</h1>
-            <Badge variant="secondary">демо</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold sm:text-2xl">{summary.fleetName}</h1>
+              <Badge variant="secondary">демо</Badge>
+            </div>
+            <ViewModeToggle value={viewMode} onChange={setViewMode} />
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Личный кабинет перевозчика — обратная связь пассажиров по вашему транспорту.
+          <p className="mt-2 text-sm text-muted-foreground">
+            {viewMode === 'passengers'
+              ? 'Оценки от людей, которые ехали в вашем транспорте.'
+              : 'Оценки от людей, наблюдавших за транспортом со стороны. Показаны отдельно и не влияют на основной рейтинг парка.'}
           </p>
         </section>
 
@@ -84,7 +94,7 @@ export default function CarrierDemo() {
             <div className="mt-2 font-mono-num text-4xl font-bold leading-none">
               {summary.monthCount.toLocaleString('ru-RU')}
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">от пассажиров парка</p>
+            <p className="mt-2 text-sm text-muted-foreground">{viewMode === 'passengers' ? 'от пассажиров парка' : 'от наблюдателей'}</p>
           </div>
           <div className="rounded-xl border border-border p-5">
             <p className="text-sm text-muted-foreground">Транспорта в парке</p>
@@ -102,7 +112,7 @@ export default function CarrierDemo() {
 
         {/* Разбивка по типам */}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {carrierDemoByType.map((t) => (
+          {byType.map((t) => (
             <div key={t.type} className="rounded-xl border border-border p-5">
               <div className="flex items-center gap-2.5">
                 <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${transportBg[t.type]}`}>
@@ -182,11 +192,11 @@ export default function CarrierDemo() {
         <div className="mt-8">
           <div className="flex items-center gap-2">
             <Icon name="Sparkles" size={18} className="text-muted-foreground" />
-            <h3 className="text-lg font-semibold">О чём пишут пассажиры</h3>
+            <h3 className="text-lg font-semibold">{viewMode === 'passengers' ? 'О чём пишут пассажиры' : 'О чём пишут наблюдатели'}</h3>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически. Примеры демонстрационные.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {carrierDemoClusters.map((c) => (
+            {clusters.map((c) => (
               <div key={c.key} className="rounded-xl border border-border p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">

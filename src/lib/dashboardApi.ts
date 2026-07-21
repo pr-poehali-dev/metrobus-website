@@ -28,15 +28,18 @@ export interface Cluster {
   examples: string[];
 }
 
+export type DashboardViewMode = 'passengers' | 'observers';
+
 export interface DashboardData {
   summary: DashboardSummary;
   timeline: TimelinePoint[];
   month: string;
   clusters: Cluster[];
+  viewMode: DashboardViewMode;
 }
 
-export async function fetchDashboardStats(monthOffset: number): Promise<DashboardData> {
-  const url = `${func2url['dashboard-stats']}?monthOffset=${monthOffset}`;
+export async function fetchDashboardStats(monthOffset: number, viewMode: DashboardViewMode = 'passengers'): Promise<DashboardData> {
+  const url = `${func2url['dashboard-stats']}?monthOffset=${monthOffset}&viewMode=${viewMode}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('dashboard_stats_failed');
   return res.json();

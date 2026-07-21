@@ -53,10 +53,11 @@ def classify_comment(comment: str):
 
 
 def handler(event: dict, context) -> dict:
-    '''Возвращает агрегированные данные дашборда пассажирских оценок: сводку, разбивку по видам транспорта,
+    '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
     хронологию по дням выбранного месяца и AI-кластеры комментариев.
-    Args: event - dict с httpMethod и queryStringParameters (monthOffset); context - объект с request_id.
-    Returns: HTTP response с JSON { summary, timeline, clusters }.
+    Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers');
+        context - объект с request_id.
+    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode }.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -80,6 +81,13 @@ def handler(event: dict, context) -> dict:
     except (TypeError, ValueError):
         month_offset = 0
 
+    view_mode = params.get('viewMode', 'passengers')
+    if view_mode not in ('passengers', 'observers'):
+        view_mode = 'passengers'
+    # passengers: is_passenger = true ИЛИ NULL (старые записи без декларации считаем пассажирскими)
+    # observers: is_passenger = false (пользователь явно указал "Я наблюдатель вне транспорта")
+    role_filter = 'is_passenger IS DISTINCT FROM false' if view_mode == 'passengers' else 'is_passenger = false'
+
     today = date.today()
     year = today.year
     month = today.month + month_offset
@@ -102,11 +110,11 @@ def handler(event: dict, context) -> dict:
 
     try:
         cur.execute(
-            """
+            f"""
             SELECT COALESCE(AVG(rating), 0) AS average, COUNT(*) AS cnt
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
-              AND is_draft = false AND is_passenger IS DISTINCT FROM false
+              AND is_draft = false AND {role_filter}
             """,
             (date(year, month, 1),),
         )
@@ -115,21 +123,21 @@ def handler(event: dict, context) -> dict:
         month_count = int(cur_row['cnt'])
 
         cur.execute(
-            """
+            f"""
             SELECT COALESCE(AVG(rating), 0) AS average
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
-              AND is_draft = false AND is_passenger IS DISTINCT FROM false
+              AND is_draft = false AND {role_filter}
             """,
             (date(prev_year, prev_month, 1),),
         )
         prev_average = float(cur.fetchone()['average'])
 
         cur.execute(
-            """
+            f"""
             SELECT transport_type, COALESCE(AVG(rating), 0) AS average, COUNT(*) AS cnt
             FROM transport_passenger_ratings
-            WHERE is_draft = false AND is_passenger IS DISTINCT FROM false
+            WHERE is_draft = false AND {role_filter}
             GROUP BY transport_type
             """
         )
@@ -150,20 +158,20 @@ def handler(event: dict, context) -> dict:
         by_type = [by_type_map['bus'], by_type_map['tram'], by_type_map['trolley']]
 
         cur.execute(
-            """
+            f"""
             SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_passenger_ratings
-            WHERE route_number IS NOT NULL AND is_draft = false AND is_passenger IS DISTINCT FROM false
+            WHERE route_number IS NOT NULL AND is_draft = false AND {role_filter}
             """
         )
         routes_count = int(cur.fetchone()['cnt'])
 
         cur.execute(
-            """
+            f"""
             SELECT EXTRACT(DAY FROM rated_at)::int AS day, transport_type,
                    AVG(rating) AS value, COUNT(*) AS cnt
             FROM transport_passenger_ratings
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
-              AND is_draft = false AND is_passenger IS DISTINCT FROM false
+              AND is_draft = false AND {role_filter}
             GROUP BY day, transport_type
             ORDER BY day
             """,
@@ -192,9 +200,9 @@ def handler(event: dict, context) -> dict:
             timeline.append(point)
 
         cur.execute(
-            """
+            f"""
             SELECT comment FROM transport_passenger_ratings
-            WHERE comment IS NOT NULL AND comment != '' AND is_draft = false AND is_passenger IS DISTINCT FROM false
+            WHERE comment IS NOT NULL AND comment != '' AND is_draft = false AND {role_filter}
             """
         )
         comments = [r['comment'] for r in cur.fetchall()]
@@ -233,6 +241,7 @@ def handler(event: dict, context) -> dict:
             'timeline': timeline,
             'month': f'{MONTHS[month - 1]}, {year}',
             'clusters': clusters,
+            'viewMode': view_mode,
         }
 
         return {
