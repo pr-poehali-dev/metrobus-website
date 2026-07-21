@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AccessForm from '@/components/metrobus/AccessForm';
+import CityRequestForm from '@/components/metrobus/CityRequestForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
 import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
@@ -38,6 +39,7 @@ const Index = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [cityDialogOpen, setCityDialogOpen] = useState(false);
 
   useEffect(() => {
     triggerIcqrSync();
@@ -189,9 +191,14 @@ const Index = () => {
                   <h2 className="text-2xl font-bold sm:text-3xl">
                     {viewMode === 'passengers' ? 'Дашборд пассажира' : 'Дашборд наблюдателя'}
                   </h2>
-                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                    обновляется ежедневно
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCityDialogOpen(true)}
+                    className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+                  >
+                    <Icon name="MapPin" size={12} />
+                    Санкт-Петербург
+                  </button>
                 </div>
                 <ViewModeToggle value={viewMode} onChange={setViewMode} />
               </div>
@@ -418,6 +425,26 @@ const Index = () => {
               </Button>
             </a>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={cityDialogOpen} onOpenChange={setCityDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon name="MapPin" size={18} />
+              Сервис работает в Санкт-Петербурге
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-left text-foreground">
+              Технически запустить сервис в другом городе или регионе несложно — способ оценки
+              универсален и не привязан к конкретному городу.
+              <br />
+              <br />
+              Но для официального запуска нужно согласие городских властей или желание местных
+              перевозчиков подключиться. Оставьте заявку — так мы поймём, где сервис нужнее всего.
+            </DialogDescription>
+          </DialogHeader>
+          <CityRequestForm />
         </DialogContent>
       </Dialog>
     </div>
