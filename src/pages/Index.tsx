@@ -387,7 +387,7 @@ const Index = () => {
             </div>
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-            <span>© {new Date().getFullYear()} МЕТРОБУС.РФ. Правовая информация носит предварительный характер.</span>
+            <span>© {new Date().getFullYear()} МЕТРОБУС.РФ.</span>
             <a href="/terms" className="underline hover:text-foreground">Пользовательское соглашение</a>
             <a href="/privacy" className="underline hover:text-foreground">Политика конфиденциальности</a>
           </div>
