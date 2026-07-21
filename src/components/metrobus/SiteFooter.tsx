@@ -36,7 +36,7 @@ export default function SiteFooter() {
             <a href="/terms" className="underline hover:text-foreground">Пользовательское соглашение</a>
             <a href="/privacy" className="underline hover:text-foreground">Политика конфиденциальности</a>
           </div>
-          <span>© {new Date().getFullYear()} МЕТРОБУС.РФ.</span>
+          <span>© ООО «МЕДИА-ИНКОД», {new Date().getFullYear()}</span>
         </div>
       </div>
     </footer>
