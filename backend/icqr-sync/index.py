@@ -100,6 +100,9 @@ def enrich_geo(cur, limit: int = 30):
         transport_submit_lat = to_float(details.get('transport_submit_lat'))
         transport_submit_lng = to_float(details.get('transport_submit_lng'))
 
+        result_false = details.get('result_false')
+        is_draft = result_false == 'inpad_success_without_rating'
+
         cur.execute(
             """
             UPDATE transport_passenger_ratings SET
@@ -125,6 +128,12 @@ def enrich_geo(cur, limit: int = 30):
                 transport_submit_lat = %s,
                 transport_submit_lng = %s,
                 transport_submit_dist = %s,
+                possibly_not_passenger = %s,
+                anti_fraud_reason = %s,
+                rating_client_id = %s,
+                location_id = %s,
+                location_code = %s,
+                is_draft = %s,
                 geo_enriched_at = now()
             WHERE id = %s
             """,
@@ -140,7 +149,7 @@ def enrich_geo(cur, limit: int = 30):
                 details.get('submit_clicked_accuracy_m'),
                 movement_m,
                 details.get('uuid'),
-                details.get('result_false'),
+                result_false,
                 details.get('ip'),
                 to_bool(details.get('is_passanger')),
                 details.get('operator_id'),
@@ -151,6 +160,12 @@ def enrich_geo(cur, limit: int = 30):
                 transport_submit_lat,
                 transport_submit_lng,
                 details.get('transport_submit_dist'),
+                to_bool(details.get('possibly_not_passenger')),
+                details.get('anti_fraud_reason'),
+                details.get('rating_client_id'),
+                details.get('location_id'),
+                details.get('location_code'),
+                is_draft,
                 row_id,
             ),
         )

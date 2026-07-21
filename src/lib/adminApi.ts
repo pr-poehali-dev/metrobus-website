@@ -72,8 +72,13 @@ export interface AdminReviewItem {
   transportSubmitLat: number | null;
   transportSubmitLng: number | null;
   transportSubmitDist: number | null;
-  trustLevel: 'high' | 'low';
+  trustLevel: 'high' | 'medium' | 'low';
   trustFlags: string[];
+  isObserver: boolean;
+  notCountedReason: string | null;
+  possiblyNotPassenger: boolean | null;
+  antiFraudReason: string | null;
+  locationCode: string | null;
 }
 
 export interface AdminReviewsResponse {
@@ -142,6 +147,8 @@ export interface ModerationListItem {
   is_passanger?: boolean | number | null;
   transport_opened_dist?: number | null;
   transport_submit_dist?: number | null;
+  possibly_not_passenger?: boolean | number | null;
+  anti_fraud_reason?: string | null;
 }
 
 export interface ModerationPagination {

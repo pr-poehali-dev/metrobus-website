@@ -51,27 +51,39 @@ interface TrustCheck {
   reasons: string[];
 }
 
+const NOT_COUNTED_LABELS: Record<string, string> = {
+  inpad_success_without_rating: 'Черновик: переход из ИНПАДА без итоговой оценки',
+};
+
+function notCountedLabel(reason: string) {
+  return NOT_COUNTED_LABELS[reason] ?? `Не учтено в рейтинге: ${reason}`;
+}
+
 function computeTrust(item: Record<string, unknown>): TrustCheck {
   const reasons: string[] = [];
-  const isPassenger = toBoolLike(item.is_passanger);
-  const resultFalse = item.result_false as string | null;
+  // possibly_not_passenger и anti_fraud_reason — официальные антифрод-поля ICQR (пока не заполняются их кодом,
+  // но это правильное место для будущей логики). result_false / is_passanger=0 — это НЕ признаки накрутки:
+  // result_false объясняет, почему оценка не пошла в рейтинг (далеко от маршрута и т.п.), а is_passanger=0 —
+  // легитимный выбор пассажира «Я наблюдатель вне транспорта».
+  const possiblyNotPassenger = toBoolLike(item.possibly_not_passenger);
+  const antiFraudReason = item.anti_fraud_reason as string | null;
   const openedDist = item.transport_opened_dist as number | null;
   const submitDist = item.transport_submit_dist as number | null;
 
-  if (resultFalse) reasons.push(`Отклонено ICQR: ${resultFalse}`);
-  if (isPassenger === false) reasons.push('Система ICQR не подтвердила, что это пассажир');
+  if (antiFraudReason) reasons.push(`ICQR: сработал антифрод (${antiFraudReason})`);
+  if (possiblyNotPassenger) reasons.push('ICQR: похоже, не пассажир (автоантифрод)');
   if (typeof openedDist === 'number' && openedDist > 300) reasons.push(`Далеко от ТС при открытии (${openedDist} м)`);
   if (typeof submitDist === 'number' && submitDist > 300) reasons.push(`Далеко от ТС при отправке (${submitDist} м)`);
 
+  if (possiblyNotPassenger || antiFraudReason) return { level: 'low', reasons };
   if (reasons.length === 0) return { level: 'high', reasons: [] };
-  if (resultFalse || isPassenger === false) return { level: 'low', reasons };
   return { level: 'medium', reasons };
 }
 
 const TRUST_BADGE: Record<TrustCheck['level'], { label: string; variant: 'default' | 'secondary' | 'destructive'; icon: string }> = {
   high: { label: 'Проверено', variant: 'default', icon: 'ShieldCheck' },
   medium: { label: 'Есть отклонения', variant: 'secondary', icon: 'ShieldAlert' },
-  low: { label: 'Подозрительно', variant: 'destructive', icon: 'ShieldX' },
+  low: { label: 'Антифрод ICQR', variant: 'destructive', icon: 'ShieldX' },
 };
 
 export default function ModerationQueue() {
@@ -335,6 +347,7 @@ export default function ModerationQueue() {
                 const trust = computeTrust(selected);
                 const trustBadge = TRUST_BADGE[trust.level];
                 const isPassenger = toBoolLike(selected.is_passanger);
+                const resultFalse = selected.result_false as string | null;
                 const openedDist = selected.transport_opened_dist as number | null;
                 const submitDist = selected.transport_submit_dist as number | null;
                 const operatorTitle = selected.operator_title as string | null;
@@ -342,45 +355,60 @@ export default function ModerationQueue() {
                 const isModerated = String(selected.moderation_status) !== 'pending';
 
                 return (
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="font-medium">Проверка подлинности</p>
-                      <Badge variant={trustBadge.variant} className="gap-1">
-                        <Icon name={trustBadge.icon} size={12} />
-                        {trustBadge.label}
-                      </Badge>
-                    </div>
-
-                    {trust.reasons.length > 0 && (
-                      <ul className="mb-2 space-y-1 text-xs text-muted-foreground">
-                        {trust.reasons.map((r, i) => (
-                          <li key={i} className="flex items-start gap-1.5">
-                            <Icon name="AlertTriangle" size={12} className="mt-0.5 shrink-0 text-amber-500" />
-                            {r}
-                          </li>
-                        ))}
-                      </ul>
+                  <>
+                    {isPassenger === false && (
+                      <div className="flex items-center gap-2 rounded-lg bg-secondary/60 px-3 py-2 text-xs text-muted-foreground">
+                        <Icon name="Eye" size={13} className="shrink-0" />
+                        Пассажир указал в форме, что оценивает со стороны («наблюдатель вне транспорта»)
+                      </div>
+                    )}
+                    {!!resultFalse && (
+                      <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
+                        <Icon name="Info" size={13} className="shrink-0" />
+                        {notCountedLabel(resultFalse)}
+                      </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                      <span className="text-muted-foreground">Пассажир (ICQR)</span>
-                      <span className="text-right">
-                        {isPassenger === null ? '—' : isPassenger ? 'Подтверждено' : 'Не подтверждено'}
-                      </span>
-                      <span className="text-muted-foreground">До ТС при открытии</span>
-                      <span className="text-right">{typeof openedDist === 'number' ? `${openedDist} м` : '—'}</span>
-                      <span className="text-muted-foreground">До ТС при отправке</span>
-                      <span className="text-right">{typeof submitDist === 'number' ? `${submitDist} м` : '—'}</span>
-                      {isModerated && (
-                        <>
-                          <span className="text-muted-foreground">Оператор парка</span>
-                          <span className="text-right">{operatorTitle || '—'}</span>
-                          <span className="text-muted-foreground">IP пассажира</span>
-                          <span className="text-right font-mono-num">{ip || '—'}</span>
-                        </>
+                    <div className="rounded-lg border border-border p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="font-medium">Проверка подлинности</p>
+                        <Badge variant={trustBadge.variant} className="gap-1">
+                          <Icon name={trustBadge.icon} size={12} />
+                          {trustBadge.label}
+                        </Badge>
+                      </div>
+
+                      {trust.reasons.length > 0 && (
+                        <ul className="mb-2 space-y-1 text-xs text-muted-foreground">
+                          {trust.reasons.map((r, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <Icon name="AlertTriangle" size={12} className="mt-0.5 shrink-0 text-amber-500" />
+                              {r}
+                            </li>
+                          ))}
+                        </ul>
                       )}
+
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                        <span className="text-muted-foreground">Роль (декларация пассажира)</span>
+                        <span className="text-right">
+                          {isPassenger === null ? '—' : isPassenger ? 'Пассажир' : 'Наблюдатель'}
+                        </span>
+                        <span className="text-muted-foreground">До ТС при открытии</span>
+                        <span className="text-right">{typeof openedDist === 'number' ? `${openedDist} м` : '—'}</span>
+                        <span className="text-muted-foreground">До ТС при отправке</span>
+                        <span className="text-right">{typeof submitDist === 'number' ? `${submitDist} м` : '—'}</span>
+                        {isModerated && (
+                          <>
+                            <span className="text-muted-foreground">Оператор парка</span>
+                            <span className="text-right">{operatorTitle || '—'}</span>
+                            <span className="text-muted-foreground">IP пассажира</span>
+                            <span className="text-right font-mono-num">{ip || '—'}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </>
                 );
               })()}
 

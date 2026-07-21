@@ -9,18 +9,27 @@ const TRANSPORT_LABELS: Record<string, string> = {
   trolley: 'Троллейбус',
 };
 
-const TRUST_BADGE: Record<'high' | 'low', { label: string; variant: 'default' | 'destructive'; icon: string }> = {
+const TRUST_BADGE: Record<'high' | 'medium' | 'low', { label: string; variant: 'default' | 'secondary' | 'destructive'; icon: string }> = {
   high: { label: 'Проверено', variant: 'default', icon: 'ShieldCheck' },
-  low: { label: 'Подозрительно', variant: 'destructive', icon: 'ShieldX' },
+  medium: { label: 'Есть отклонения', variant: 'secondary', icon: 'ShieldAlert' },
+  low: { label: 'Антифрод ICQR', variant: 'destructive', icon: 'ShieldX' },
 };
 
 const TRUST_FLAG_LABELS: Record<string, string> = {
-  result_false: 'ICQR пометил отзыв ошибочным',
-  not_passenger: 'Система не подтвердила, что это пассажир',
+  possibly_not_passenger: 'ICQR: похоже, не пассажир (автоантифрод)',
+  anti_fraud_reason: 'ICQR: сработал антифрод',
   far_from_vehicle_open: 'Далеко от транспорта при открытии страницы',
   far_from_vehicle_submit: 'Далеко от транспорта при отправке оценки',
   excessive_movement: 'Слишком большое перемещение между открытием и отправкой',
 };
+
+const NOT_COUNTED_LABELS: Record<string, string> = {
+  inpad_success_without_rating: 'Черновик: переход из ИНПАДА без итоговой оценки',
+};
+
+function notCountedLabel(reason: string) {
+  return NOT_COUNTED_LABELS[reason] ?? `Не учтено в рейтинге: ${reason}`;
+}
 
 function formatDate(iso: string | null) {
   if (!iso) return '—';
@@ -82,6 +91,20 @@ export default function ReviewDetailDialog({
               </div>
             )}
 
+            {item.isObserver && (
+              <div className="flex items-center gap-2 rounded-lg bg-secondary/60 px-3 py-2 text-xs text-muted-foreground">
+                <Icon name="Eye" size={13} className="shrink-0" />
+                Пассажир указал в форме, что оценивает со стороны («наблюдатель вне транспорта»)
+              </div>
+            )}
+
+            {item.notCountedReason && (
+              <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
+                <Icon name="Info" size={13} className="shrink-0" />
+                {notCountedLabel(item.notCountedReason)}
+              </div>
+            )}
+
             <div className="rounded-lg border border-border p-3">
               <div className="mb-2 flex items-center justify-between">
                 <p className="font-medium">Проверка подлинности</p>
@@ -103,9 +126,9 @@ export default function ReviewDetailDialog({
               )}
 
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                <span className="text-muted-foreground">Пассажир (ICQR)</span>
+                <span className="text-muted-foreground">Роль (декларация пассажира)</span>
                 <span className="text-right">
-                  {item.isPassenger === null ? '—' : item.isPassenger ? 'Подтверждено' : 'Не подтверждено'}
+                  {item.isPassenger === null ? '—' : item.isPassenger ? 'Пассажир' : 'Наблюдатель'}
                 </span>
                 <span className="text-muted-foreground">До ближайшей остановки</span>
                 <span className="text-right">{item.nearestStopDistanceM != null ? `${item.nearestStopDistanceM} м` : '—'}</span>
@@ -119,6 +142,12 @@ export default function ReviewDetailDialog({
                 <span className="text-right">{item.operatorTitle || '—'}</span>
                 <span className="text-muted-foreground">IP пассажира</span>
                 <span className="text-right font-mono-num">{item.ip || '—'}</span>
+                {item.locationCode && (
+                  <>
+                    <span className="text-muted-foreground">Локация</span>
+                    <span className="text-right">{item.locationCode}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

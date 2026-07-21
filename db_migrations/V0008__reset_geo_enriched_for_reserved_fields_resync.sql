@@ -1,0 +1,1 @@
+UPDATE transport_passenger_ratings SET geo_enriched_at = NULL;

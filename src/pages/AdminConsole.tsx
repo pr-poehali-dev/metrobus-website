@@ -318,12 +318,19 @@ export default function AdminConsole() {
                   </TableCell>
                   <TableCell className="max-w-[320px] text-sm text-muted-foreground">{item.comment || '—'}</TableCell>
                   <TableCell>
-                    {item.trustLevel === 'low' ? (
+                    {item.trustLevel === 'low' && (
                       <Badge variant="destructive" className="gap-1 whitespace-nowrap">
                         <Icon name="ShieldX" size={12} />
-                        Подозрительно
+                        Антифрод ICQR
                       </Badge>
-                    ) : (
+                    )}
+                    {item.trustLevel === 'medium' && (
+                      <Badge variant="secondary" className="gap-1 whitespace-nowrap">
+                        <Icon name="ShieldAlert" size={12} />
+                        Есть отклонения
+                      </Badge>
+                    )}
+                    {item.trustLevel === 'high' && (
                       <Badge variant="default" className="gap-1 whitespace-nowrap">
                         <Icon name="ShieldCheck" size={12} />
                         Проверено

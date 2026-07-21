@@ -79,7 +79,7 @@ def handler(event: dict, context) -> dict:
         per_page = 50
     offset = (page - 1) * per_page
 
-    conditions = []
+    conditions = ["is_draft = false"]
     values = []
 
     if search:
@@ -136,7 +136,9 @@ def handler(event: dict, context) -> dict:
                    page_opened_lat, page_opened_lng, submit_lat, submit_lng, movement_distance_m,
                    uuid, result_false, ip, is_passenger, operator_id, operator_title,
                    transport_opened_lat, transport_opened_lng, transport_opened_dist,
-                   transport_submit_lat, transport_submit_lng, transport_submit_dist
+                   transport_submit_lat, transport_submit_lng, transport_submit_dist,
+                   possibly_not_passenger, anti_fraud_reason, rating_client_id,
+                   location_id, location_code
             FROM transport_passenger_ratings
             {where_clause}
             ORDER BY {sort} {order}
@@ -162,17 +164,19 @@ def handler(event: dict, context) -> dict:
                 sentiment = 'neutral'
 
             trust_flags = []
-            if r['result_false']:
-                trust_flags.append('result_false')
-            if r['is_passenger'] is False:
-                trust_flags.append('not_passenger')
+            if r['possibly_not_passenger']:
+                trust_flags.append('possibly_not_passenger')
+            if r['anti_fraud_reason']:
+                trust_flags.append('anti_fraud_reason')
             if r['transport_opened_dist'] is not None and r['transport_opened_dist'] > 300:
                 trust_flags.append('far_from_vehicle_open')
             if r['transport_submit_dist'] is not None and r['transport_submit_dist'] > 300:
                 trust_flags.append('far_from_vehicle_submit')
             if r['movement_distance_m'] is not None and r['movement_distance_m'] > 2000:
                 trust_flags.append('excessive_movement')
-            trust_level = 'low' if trust_flags else 'high'
+            trust_level = 'low' if (r['possibly_not_passenger'] or r['anti_fraud_reason']) else (
+                'medium' if trust_flags else 'high'
+            )
 
             items.append({
                 'id': r['id'],
@@ -210,6 +214,11 @@ def handler(event: dict, context) -> dict:
                 'transportSubmitDist': r['transport_submit_dist'],
                 'trustLevel': trust_level,
                 'trustFlags': trust_flags,
+                'isObserver': r['is_passenger'] is False,
+                'notCountedReason': r['result_false'],
+                'possiblyNotPassenger': r['possibly_not_passenger'],
+                'antiFraudReason': r['anti_fraud_reason'],
+                'locationCode': r['location_code'],
             })
 
         return {
