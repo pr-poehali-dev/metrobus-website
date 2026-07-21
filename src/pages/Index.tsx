@@ -107,7 +107,7 @@ const Index = () => {
           <h1 className="text-xl font-bold leading-tight sm:text-4xl">
             Оценивай свои поездки — без приложения, без регистрации и без сканирования QR-кода
           </h1>
-          <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">Твой вклад в развитие наземного общественно транспорта Санкт-Петербурга. Оценки увидят перевозчики и организатор перевозок.</p>
+          <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">Без приложения. Без регистрации. Без сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={ICQR_URL} target="_blank" rel="noopener noreferrer" className="sm:w-auto">
               <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto">
