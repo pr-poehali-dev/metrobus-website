@@ -16,7 +16,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, children }: TopSectio
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <a href="#top" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-primary">
-              <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ddbe65f3-c166-4f48-b35d-f56e0b819240.jpg" alt="МЕТРОБУС.РФ" className="h-full w-full object-cover" />
+              <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
             </span>
             <span className="flex flex-col leading-tight">
               <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
