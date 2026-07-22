@@ -181,6 +181,12 @@ export default function MainTabs({
                         alt="Автобус"
                         className="h-[18px] w-[18px] object-contain"
                       />
+                    ) : t.type === 'tram' ? (
+                      <img
+                        src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/d297234a-d192-4d26-9992-fad1d4979d03.png"
+                        alt="Трамвай"
+                        className="h-[18px] w-[18px] object-contain"
+                      />
                     ) : (
                       <Icon name={transportIcon[t.type]} size={18} className={transportClass[t.type]} />
                     )}
