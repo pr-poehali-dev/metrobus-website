@@ -95,6 +95,7 @@ export default function ModerationQueue() {
 
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [routeNumber, setRouteNumber] = useState('');
+  const [role, setRole] = useState<'all' | 'passenger' | 'observer'>('all');
   const [page, setPage] = useState(1);
   const perPage = 20;
 
@@ -167,6 +168,13 @@ export default function ModerationQueue() {
 
   const totalPages = Math.max(1, pagination.total_pages);
 
+  const filteredItems = items.filter((item) => {
+    if (role === 'all') return true;
+    const isPassenger = toBoolLike(item.is_passanger);
+    if (role === 'passenger') return isPassenger === true;
+    return isPassenger === false;
+  });
+
   if (errorMsg === 'unauthorized') {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -184,7 +192,7 @@ export default function ModerationQueue() {
         </div>
       )}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Select value={status} onValueChange={(v) => { setStatus(v as typeof status); setPage(1); }}>
           <SelectTrigger><SelectValue placeholder="Статус" /></SelectTrigger>
           <SelectContent>
@@ -192,6 +200,15 @@ export default function ModerationQueue() {
             <SelectItem value="approved">Одобренные</SelectItem>
             <SelectItem value="rejected">Отклонённые</SelectItem>
             <SelectItem value="all">Все</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={role} onValueChange={(v) => { setRole(v as typeof role); setPage(1); }}>
+          <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Пассажир и наблюдатель</SelectItem>
+            <SelectItem value="passenger">Пассажир</SelectItem>
+            <SelectItem value="observer">Наблюдатель</SelectItem>
           </SelectContent>
         </Select>
 
@@ -219,7 +236,7 @@ export default function ModerationQueue() {
               <TableHead>Оценка</TableHead>
               <TableHead>Транспорт</TableHead>
               <TableHead>Маршрут</TableHead>
-              <TableHead>Остановки</TableHead>
+              <TableHead>Роль</TableHead>
               <TableHead>Комментарий</TableHead>
               <TableHead>Статус</TableHead>
               <TableHead>Доверие</TableHead>
@@ -230,14 +247,22 @@ export default function ModerationQueue() {
             {loading && (
               <TableRow><TableCell colSpan={9} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
             )}
-            {!loading && items.length === 0 && !errorMsg && (
+            {!loading && filteredItems.length === 0 && !errorMsg && (
               <TableRow><TableCell colSpan={9} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
             )}
-            {!loading && items.map((item) => {
+            {!loading && filteredItems.map((item, idx) => {
               const trust = computeTrust(item as unknown as Record<string, unknown>);
               const trustBadge = TRUST_BADGE[trust.level];
+              const isPassenger = toBoolLike(item.is_passanger);
+              const prevDay = idx > 0 ? new Date(filteredItems[idx - 1].created_at).toDateString() : null;
+              const currDay = new Date(item.created_at).toDateString();
+              const isNewDay = idx > 0 && currDay !== prevDay;
               return (
-              <TableRow key={item.id} className="cursor-pointer hover:bg-secondary/50" onClick={() => openItem(item.id)}>
+              <TableRow
+                key={item.id}
+                className={`cursor-pointer hover:bg-secondary/50 ${isNewDay ? 'border-t-4 border-t-border' : ''}`}
+                onClick={() => openItem(item.id)}
+              >
                 <TableCell className="whitespace-nowrap text-sm">{formatDate(item.created_at)}</TableCell>
                 <TableCell>
                   <span className="flex items-center gap-1 font-mono-num font-semibold">
@@ -247,10 +272,10 @@ export default function ModerationQueue() {
                 </TableCell>
                 <TableCell className="text-sm">{item.transport_type ? (TRANSPORT_LABELS[item.transport_type] ?? item.transport_type) : '—'}</TableCell>
                 <TableCell className="text-sm">{item.route_number ?? '—'}</TableCell>
-                <TableCell className="max-w-[180px] truncate text-sm text-muted-foreground">
-                  {item.nearest_stop_name || item.stop_to_name
-                    ? `${item.nearest_stop_name ?? ''}${item.nearest_stop_name && item.stop_to_name ? ' → ' : ''}${item.stop_to_name ?? ''}`
-                    : '—'}
+                <TableCell className="text-sm">
+                  {isPassenger === true && 'Пассажир'}
+                  {isPassenger === false && 'Наблюдатель'}
+                  {isPassenger === null && '—'}
                 </TableCell>
                 <TableCell className="max-w-[260px] truncate text-sm text-muted-foreground">{item.comment || '—'}</TableCell>
                 <TableCell>

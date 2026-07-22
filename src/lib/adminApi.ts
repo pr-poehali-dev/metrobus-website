@@ -92,6 +92,7 @@ export interface AdminReviewsResponse {
 export interface AdminReviewsQuery {
   search?: string;
   transportType?: string;
+  role?: 'passenger' | 'observer';
   ratingMin?: string;
   ratingMax?: string;
   dateFrom?: string;
@@ -109,6 +110,7 @@ export async function fetchAdminReviews(query: AdminReviewsQuery): Promise<Admin
   const params = new URLSearchParams();
   if (query.search) params.set('search', query.search);
   if (query.transportType) params.set('transport_type', query.transportType);
+  if (query.role) params.set('role', query.role);
   if (query.ratingMin) params.set('rating_min', query.ratingMin);
   if (query.ratingMax) params.set('rating_max', query.ratingMax);
   if (query.dateFrom) params.set('date_from', query.dateFrom);

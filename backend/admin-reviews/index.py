@@ -30,7 +30,7 @@ def verify_token(secret: str, token: str) -> bool:
 def handler(event: dict, context) -> dict:
     '''Возвращает реестр отзывов пассажиров для админ-панели: поиск, фильтры, сортировка, пагинация.
     Требует валидный токен сессии в заголовке X-Admin-Token.
-    Args: event - dict с httpMethod, queryStringParameters (search, transport_type, rating_min, rating_max,
+    Args: event - dict с httpMethod, queryStringParameters (search, transport_type, role, rating_min, rating_max,
         date_from, date_to, sort, order, page, per_page), headers X-Admin-Token; context - объект с request_id.
     Returns: HTTP response с JSON { items, total, page, per_page }.
     '''
@@ -63,6 +63,7 @@ def handler(event: dict, context) -> dict:
     params = event.get('queryStringParameters') or {}
     search = (params.get('search') or '').strip()
     transport_type = (params.get('transport_type') or '').strip()
+    role = (params.get('role') or '').strip()
     rating_min = params.get('rating_min')
     rating_max = params.get('rating_max')
     date_from = params.get('date_from')
@@ -92,6 +93,11 @@ def handler(event: dict, context) -> dict:
     if transport_type:
         conditions.append("transport_type = %s")
         values.append(transport_type)
+
+    if role == 'passenger':
+        conditions.append("is_passenger = true")
+    elif role == 'observer':
+        conditions.append("is_passenger = false")
 
     if rating_min:
         conditions.append("rating >= %s")

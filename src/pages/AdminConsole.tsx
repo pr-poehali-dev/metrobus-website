@@ -101,6 +101,7 @@ export default function AdminConsole() {
 
   const [search, setSearch] = useState('');
   const [transportType, setTransportType] = useState('all');
+  const [role, setRole] = useState('all');
   const [ratingMin, setRatingMin] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -117,6 +118,7 @@ export default function AdminConsole() {
     const query: AdminReviewsQuery = {
       search: search || undefined,
       transportType: transportType !== 'all' ? transportType : undefined,
+      role: role !== 'all' ? (role as 'passenger' | 'observer') : undefined,
       ratingMin: ratingMin !== 'all' ? ratingMin : undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
@@ -134,7 +136,7 @@ export default function AdminConsole() {
       setAnomalyTotal(res.anomalyTotal);
     }
     setLoading(false);
-  }, [search, transportType, ratingMin, dateFrom, dateTo, sort, order, page]);
+  }, [search, transportType, role, ratingMin, dateFrom, dateTo, sort, order, page]);
 
   useEffect(() => {
     if (authed) load();
@@ -155,11 +157,12 @@ export default function AdminConsole() {
     setAuthed(false);
   };
 
-  const hasActiveFilters = Boolean(search || transportType !== 'all' || dateFrom || dateTo);
+  const hasActiveFilters = Boolean(search || transportType !== 'all' || role !== 'all' || dateFrom || dateTo);
 
   const resetFilters = () => {
     setSearch('');
     setTransportType('all');
+    setRole('all');
     setDateFrom('');
     setDateTo('');
     setPage(1);
@@ -250,6 +253,15 @@ export default function AdminConsole() {
             </SelectContent>
           </Select>
 
+          <Select value={role} onValueChange={(v) => { setRole(v); setPage(1); }}>
+            <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Пассажир и наблюдатель</SelectItem>
+              <SelectItem value="passenger">Пассажир</SelectItem>
+              <SelectItem value="observer">Наблюдатель</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
           <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
         </div>
@@ -283,7 +295,7 @@ export default function AdminConsole() {
                 <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('route_number')}>
                   <span className="flex items-center gap-1">Маршрут {sort === 'route_number' && <Icon name={order === 'DESC' ? 'ChevronDown' : 'ChevronUp'} size={14} />}</span>
                 </TableHead>
-                <TableHead>Остановки</TableHead>
+                <TableHead>Роль</TableHead>
                 <TableHead>Комментарий</TableHead>
                 <TableHead>Доверие</TableHead>
               </TableRow>
@@ -295,10 +307,14 @@ export default function AdminConsole() {
               {!loading && items.length === 0 && (
                 <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
               )}
-              {!loading && items.map((item) => (
+              {!loading && items.map((item, idx) => {
+                const prevDay = idx > 0 ? (items[idx - 1].ratedAt ? new Date(items[idx - 1].ratedAt!).toDateString() : null) : null;
+                const currDay = item.ratedAt ? new Date(item.ratedAt).toDateString() : null;
+                const isNewDay = idx > 0 && currDay !== prevDay;
+                return (
                 <TableRow
                   key={item.id}
-                  className={`cursor-pointer ${sentimentRowClass(item.sentiment)}`}
+                  className={`cursor-pointer ${sentimentRowClass(item.sentiment)} ${isNewDay ? 'border-t-4 border-t-border' : ''}`}
                   onClick={() => setSelectedItem(item)}
                 >
                   <TableCell className="whitespace-nowrap text-sm">{formatDate(item.ratedAt)}</TableCell>
@@ -311,10 +327,10 @@ export default function AdminConsole() {
                   </TableCell>
                   <TableCell className="text-sm">{item.transportType ? (TRANSPORT_LABELS[item.transportType] ?? item.transportType) : '—'}</TableCell>
                   <TableCell className="text-sm">{item.routeNumber ?? '—'}</TableCell>
-                  <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
-                    {item.nearestStopName || item.stopToName
-                      ? `${item.nearestStopName ?? ''}${item.nearestStopName && item.stopToName ? ' → ' : ''}${item.stopToName ?? ''}`
-                      : '—'}
+                  <TableCell className="text-sm">
+                    {item.isPassenger === true && 'Пассажир'}
+                    {item.isPassenger === false && 'Наблюдатель'}
+                    {item.isPassenger === null && '—'}
                   </TableCell>
                   <TableCell className="max-w-[320px] text-sm text-muted-foreground">{item.comment || '—'}</TableCell>
                   <TableCell>
@@ -338,7 +354,8 @@ export default function AdminConsole() {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
