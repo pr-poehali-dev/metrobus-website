@@ -5,6 +5,7 @@ import hashlib
 import time
 import urllib.request
 import urllib.error
+import psycopg2
 
 
 ICQR_BASE_URL = os.environ.get('ICQR_API_BASE_URL', 'https://api.icqr.ru')
@@ -22,6 +23,33 @@ def verify_token(secret: str, token: str) -> bool:
     if not hmac.compare_digest(expected, sig):
         return False
     return int(expires_str) > int(time.time())
+
+
+def enrich_is_passenger(items: list) -> None:
+    '''Дополняет каждую запись списка полем is_passanger, взятым из локальной БД (transport_passenger_ratings.is_passenger),
+    т.к. команда list_ratings ICQR API это поле не возвращает — оно приходит только в get_rating.'''
+    ids = [item['id'] for item in items if item.get('id') is not None]
+    if not ids:
+        return
+    try:
+        dsn = os.environ['DATABASE_URL']
+        conn = psycopg2.connect(dsn)
+        try:
+            cur = conn.cursor()
+            placeholders = ','.join(['%s'] * len(ids))
+            cur.execute(
+                f"SELECT icqr_id, is_passenger FROM transport_passenger_ratings WHERE icqr_id IN ({placeholders})",
+                ids,
+            )
+            by_id = {row[0]: row[1] for row in cur.fetchall()}
+            cur.close()
+        finally:
+            conn.close()
+    except Exception:
+        return
+    for item in items:
+        if item.get('id') in by_id:
+            item['is_passanger'] = by_id[item['id']]
 
 
 def icqr_command(command: str, command_params: dict):
@@ -52,7 +80,8 @@ def icqr_command(command: str, command_params: dict):
 
 def handler(event: dict, context) -> dict:
     '''Прокси (BFF) к ICQR Admin Command API для модерации отзывов пассажиров: очередь pending,
-    карточка отзыва, действия approve/reject/reset. Требует валидный токен сессии в X-Admin-Token.
+    карточка отзыва, действия approve/reject/reset. Список дополнительно обогащается полем is_passanger
+    из локальной БД (ICQR list_ratings его не отдаёт). Требует валидный токен сессии в X-Admin-Token.
     Args: event - dict с httpMethod, queryStringParameters (status, page, per_page, rating_id,
         route_number, has_comment, date_from, date_to), body для POST-действий модерации,
         headers X-Admin-Token; context - объект с request_id.
@@ -158,11 +187,13 @@ def handler(event: dict, context) -> dict:
                                      'message': payload.get('Request_status', {}).get('Message')}),
             }
         data = payload.get('Data', {})
+        items = data.get('items', [])
+        enrich_is_passenger(items)
         return {
             'statusCode': 200,
             'headers': headers,
             'body': json.dumps({
-                'items': data.get('items', []),
+                'items': items,
                 'pagination': data.get('pagination', {}),
             }),
         }
