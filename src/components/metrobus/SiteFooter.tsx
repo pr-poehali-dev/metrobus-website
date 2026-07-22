@@ -14,6 +14,11 @@ export default function SiteFooter() {
               <span className="font-bold">МЕТРОБУС.РФ</span>
             </div>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">Цифровые сервисы пассажира.<br />Оплата проезда. Смарт-информирование. Обратная связь.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
+              <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
+              <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
+            </div>
           </div>
           <div className="space-y-4 text-sm text-muted-foreground sm:mt-10 sm:text-right">
             <a href="mailto:support@icqr.ru" className="flex items-center gap-2 hover:text-foreground sm:justify-end">
@@ -25,14 +30,9 @@ export default function SiteFooter() {
                 <Icon name="ShieldCheck" size={15} />
                 Патент на изобретение способа № 2803701
               </p>
-              <p className="flex flex-wrap items-center justify-start gap-x-3 gap-y-1">
-                <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
-                <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
-                <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
-                <span className="flex items-center gap-2">
-                  <Icon name="BadgeCheck" size={15} />
-                  Реестр Минцифры № 19406
-                </span>
+              <p className="flex items-center gap-2 sm:justify-end">
+                <Icon name="BadgeCheck" size={15} />
+                Реестр Минцифры № 19406
               </p>
             </div>
           </div>
