@@ -26,6 +26,11 @@ const transportBg: Record<TransportType, string> = {
   tram: 'bg-transport-tram/10',
   trolley: 'bg-transport-trolley/10',
 };
+const transportImg: Record<TransportType, string> = {
+  bus: '/icons/bus-transport.png',
+  tram: '/icons/tram-transport.png',
+  trolley: '/icons/trolley-transport.png',
+};
 
 interface MainTabsProps {
   viewMode: ViewMode;
@@ -175,27 +180,11 @@ export default function MainTabs({
               <div key={t.type} className="rounded-xl border border-border p-5">
                 <div className="flex items-center gap-2.5">
                   <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${transportBg[t.type]}`}>
-                    {t.type === 'bus' ? (
-                      <img
-                        src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/bd86e315-cbfa-4694-bc73-0607d14a5c88.png"
-                        alt="Автобус"
-                        className="h-[18px] w-[18px] object-contain"
-                      />
-                    ) : t.type === 'tram' ? (
-                      <img
-                        src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/d297234a-d192-4d26-9992-fad1d4979d03.png"
-                        alt="Трамвай"
-                        className="h-[18px] w-[18px] object-contain"
-                      />
-                    ) : t.type === 'trolley' ? (
-                      <img
-                        src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/6cd1a786-2eed-481d-be60-6f0e6c4f5453.png"
-                        alt="Троллейбус"
-                        className="h-[18px] w-[18px] object-contain"
-                      />
-                    ) : (
-                      <Icon name={transportIcon[t.type]} size={18} className={transportClass[t.type]} />
-                    )}
+                    <img
+                      src={transportImg[t.type]}
+                      alt={t.label}
+                      className="h-[22px] w-[15px] object-contain"
+                    />
                   </span>
                   <span className="font-semibold">{t.label}</span>
                 </div>
