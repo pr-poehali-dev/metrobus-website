@@ -5,8 +5,8 @@ export default function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/30">
       <div className="mx-auto max-w-5xl px-4 py-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="flex flex-col sm:h-full">
             <div className="flex items-center gap-2">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-primary">
                 <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
@@ -14,7 +14,7 @@ export default function SiteFooter() {
               <span className="font-bold">МЕТРОБУС.РФ</span>
             </div>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">Цифровые сервисы пассажира.<br />Оплата проезда. Смарт-информирование. Обратная связь.</p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground sm:mt-auto">
               <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
               <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
               <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
