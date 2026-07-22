@@ -1,4 +1,5 @@
 import Icon from '@/components/ui/icon';
+import { SOCIAL_LINKS } from '@/lib/socialLinks';
 
 export default function SiteFooter() {
   return (
@@ -27,6 +28,11 @@ export default function SiteFooter() {
               <p className="flex items-center gap-2 sm:justify-end">
                 <Icon name="BadgeCheck" size={15} />
                 Реестр Минцифры № 19406
+              </p>
+              <p className="flex items-center gap-3 sm:justify-end">
+                <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
+                <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
+                <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
               </p>
             </div>
           </div>
