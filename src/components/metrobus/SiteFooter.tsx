@@ -26,13 +26,13 @@ export default function SiteFooter() {
                 Патент на изобретение способа № 2803701
               </p>
               <p className="flex flex-wrap items-center justify-start gap-x-3 gap-y-1">
+                <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
+                <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
+                <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
                 <span className="flex items-center gap-2">
                   <Icon name="BadgeCheck" size={15} />
                   Реестр Минцифры № 19406
                 </span>
-                <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
-                <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
-                <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
               </p>
             </div>
           </div>
