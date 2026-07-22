@@ -5,7 +5,7 @@ import hashlib
 import time
 import urllib.request
 import urllib.error
-import psycopg2
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 ICQR_BASE_URL = os.environ.get('ICQR_API_BASE_URL', 'https://api.icqr.ru')
@@ -26,30 +26,32 @@ def verify_token(secret: str, token: str) -> bool:
 
 
 def enrich_is_passenger(items: list) -> None:
-    '''Дополняет каждую запись списка полем is_passanger, взятым из локальной БД (transport_passenger_ratings.is_passenger),
-    т.к. команда list_ratings ICQR API это поле не возвращает — оно приходит только в get_rating.'''
+    '''Дополняет каждую запись списка полем is_passanger, запрашивая карточку отзыва (get_rating) в ICQR Admin API,
+    т.к. команда list_ratings это поле не возвращает — оно приходит только в get_rating. Запросы идут параллельно.'''
     ids = [item['id'] for item in items if item.get('id') is not None]
     if not ids:
         return
-    try:
-        dsn = os.environ['DATABASE_URL']
-        conn = psycopg2.connect(dsn)
+
+    def fetch_one(rating_id):
         try:
-            cur = conn.cursor()
-            placeholders = ','.join(['%s'] * len(ids))
-            cur.execute(
-                f"SELECT icqr_id, is_passenger FROM transport_passenger_ratings WHERE icqr_id IN ({placeholders})",
-                ids,
-            )
-            by_id = {row[0]: row[1] for row in cur.fetchall()}
-            cur.close()
-        finally:
-            conn.close()
-    except Exception:
-        return
+            _, payload = icqr_command('get_rating', {'rating_id': rating_id})
+            if payload.get('Request_status', {}).get('Code') != 'Ok':
+                return rating_id, None
+            data = payload.get('Data') or {}
+            return rating_id, data.get('is_passanger')
+        except Exception:
+            return rating_id, None
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [pool.submit(fetch_one, rid) for rid in ids]
+        for future in as_completed(futures):
+            rid, is_passanger = future.result()
+            results[rid] = is_passanger
+
     for item in items:
-        if item.get('id') in by_id:
-            item['is_passanger'] = by_id[item['id']]
+        if item.get('id') in results:
+            item['is_passanger'] = results[item['id']]
 
 
 def icqr_command(command: str, command_params: dict):
@@ -81,7 +83,7 @@ def icqr_command(command: str, command_params: dict):
 def handler(event: dict, context) -> dict:
     '''Прокси (BFF) к ICQR Admin Command API для модерации отзывов пассажиров: очередь pending,
     карточка отзыва, действия approve/reject/reset. Список дополнительно обогащается полем is_passanger
-    из локальной БД (ICQR list_ratings его не отдаёт). Требует валидный токен сессии в X-Admin-Token.
+    параллельными запросами get_rating (list_ratings это поле не отдаёт). Требует валидный токен сессии в X-Admin-Token.
     Args: event - dict с httpMethod, queryStringParameters (status, page, per_page, rating_id,
         route_number, has_comment, date_from, date_to), body для POST-действий модерации,
         headers X-Admin-Token; context - объект с request_id.
