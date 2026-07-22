@@ -99,7 +99,7 @@ export default function MainTabs({
           <div className="mt-6 space-y-3">
             {[
               { n: 1, icon: 'Hash', title: 'Видишь короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
-              { n: 2, icon: 'Map', title: 'Вводишь его в QR-поиск на ICQR.RU', text: 'Получаешь трассу маршрута в связке с транспортом.' },
+              { n: 2, icon: 'Grid3x3', title: 'Вводишь его в QR-поиск на ICQR.RU', text: 'Получаешь трассу маршрута в связке с транспортом.' },
               { n: 3, icon: 'MessageSquare', title: 'Проверяешь данные и ставишь оценку', text: 'При желании пишешь короткий комментарий.' },
             ].map((s) => (
               <div key={s.n} className="flex items-start gap-4 rounded-xl border border-border p-4 sm:p-5">
