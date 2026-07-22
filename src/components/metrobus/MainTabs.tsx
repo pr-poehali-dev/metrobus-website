@@ -175,7 +175,15 @@ export default function MainTabs({
               <div key={t.type} className="rounded-xl border border-border p-5">
                 <div className="flex items-center gap-2.5">
                   <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${transportBg[t.type]}`}>
-                    <Icon name={transportIcon[t.type]} size={18} className={transportClass[t.type]} />
+                    {t.type === 'bus' ? (
+                      <img
+                        src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/bd86e315-cbfa-4694-bc73-0607d14a5c88.png"
+                        alt="Автобус"
+                        className="h-[18px] w-[18px] object-contain"
+                      />
+                    ) : (
+                      <Icon name={transportIcon[t.type]} size={18} className={transportClass[t.type]} />
+                    )}
                   </span>
                   <span className="font-semibold">{t.label}</span>
                 </div>
