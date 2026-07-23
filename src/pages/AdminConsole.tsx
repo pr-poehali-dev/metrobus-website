@@ -106,6 +106,7 @@ export default function AdminConsole() {
   const [ratingMin, setRatingMin] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [commentStatus, setCommentStatus] = useState<'all' | 'unverified'>('all');
   const [sort, setSort] = useState('rated_at');
   const [order, setOrder] = useState<'ASC' | 'DESC'>('DESC');
   const [selectedItem, setSelectedItem] = useState<AdminReviewItem | null>(null);
@@ -123,6 +124,7 @@ export default function AdminConsole() {
       ratingMin: ratingMin !== 'all' ? ratingMin : undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
+      commentStatus: commentStatus === 'unverified' ? 'unverified' : undefined,
       sort,
       order,
       page,
@@ -137,7 +139,7 @@ export default function AdminConsole() {
       setAnomalyTotal(res.anomalyTotal);
     }
     setLoading(false);
-  }, [search, transportType, role, ratingMin, dateFrom, dateTo, sort, order, page]);
+  }, [search, transportType, role, ratingMin, dateFrom, dateTo, commentStatus, sort, order, page]);
 
   useEffect(() => {
     if (authed) load();
@@ -167,7 +169,7 @@ export default function AdminConsole() {
     }
   };
 
-  const hasActiveFilters = Boolean(search || transportType !== 'all' || role !== 'all' || dateFrom || dateTo);
+  const hasActiveFilters = Boolean(search || transportType !== 'all' || role !== 'all' || dateFrom || dateTo || commentStatus !== 'all');
 
   const resetFilters = () => {
     setSearch('');
@@ -175,6 +177,12 @@ export default function AdminConsole() {
     setRole('all');
     setDateFrom('');
     setDateTo('');
+    setCommentStatus('all');
+    setPage(1);
+  };
+
+  const toggleUnverifiedFilter = () => {
+    setCommentStatus((prev) => (prev === 'unverified' ? 'all' : 'unverified'));
     setPage(1);
   };
 
@@ -276,7 +284,16 @@ export default function AdminConsole() {
           <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
         </div>
 
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex items-center justify-between">
+          <Button
+            variant={commentStatus === 'unverified' ? 'default' : 'outline'}
+            size="sm"
+            onClick={toggleUnverifiedFilter}
+            className="gap-1.5"
+          >
+            <Icon name="Circle" size={14} />
+            Только непроверенные комментарии
+          </Button>
           <Button
             variant="outline"
             size="sm"

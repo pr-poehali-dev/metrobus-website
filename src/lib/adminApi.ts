@@ -98,6 +98,7 @@ export interface AdminReviewsQuery {
   ratingMax?: string;
   dateFrom?: string;
   dateTo?: string;
+  commentStatus?: 'verified' | 'unverified';
   sort?: string;
   order?: 'ASC' | 'DESC';
   page?: number;
@@ -116,6 +117,7 @@ export async function fetchAdminReviews(query: AdminReviewsQuery): Promise<Admin
   if (query.ratingMax) params.set('rating_max', query.ratingMax);
   if (query.dateFrom) params.set('date_from', query.dateFrom);
   if (query.dateTo) params.set('date_to', query.dateTo);
+  if (query.commentStatus) params.set('comment_status', query.commentStatus);
   if (query.sort) params.set('sort', query.sort);
   if (query.order) params.set('order', query.order);
   params.set('page', String(query.page ?? 1));

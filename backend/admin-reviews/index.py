@@ -33,8 +33,8 @@ def handler(event: dict, context) -> dict:
     (только проверенные комментарии участвуют в кластеризации на публичном дашборде).
     Требует валидный токен сессии в заголовке X-Admin-Token.
     Args: event - dict с httpMethod, queryStringParameters (search, transport_type, role, rating_min, rating_max,
-        date_from, date_to, sort, order, page, per_page) для GET, body { id, verified } для POST;
-        headers X-Admin-Token; context - объект с request_id.
+        date_from, date_to, comment_status: 'verified'|'unverified', sort, order, page, per_page) для GET,
+        body { id, verified } для POST; headers X-Admin-Token; context - объект с request_id.
     Returns: HTTP response с JSON { items, total, page, per_page } для GET или { ok, id, verified } для POST.
     '''
     method = event.get('httpMethod', 'GET')
@@ -101,6 +101,7 @@ def handler(event: dict, context) -> dict:
     rating_max = params.get('rating_max')
     date_from = params.get('date_from')
     date_to = params.get('date_to')
+    comment_status = (params.get('comment_status') or '').strip()
     sort = ALLOWED_SORT_FIELDS.get(params.get('sort', 'rated_at'), 'rated_at')
     order = 'ASC' if (params.get('order') or '').upper() == 'ASC' else 'DESC'
     try:
@@ -147,6 +148,11 @@ def handler(event: dict, context) -> dict:
     if date_to:
         conditions.append("rated_at < (%s::date + INTERVAL '1 day')")
         values.append(date_to)
+
+    if comment_status == 'unverified':
+        conditions.append("comment IS NOT NULL AND comment != '' AND comment_verified = false")
+    elif comment_status == 'verified':
+        conditions.append("comment_verified = true")
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
