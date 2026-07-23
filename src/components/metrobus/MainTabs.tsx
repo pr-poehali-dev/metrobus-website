@@ -9,7 +9,16 @@ import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
 import { DashboardSummary, TimelinePoint, Cluster } from '@/lib/dashboardApi';
 
-const RatingChart = lazy(() => import('@/components/metrobus/RatingChart'));
+const RatingChart = lazy(() =>
+  import('@/components/metrobus/RatingChart').catch(() => {
+    const key = 'rating-chart-reload';
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, '1');
+      window.location.reload();
+    }
+    return { default: () => null };
+  })
+);
 
 const transportIcon: Record<TransportType, string> = {
   bus: 'Bus',
