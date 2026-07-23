@@ -54,7 +54,8 @@ def classify_comment(comment: str):
 
 def handler(event: dict, context) -> dict:
     '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
-    хронологию по дням выбранного месяца и AI-кластеры комментариев.
+    хронологию по дням выбранного месяца и кластеры комментариев (только вручную проверенных
+    модератором в админ-консоли, comment_verified = true).
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers');
         context - объект с request_id.
     Returns: HTTP response с JSON { summary, timeline, clusters, viewMode }.
@@ -202,7 +203,8 @@ def handler(event: dict, context) -> dict:
         cur.execute(
             f"""
             SELECT comment FROM transport_passenger_ratings
-            WHERE comment IS NOT NULL AND comment != '' AND is_draft = false AND {role_filter}
+            WHERE comment IS NOT NULL AND comment != '' AND is_draft = false
+              AND comment_verified = true AND {role_filter}
             """
         )
         comments = [r['comment'] for r in cur.fetchall()]

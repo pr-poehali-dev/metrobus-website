@@ -29,10 +29,13 @@ def verify_token(secret: str, token: str) -> bool:
 
 def handler(event: dict, context) -> dict:
     '''Возвращает реестр отзывов пассажиров для админ-панели: поиск, фильтры, сортировка, пагинация.
+    POST с action=verify_comment отмечает комментарий отзыва как проверенный вручную модератором
+    (только проверенные комментарии участвуют в кластеризации на публичном дашборде).
     Требует валидный токен сессии в заголовке X-Admin-Token.
     Args: event - dict с httpMethod, queryStringParameters (search, transport_type, role, rating_min, rating_max,
-        date_from, date_to, sort, order, page, per_page), headers X-Admin-Token; context - объект с request_id.
-    Returns: HTTP response с JSON { items, total, page, per_page }.
+        date_from, date_to, sort, order, page, per_page) для GET, body { id, verified } для POST;
+        headers X-Admin-Token; context - объект с request_id.
+    Returns: HTTP response с JSON { items, total, page, per_page } для GET или { ok, id, verified } для POST.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -41,7 +44,7 @@ def handler(event: dict, context) -> dict:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
                 'Access-Control-Max-Age': '86400',
             },
@@ -58,6 +61,36 @@ def handler(event: dict, context) -> dict:
             'statusCode': 401,
             'headers': headers,
             'body': json.dumps({'error': 'unauthorized'}),
+        }
+
+    if method == 'POST':
+        body = json.loads(event.get('body') or '{}')
+        review_id = body.get('id')
+        verified = bool(body.get('verified'))
+        if not review_id:
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'id_required'})}
+
+        dsn = os.environ['DATABASE_URL']
+        conn = psycopg2.connect(dsn)
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                UPDATE transport_passenger_ratings
+                SET comment_verified = %s, comment_verified_at = CASE WHEN %s THEN now() ELSE NULL END
+                WHERE id = %s
+                """,
+                (verified, verified, int(review_id)),
+            )
+            conn.commit()
+        finally:
+            cur.close()
+            conn.close()
+
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({'ok': True, 'id': review_id, 'verified': verified}),
         }
 
     params = event.get('queryStringParameters') or {}
@@ -144,7 +177,7 @@ def handler(event: dict, context) -> dict:
                    transport_opened_lat, transport_opened_lng, transport_opened_dist,
                    transport_submit_lat, transport_submit_lng, transport_submit_dist,
                    possibly_not_passenger, anti_fraud_reason, rating_client_id,
-                   location_id, location_code
+                   location_id, location_code, comment_verified
             FROM transport_passenger_ratings
             {where_clause}
             ORDER BY {sort} {order}
@@ -225,6 +258,7 @@ def handler(event: dict, context) -> dict:
                 'possiblyNotPassenger': r['possibly_not_passenger'],
                 'antiFraudReason': r['anti_fraud_reason'],
                 'locationCode': r['location_code'],
+                'commentVerified': r['comment_verified'],
             })
 
         return {

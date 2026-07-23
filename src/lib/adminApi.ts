@@ -79,6 +79,7 @@ export interface AdminReviewItem {
   possiblyNotPassenger: boolean | null;
   antiFraudReason: string | null;
   locationCode: string | null;
+  commentVerified: boolean;
 }
 
 export interface AdminReviewsResponse {
@@ -130,6 +131,23 @@ export async function fetchAdminReviews(query: AdminReviewsQuery): Promise<Admin
   }
   if (!res.ok) throw new Error('admin_reviews_failed');
   return res.json();
+}
+
+export async function setCommentVerified(id: number, verified: boolean): Promise<boolean> {
+  const token = getAdminToken();
+  if (!token) return false;
+
+  const res = await fetch(func2url['admin-reviews'], {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify({ id, verified }),
+  });
+
+  if (res.status === 401) {
+    clearAdminToken();
+    return false;
+  }
+  return res.ok;
 }
 
 export interface ModerationListItem {

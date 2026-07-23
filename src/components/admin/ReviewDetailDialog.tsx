@@ -86,7 +86,20 @@ export default function ReviewDetailDialog({
 
             {!!item.comment && (
               <div>
-                <p className="mb-1 text-muted-foreground">Комментарий</p>
+                <div className="mb-1 flex items-center justify-between">
+                  <p className="text-muted-foreground">Комментарий</p>
+                  {item.commentVerified ? (
+                    <Badge variant="default" className="gap-1">
+                      <Icon name="CheckCircle2" size={12} />
+                      Проверен вручную
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="gap-1">
+                      <Icon name="Circle" size={12} />
+                      Не проверен
+                    </Badge>
+                  )}
+                </div>
                 <p className="rounded-lg bg-secondary p-3">{item.comment}</p>
               </div>
             )}

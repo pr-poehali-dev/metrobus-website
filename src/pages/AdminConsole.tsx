@@ -15,6 +15,7 @@ import {
   verifySession,
   clearAdminToken,
   fetchAdminReviews,
+  setCommentVerified,
   AdminReviewItem,
   AdminReviewsQuery,
 } from '@/lib/adminApi';
@@ -155,6 +156,15 @@ export default function AdminConsole() {
   const logout = () => {
     clearAdminToken();
     setAuthed(false);
+  };
+
+  const toggleVerified = async (item: AdminReviewItem) => {
+    const next = !item.commentVerified;
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, commentVerified: next } : i)));
+    const ok = await setCommentVerified(item.id, next);
+    if (!ok) {
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, commentVerified: !next } : i)));
+    }
   };
 
   const hasActiveFilters = Boolean(search || transportType !== 'all' || role !== 'all' || dateFrom || dateTo);
@@ -298,14 +308,15 @@ export default function AdminConsole() {
                 <TableHead>Роль</TableHead>
                 <TableHead>Комментарий</TableHead>
                 <TableHead>Доверие</TableHead>
+                <TableHead>Проверено</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading && (
-                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
               )}
               {!loading && items.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Ничего не найдено</TableCell></TableRow>
               )}
               {!loading && items.map((item, idx) => {
                 const prevDay = idx > 0 ? (items[idx - 1].ratedAt ? new Date(items[idx - 1].ratedAt!).toDateString() : null) : null;
@@ -351,6 +362,21 @@ export default function AdminConsole() {
                         <Icon name="ShieldCheck" size={12} />
                         Проверено
                       </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    {item.comment ? (
+                      <Button
+                        variant={item.commentVerified ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-7 gap-1.5 whitespace-nowrap"
+                        onClick={() => toggleVerified(item)}
+                      >
+                        <Icon name={item.commentVerified ? 'CheckCircle2' : 'Circle'} size={13} />
+                        {item.commentVerified ? 'Проверено' : 'Проверить'}
+                      </Button>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
                     )}
                   </TableCell>
                 </TableRow>
