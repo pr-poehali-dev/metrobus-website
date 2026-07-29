@@ -5,10 +5,11 @@ import Icon from '@/components/ui/icon';
 interface TopSectionProps {
   icqrUrl: string;
   onAboutOpen: () => void;
+  showDashboardButton: boolean;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, onAboutOpen, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, children }: TopSectionProps) {
   return (
     <>
       {/* HEADER */}
@@ -52,12 +53,14 @@ export default function TopSection({ icqrUrl, onAboutOpen, children }: TopSectio
                 Оценить поездку
               </Button>
             </a>
-            <a href="#dashboard" className="sm:w-auto">
-              <Button size="lg" variant="outline" className="h-12 w-full gap-2 text-base sm:w-auto">
-                <Icon name="ChartLine" size={18} />
-                Смотреть дашборд
-              </Button>
-            </a>
+            {showDashboardButton && (
+              <a href="#dashboard" className="sm:w-auto">
+                <Button size="lg" variant="outline" className="h-12 w-full gap-2 text-base sm:w-auto">
+                  <Icon name="ChartLine" size={18} />
+                  Смотреть дашборд
+                </Button>
+              </a>
+            )}
           </div>
         </section>
 

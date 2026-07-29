@@ -42,6 +42,8 @@ const transportImg: Record<TransportType, string> = {
 };
 
 interface MainTabsProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
   viewMode: ViewMode;
   setViewMode: (v: ViewMode) => void;
   monthOffset: number;
@@ -58,6 +60,8 @@ interface MainTabsProps {
 }
 
 export default function MainTabs({
+  activeTab,
+  onTabChange,
   viewMode,
   setViewMode,
   monthOffset,
@@ -73,7 +77,7 @@ export default function MainTabs({
   onCityDialogOpen,
 }: MainTabsProps) {
   return (
-    <Tabs defaultValue="passengers" className="pb-16">
+    <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
       <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
         <TabsTrigger value="passengers" className="h-10 gap-1.5 text-[13px] sm:text-sm">
           <Icon name="Users" size={15} />Пассажирам

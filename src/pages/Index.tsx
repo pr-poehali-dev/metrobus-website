@@ -18,6 +18,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [cityDialogOpen, setCityDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('passengers');
 
   useEffect(() => {
     triggerIcqrSync();
@@ -52,9 +53,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <TopSection icqrUrl={ICQR_URL} onAboutOpen={() => setAboutOpen(true)}>
+      <TopSection icqrUrl={ICQR_URL} onAboutOpen={() => setAboutOpen(true)} showDashboardButton={activeTab === 'passengers'}>
         {/* NAV TABS */}
         <MainTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
           viewMode={viewMode}
           setViewMode={setViewMode}
           monthOffset={monthOffset}
