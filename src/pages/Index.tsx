@@ -4,9 +4,10 @@ import MainTabs from '@/components/metrobus/MainTabs';
 import SiteFooter from '@/components/metrobus/SiteFooter';
 import InfoDialogs from '@/components/metrobus/InfoDialogs';
 import InstallAppBanner from '@/components/metrobus/InstallAppBanner';
-import { ViewMode } from '@/components/metrobus/ViewModeToggle';
+import { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
 import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashboardApi';
+import { captureMyRatingsTokenFromUrl, getMyRatingsToken } from '@/lib/myRatingsToken';
 
 const ICQR_URL = 'https://icqr.ru';
 
@@ -14,6 +15,8 @@ const MONTH_OFFSET = 0;
 
 const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('passengers');
+  const [dataScope, setDataScope] = useState<DataScope>('all');
+  const [myToken, setMyToken] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -22,12 +25,14 @@ const Index = () => {
 
   useEffect(() => {
     triggerIcqrSync();
+    captureMyRatingsTokenFromUrl();
+    setMyToken(getMyRatingsToken());
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchDashboardStats(MONTH_OFFSET, viewMode)
+    fetchDashboardStats(MONTH_OFFSET, viewMode, dataScope, myToken)
       .then((res) => {
         if (!cancelled) setData(res);
       })
@@ -37,7 +42,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [viewMode]);
+  }, [viewMode, dataScope, myToken]);
 
   const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, routesCount: 0, byType: [
     { type: 'bus' as TransportType, label: 'Автобус', average: 0, count: 0 },
@@ -58,6 +63,9 @@ const Index = () => {
           onTabChange={setActiveTab}
           viewMode={viewMode}
           setViewMode={setViewMode}
+          dataScope={dataScope}
+          setDataScope={setDataScope}
+          hasMyToken={!!myToken}
           loading={loading}
           summary={summary}
           clusters={clusters}

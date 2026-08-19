@@ -29,6 +29,7 @@ export interface Cluster {
 }
 
 export type DashboardViewMode = 'passengers' | 'observers';
+export type DashboardDataScope = 'mine' | 'all';
 
 export interface DashboardData {
   summary: DashboardSummary;
@@ -38,8 +39,17 @@ export interface DashboardData {
   viewMode: DashboardViewMode;
 }
 
-export async function fetchDashboardStats(monthOffset: number, viewMode: DashboardViewMode = 'passengers'): Promise<DashboardData> {
-  const url = `${func2url['dashboard-stats']}?monthOffset=${monthOffset}&viewMode=${viewMode}`;
+export async function fetchDashboardStats(
+  monthOffset: number,
+  viewMode: DashboardViewMode = 'passengers',
+  dataScope: DashboardDataScope = 'all',
+  myToken?: string | null,
+): Promise<DashboardData> {
+  const params = new URLSearchParams({ monthOffset: String(monthOffset), viewMode });
+  if (dataScope === 'mine' && myToken) {
+    params.set('myToken', myToken);
+  }
+  const url = `${func2url['dashboard-stats']}?${params.toString()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('dashboard_stats_failed');
   return res.json();

@@ -56,7 +56,10 @@ def handler(event: dict, context) -> dict:
     '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
     хронологию по дням выбранного месяца и кластеры комментариев (только вручную проверенных
     модератором в админ-консоли, comment_verified = true).
-    Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers');
+    Если передан параметр myToken — данные фильтруются только оценками этого пользователя
+    ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
+    Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
+        myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
         context - объект с request_id.
     Returns: HTTP response с JSON { summary, timeline, clusters, viewMode }.
     '''
@@ -89,6 +92,10 @@ def handler(event: dict, context) -> dict:
     # observers: is_passenger = false (пользователь явно указал "Я наблюдатель вне транспорта")
     role_filter = 'is_passenger IS DISTINCT FROM false' if view_mode == 'passengers' else 'is_passenger = false'
 
+    my_token = (params.get('myToken') or '').strip() or None
+    if my_token:
+        role_filter += ' AND rating_client_id = %s'
+
     today = date.today()
     year = today.year
     month = today.month + month_offset
@@ -110,6 +117,10 @@ def handler(event: dict, context) -> dict:
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     try:
+        month_params = (date(year, month, 1),) + ((my_token,) if my_token else ())
+        prev_month_params = (date(prev_year, prev_month, 1),) + ((my_token,) if my_token else ())
+        no_date_params = (my_token,) if my_token else ()
+
         cur.execute(
             f"""
             SELECT COALESCE(AVG(rating), 0) AS average, COUNT(*) AS cnt
@@ -117,7 +128,7 @@ def handler(event: dict, context) -> dict:
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
               AND is_draft = false AND {role_filter}
             """,
-            (date(year, month, 1),),
+            month_params,
         )
         cur_row = cur.fetchone()
         current_average = float(cur_row['average'])
@@ -130,7 +141,7 @@ def handler(event: dict, context) -> dict:
             WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
               AND is_draft = false AND {role_filter}
             """,
-            (date(prev_year, prev_month, 1),),
+            prev_month_params,
         )
         prev_average = float(cur.fetchone()['average'])
 
@@ -140,7 +151,8 @@ def handler(event: dict, context) -> dict:
             FROM transport_passenger_ratings
             WHERE is_draft = false AND {role_filter}
             GROUP BY transport_type
-            """
+            """,
+            no_date_params,
         )
         by_type_raw = cur.fetchall()
         by_type_map = {}
@@ -162,7 +174,8 @@ def handler(event: dict, context) -> dict:
             f"""
             SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_passenger_ratings
             WHERE route_number IS NOT NULL AND is_draft = false AND {role_filter}
-            """
+            """,
+            no_date_params,
         )
         routes_count = int(cur.fetchone()['cnt'])
 
@@ -176,7 +189,7 @@ def handler(event: dict, context) -> dict:
             GROUP BY day, transport_type
             ORDER BY day
             """,
-            (date(year, month, 1),),
+            month_params,
         )
         timeline_rows: dict[int, dict] = {}
         for r in cur.fetchall():
@@ -205,7 +218,8 @@ def handler(event: dict, context) -> dict:
             SELECT comment FROM transport_passenger_ratings
             WHERE comment IS NOT NULL AND comment != '' AND is_draft = false
               AND comment_verified = true AND {role_filter}
-            """
+            """,
+            no_date_params,
         )
         comments = [r['comment'] for r in cur.fetchall()]
         cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in CLUSTER_RULES}

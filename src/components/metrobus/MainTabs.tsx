@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import AccessForm from '@/components/metrobus/AccessForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
-import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
+import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
 import { DashboardSummary, Cluster } from '@/lib/dashboardApi';
 
@@ -35,6 +35,9 @@ interface MainTabsProps {
   onTabChange: (tab: string) => void;
   viewMode: ViewMode;
   setViewMode: (v: ViewMode) => void;
+  dataScope: DataScope;
+  setDataScope: (v: DataScope) => void;
+  hasMyToken: boolean;
   loading: boolean;
   summary: DashboardSummary;
   clusters: Cluster[];
@@ -48,6 +51,9 @@ export default function MainTabs({
   onTabChange,
   viewMode,
   setViewMode,
+  dataScope,
+  setDataScope,
+  hasMyToken,
   loading,
   summary,
   clusters,
@@ -131,13 +137,29 @@ export default function MainTabs({
                 Санкт-Петербург
               </button>
             </div>
-            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+            <ViewModeToggle
+              value={viewMode}
+              onChange={setViewMode}
+              dataScope={dataScope}
+              onDataScopeChange={setDataScope}
+            />
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            {viewMode === 'passengers'
+            {dataScope === 'mine'
+              ? 'Показаны только ваши оценки, сохранённые при последнем визите на ICQR.RU в этом браузере.'
+              : viewMode === 'passengers'
               ? 'Оценки от людей, которые ехали в наземном общественном транспорте.'
               : 'Оценки от людей, наблюдавших за работой наземного общественного транспорта со стороны.'}
           </p>
+
+          {dataScope === 'mine' && !hasMyToken && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
+              <Icon name="Fingerprint" size={16} className="shrink-0 text-amber-600" />
+              <span>
+                Не нашли ваши оценки в этом браузере. Поставьте оценку на ICQR.RU — и она появится здесь автоматически.
+              </span>
+            </div>
+          )}
 
           {/* KPI: средняя + счётчик */}
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
