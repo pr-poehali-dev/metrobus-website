@@ -7,7 +7,18 @@ import AccessForm from '@/components/metrobus/AccessForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
-import { DashboardSummary, Cluster } from '@/lib/dashboardApi';
+import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord } from '@/lib/dashboardApi';
+
+const STATUS_LABELS: Record<DashboardRecord['status'], { text: string; className: string }> = {
+  published: { text: 'Опубликовано', className: 'bg-transport-tram/10 text-transport-tram' },
+  draft: { text: 'Черновик', className: 'bg-secondary text-muted-foreground' },
+};
+
+function formatRecordDate(iso: string | null) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
 
 const transportIcon: Record<TransportType, string> = {
   bus: 'Bus',
@@ -41,8 +52,9 @@ interface MainTabsProps {
   loading: boolean;
   summary: DashboardSummary;
   clusters: Cluster[];
-  trend: number;
-  trendUp: boolean;
+  metric1: DashboardMetric;
+  metric2: DashboardMetric;
+  records: DashboardRecord[];
   onCityDialogOpen: () => void;
 }
 
@@ -57,8 +69,9 @@ export default function MainTabs({
   loading,
   summary,
   clusters,
-  trend,
-  trendUp,
+  metric1,
+  metric2,
+  records,
   onCityDialogOpen,
 }: MainTabsProps) {
   return (
@@ -161,30 +174,39 @@ export default function MainTabs({
             </div>
           )}
 
-          {/* KPI: средняя + счётчик */}
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-border p-5 sm:col-span-1">
-              <p className="text-sm text-muted-foreground">Средняя оценка по городу</p>
-              <div className="mt-2 flex items-end gap-2">
-                <span className="font-mono-num text-4xl font-bold leading-none">{summary.average.toFixed(2)}</span>
-                <span className="text-lg text-muted-foreground">/5</span>
-              </div>
-              <div className={`mt-2 flex items-center gap-1 text-sm font-medium ${trendUp ? 'text-transport-tram' : 'text-destructive'}`}>
-                <Icon name={trendUp ? 'TrendingUp' : 'TrendingDown'} size={16} />
-                {trendUp ? '+' : ''}{trend.toFixed(2)} к прошлому месяцу
-              </div>
-            </div>
+          {/* KPI: метрика 1 + метрика 2 (зависят от Мои/Все) */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-border p-5">
-              <p className="text-sm text-muted-foreground">Оценок за месяц</p>
+              <p className="text-sm text-muted-foreground">{metric1.label}</p>
               <div className="mt-2 font-mono-num text-4xl font-bold leading-none">
-                {summary.monthCount.toLocaleString('ru-RU')}
+                {metric1.value.toLocaleString('ru-RU')}
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">от пассажиров города</p>
             </div>
             <div className="rounded-xl border border-border p-5">
-              <p className="text-sm text-muted-foreground">Оценено маршрутов</p>
-              <div className="mt-2 font-mono-num text-4xl font-bold leading-none">{summary.routesCount}</div>
-              <p className="mt-2 text-sm text-muted-foreground">разных маршрутов города</p>
+              <p className="text-sm text-muted-foreground">{metric2.label}</p>
+              {dataScope === 'mine' ? (
+                <div className={`mt-2 flex items-center gap-1.5 font-mono-num text-4xl font-bold leading-none ${metric2.value > 0 ? 'text-transport-tram' : ''}`}>
+                  <Icon name="TrendingUp" size={22} className={metric2.value > 0 ? 'text-transport-tram' : 'text-muted-foreground'} />
+                  {metric2.value > 0 ? '+' : ''}{metric2.value.toLocaleString('ru-RU')}
+                </div>
+              ) : (
+                <>
+                  <div className="mt-2 flex items-end gap-1.5">
+                    <span className="font-mono-num text-4xl font-bold leading-none">{metric2.value}</span>
+                    {typeof metric2.total === 'number' && (
+                      <span className="text-lg text-muted-foreground">из {metric2.total}</span>
+                    )}
+                  </div>
+                  {typeof metric2.total === 'number' && metric2.total > 0 && (
+                    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${Math.min(100, (metric2.value / metric2.total) * 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
@@ -214,6 +236,58 @@ export default function MainTabs({
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Список последних записей */}
+          <div className="mt-4">
+            <h3 className="font-semibold">
+              {dataScope === 'mine'
+                ? viewMode === 'passengers' ? 'Мои последние оценки' : 'Мои последние наблюдения'
+                : viewMode === 'passengers' ? 'Последние оценки по городу' : 'Последние наблюдения по городу'}
+            </h3>
+            {records.length === 0 && !loading && (
+              <p className="mt-3 text-sm text-muted-foreground">
+                {dataScope === 'mine' ? 'Пока нет записей.' : 'Пока нет опубликованных записей.'}
+              </p>
+            )}
+            <div className="mt-3 space-y-2">
+              {records.map((r) => (
+                <div key={r.id} className="rounded-xl border border-border p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${transportBg[r.transportType]}`}>
+                        <Icon name={transportIcon[r.transportType]} size={15} className={transportClass[r.transportType]} />
+                      </span>
+                      <span className="font-semibold">
+                        {viewMode === 'passengers' ? 'Маршрут' : 'Наблюдаемый маршрут'} №{r.routeNumber ?? '—'}
+                      </span>
+                      {r.vehicleNumber && (
+                        <span className="text-xs text-muted-foreground">борт {r.vehicleNumber}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_LABELS[r.status].className}`}>
+                        {STATUS_LABELS[r.status].text}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{formatRecordDate(r.ratedAt)}</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Icon
+                        key={i}
+                        name="Star"
+                        size={14}
+                        className={i < r.rating ? 'fill-amber-500 text-amber-500' : 'text-border'}
+                      />
+                    ))}
+                  </div>
+                  {r.comment && (
+                    <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Хронология по дням */}

@@ -9,6 +9,23 @@ export interface DashboardSummary {
   byType: { type: TransportType; label: string; average: number; count: number }[];
 }
 
+export interface DashboardMetric {
+  value: number;
+  label: string;
+  total?: number;
+}
+
+export interface DashboardRecord {
+  id: number;
+  routeNumber: string | null;
+  transportType: TransportType;
+  vehicleNumber: number | null;
+  rating: number;
+  comment: string | null;
+  status: 'draft' | 'published';
+  ratedAt: string | null;
+}
+
 export interface TimelinePoint {
   day: number;
   bus: number | null;
@@ -37,6 +54,10 @@ export interface DashboardData {
   month: string;
   clusters: Cluster[];
   viewMode: DashboardViewMode;
+  dataScope: DashboardDataScope;
+  metric1: DashboardMetric;
+  metric2: DashboardMetric;
+  records: DashboardRecord[];
 }
 
 export async function fetchDashboardStats(
@@ -45,7 +66,7 @@ export async function fetchDashboardStats(
   dataScope: DashboardDataScope = 'all',
   myToken?: string | null,
 ): Promise<DashboardData> {
-  const params = new URLSearchParams({ monthOffset: String(monthOffset), viewMode });
+  const params = new URLSearchParams({ monthOffset: String(monthOffset), viewMode, dataScope });
   if (dataScope === 'mine' && myToken) {
     params.set('myToken', myToken);
   }

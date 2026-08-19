@@ -52,16 +52,28 @@ def classify_comment(comment: str):
     return None
 
 
+STATUS_LABELS = {True: 'draft', False: 'published'}
+
+
 def handler(event: dict, context) -> dict:
     '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
-    хронологию по дням выбранного месяца и кластеры комментариев (только вручную проверенных
-    модератором в админ-консоли, comment_verified = true).
+    хронологию по дням выбранного месяца, кластеры комментариев (только вручную проверенных
+    модератором в админ-консоли, comment_verified = true), а также 2 ключевые метрики и список
+    последних записей — набор которых зависит от комбинации viewMode (пассажиры/наблюдатели)
+    и dataScope (мои/все), определяемого наличием параметра myToken:
+      - Мои: metric1 = кол-во своих оценённых поездок/наблюдений (is_draft=false),
+             metric2 = прирост своих записей за последние 7 дней,
+             records = последние 8 своих записей (все статусы, включая черновики).
+      - Все: metric1 = кол-во оценённых поездок/наблюдений по городу (is_draft=false),
+             metric2 = покрытие маршрутов (кол-во разных route_number с оценкой из общего
+             числа активных маршрутов города, взятого из app_settings.total_active_routes_count),
+             records = последние 8 опубликованных записей по городу (is_draft=false).
     Если передан параметр myToken — данные фильтруются только оценками этого пользователя
     ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
         myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
         context - объект с request_id.
-    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode }.
+    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, records }.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -92,9 +104,21 @@ def handler(event: dict, context) -> dict:
     # observers: is_passenger = false (пользователь явно указал "Я наблюдатель вне транспорта")
     role_filter = 'is_passenger IS DISTINCT FROM false' if view_mode == 'passengers' else 'is_passenger = false'
 
+    data_scope = params.get('dataScope', 'all')
+    if data_scope not in ('mine', 'all'):
+        data_scope = 'all'
+
     my_token = (params.get('myToken') or '').strip() or None
-    if my_token:
-        role_filter += ' AND rating_client_id = %s'
+    if data_scope == 'mine':
+        if my_token:
+            role_filter += ' AND rating_client_id = %s'
+            token_param = (my_token,)
+        else:
+            # dataScope=mine, но токен пользователя в этом браузере ещё не найден — нет своих данных
+            role_filter += ' AND false'
+            token_param = ()
+    else:
+        token_param = ()
 
     today = date.today()
     year = today.year
@@ -117,9 +141,9 @@ def handler(event: dict, context) -> dict:
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     try:
-        month_params = (date(year, month, 1),) + ((my_token,) if my_token else ())
-        prev_month_params = (date(prev_year, prev_month, 1),) + ((my_token,) if my_token else ())
-        no_date_params = (my_token,) if my_token else ()
+        month_params = (date(year, month, 1),) + token_param
+        prev_month_params = (date(prev_year, prev_month, 1),) + token_param
+        no_date_params = token_param
 
         cur.execute(
             f"""
@@ -246,6 +270,94 @@ def handler(event: dict, context) -> dict:
                 'examples': bucket['examples'],
             })
 
+        # ===== Метрики и список записей для карточки "Мои/Все" =====
+        if data_scope == 'mine':
+            # Метрика 1: кол-во своих оценённых поездок/наблюдений (опубликованные)
+            cur.execute(
+                f"SELECT COUNT(*) AS cnt FROM transport_passenger_ratings WHERE is_draft = false AND {role_filter}",
+                no_date_params,
+            )
+            metric1_value = int(cur.fetchone()['cnt'])
+            metric1_label = 'Моих оценённых поездок' if view_mode == 'passengers' else 'Отправлено наблюдений'
+
+            # Метрика 2: прирост своих записей за последние 7 дней
+            cur.execute(
+                f"""
+                SELECT COUNT(*) AS cnt FROM transport_passenger_ratings
+                WHERE is_draft = false AND rated_at >= now() - interval '7 days' AND {role_filter}
+                """,
+                no_date_params,
+            )
+            metric2_value = int(cur.fetchone()['cnt'])
+            metric2_label = 'Прирост за 7 дней'
+
+            # Список: последние N своих записей (все статусы, включая черновики)
+            records_filter = role_filter
+            records_params = no_date_params
+        else:
+            # Метрика 1: кол-во оценённых поездок/наблюдений по городу (опубликованные)
+            cur.execute(
+                f"SELECT COUNT(*) AS cnt FROM transport_passenger_ratings WHERE is_draft = false AND {role_filter}",
+                no_date_params,
+            )
+            metric1_value = int(cur.fetchone()['cnt'])
+            metric1_label = 'Оценено поездок по городу' if view_mode == 'passengers' else 'Наблюдений по городу'
+
+            # Метрика 2: покрытие маршрутов — N маршрутов из M имеют хотя бы одну оценку
+            cur.execute(
+                "SELECT value FROM app_settings WHERE key = 'total_active_routes_count'"
+            )
+            settings_row = cur.fetchone()
+            try:
+                total_routes = int(settings_row['value']) if settings_row and settings_row['value'] else None
+            except (TypeError, ValueError):
+                total_routes = None
+
+            cur.execute(
+                f"""
+                SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_passenger_ratings
+                WHERE route_number IS NOT NULL AND is_draft = false AND {role_filter}
+                """,
+                no_date_params,
+            )
+            covered_routes = int(cur.fetchone()['cnt'])
+            metric2_value = covered_routes
+            metric2_total = total_routes
+            metric2_label = 'Покрытие маршрутов'
+
+            # Список: последние опубликованные записи по городу
+            records_filter = f"is_draft = false AND {role_filter}"
+            records_params = no_date_params
+
+        cur.execute(
+            f"""
+            SELECT id, route_number, transport_type, vehicle_number, rating, comment,
+                   is_draft, rated_at
+            FROM transport_passenger_ratings
+            WHERE {records_filter}
+            ORDER BY rated_at DESC
+            LIMIT 8
+            """,
+            records_params,
+        )
+        records = []
+        for r in cur.fetchall():
+            records.append({
+                'id': r['id'],
+                'routeNumber': r['route_number'],
+                'transportType': normalize_transport(r['transport_type']),
+                'vehicleNumber': r['vehicle_number'],
+                'rating': r['rating'],
+                'comment': r['comment'],
+                'status': STATUS_LABELS[r['is_draft']],
+                'ratedAt': r['rated_at'].isoformat() if r['rated_at'] else None,
+            })
+
+        metric1 = {'value': metric1_value, 'label': metric1_label}
+        metric2 = {'value': metric2_value, 'label': metric2_label}
+        if data_scope == 'all':
+            metric2['total'] = metric2_total
+
         result = {
             'summary': {
                 'average': round(current_average, 2),
@@ -258,6 +370,10 @@ def handler(event: dict, context) -> dict:
             'month': f'{MONTHS[month - 1]}, {year}',
             'clusters': clusters,
             'viewMode': view_mode,
+            'dataScope': data_scope,
+            'metric1': metric1,
+            'metric2': metric2,
+            'records': records,
         }
 
         return {

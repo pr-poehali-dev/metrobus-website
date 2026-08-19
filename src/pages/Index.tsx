@@ -50,9 +50,9 @@ const Index = () => {
     { type: 'trolley' as TransportType, label: 'Троллейбус', average: 0, count: 0 },
   ] };
   const clusters = data?.clusters ?? [];
-
-  const trend = summary.average - summary.prevAverage;
-  const trendUp = trend >= 0;
+  const metric1 = data?.metric1 ?? { value: 0, label: '' };
+  const metric2 = data?.metric2 ?? { value: 0, label: '' };
+  const records = data?.records ?? [];
 
   const handleMyRatingsOpen = () => {
     setActiveTab('passengers');
@@ -84,8 +84,9 @@ const Index = () => {
           loading={loading}
           summary={summary}
           clusters={clusters}
-          trend={trend}
-          trendUp={trendUp}
+          metric1={metric1}
+          metric2={metric2}
+          records={records}
           onCityDialogOpen={() => setCityDialogOpen(true)}
         />
       </TopSection>
