@@ -44,7 +44,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           >
             Проект компании ООО "Медиа-Инкод"
           </button>
-          <h1 className="text-xl font-bold leading-tight sm:text-4xl">Оценивайте свои поездки и маршруты</h1>
+          <h1 className="text-xl font-bold leading-tight sm:text-4xl">Ваш вклад в будущее</h1>
           <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">Оценивайте свои поездки и маршруты общественного транспорта - без приложения, без регистрации и без сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="sm:w-auto">
