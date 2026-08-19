@@ -24,10 +24,7 @@ export default function ViewModeToggle({
           onValueChange={(v) => v && onDataScopeChange(v as DataScope)}
           className="rounded-lg bg-secondary p-1"
         >
-          <ToggleGroupItem value="mine" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
-            <Icon name="UserCheck" size={13} />
-            Мои
-          </ToggleGroupItem>
+          <ToggleGroupItem value="mine" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">Мои оценки</ToggleGroupItem>
           <ToggleGroupItem value="all" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
             <Icon name="Globe" size={13} />
             Все
