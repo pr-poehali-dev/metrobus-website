@@ -16,7 +16,6 @@ interface Props {
   data: MultiPoint[];
   detailed?: boolean;
   series?: SeriesKey[];
-  collecting?: boolean;
 }
 
 const ALL_SERIES = [
@@ -35,7 +34,7 @@ const COUNT_KEYS = {
   trolley: 'trolleyCount' as const,
 };
 
-export default function RatingChart({ data, detailed = false, series, collecting = false }: Props) {
+export default function RatingChart({ data, detailed = false, series }: Props) {
   const SERIES = series ? ALL_SERIES.filter((s) => series.includes(s.key)) : ALL_SERIES;
   const W = 640;
   const H = 220;
@@ -222,7 +221,7 @@ export default function RatingChart({ data, detailed = false, series, collecting
             textAnchor="middle"
             fill="hsl(var(--muted-foreground))"
           >
-            {collecting ? 'Идёт сбор и накопление информации' : 'Нет данных за этот период'}
+            Нет данных за этот период
           </text>
         )}
 

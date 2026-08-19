@@ -31,15 +31,11 @@ def handler(event: dict, context) -> dict:
     '''Возвращает реестр отзывов пассажиров для админ-панели: поиск, фильтры, сортировка, пагинация.
     POST с { id, verified } отмечает комментарий отзыва как проверенный вручную модератором
     (только проверенные комментарии участвуют в кластеризации на публичном дашборде).
-    POST с { action: 'set_stats_collection', enabled } включает/выключает сбор данных для графика
-    оценок по дням (публичного дашборда): при включении фиксируется дата старта, при выключении дата сбрасывается.
-    GET с ?action=get_settings возвращает текущую дату старта сбора статистики.
     Требует валидный токен сессии в заголовке X-Admin-Token.
     Args: event - dict с httpMethod, queryStringParameters (search, transport_type, role, rating_min, rating_max,
-        date_from, date_to, comment_status: 'verified'|'unverified', sort, order, page, per_page, action) для GET,
-        body { id, verified } или { action, enabled } для POST; headers X-Admin-Token; context - объект с request_id.
-    Returns: HTTP response с JSON { items, total, page, per_page } для GET, { ok, id, verified } или
-        { ok, statsCollectionStartedAt } для POST, { statsCollectionStartedAt } для GET настроек.
+        date_from, date_to, comment_status: 'verified'|'unverified', sort, order, page, per_page) для GET,
+        body { id, verified } для POST; headers X-Admin-Token; context - объект с request_id.
+    Returns: HTTP response с JSON { items, total, page, per_page } для GET или { ok, id, verified } для POST.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -69,48 +65,6 @@ def handler(event: dict, context) -> dict:
 
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
-
-        if body.get('action') == 'set_stats_collection':
-            enabled = bool(body.get('enabled'))
-            dsn = os.environ['DATABASE_URL']
-            conn = psycopg2.connect(dsn)
-            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            try:
-                if enabled:
-                    cur.execute(
-                        """
-                        INSERT INTO app_settings (key, value, updated_at)
-                        VALUES ('stats_collection_started_at', COALESCE(
-                            (SELECT value FROM app_settings WHERE key = 'stats_collection_started_at'),
-                            now()::text
-                        ), now())
-                        ON CONFLICT (key) DO UPDATE SET
-                            value = COALESCE(app_settings.value, now()::text),
-                            updated_at = now()
-                        """
-                    )
-                else:
-                    cur.execute(
-                        """
-                        INSERT INTO app_settings (key, value, updated_at)
-                        VALUES ('stats_collection_started_at', NULL, now())
-                        ON CONFLICT (key) DO UPDATE SET value = NULL, updated_at = now()
-                        """
-                    )
-                conn.commit()
-                cur.execute("SELECT value FROM app_settings WHERE key = 'stats_collection_started_at'")
-                row = cur.fetchone()
-                started_at = row['value'] if row else None
-            finally:
-                cur.close()
-                conn.close()
-
-            return {
-                'statusCode': 200,
-                'headers': headers,
-                'body': json.dumps({'ok': True, 'statsCollectionStartedAt': started_at}),
-            }
-
         review_id = body.get('id')
         verified = bool(body.get('verified'))
         if not review_id:
@@ -140,24 +94,6 @@ def handler(event: dict, context) -> dict:
         }
 
     params = event.get('queryStringParameters') or {}
-
-    if params.get('action') == 'get_settings':
-        dsn = os.environ['DATABASE_URL']
-        conn = psycopg2.connect(dsn)
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            cur.execute("SELECT value FROM app_settings WHERE key = 'stats_collection_started_at'")
-            row = cur.fetchone()
-            started_at = row['value'] if row else None
-        finally:
-            cur.close()
-            conn.close()
-        return {
-            'statusCode': 200,
-            'headers': headers,
-            'body': json.dumps({'statsCollectionStartedAt': started_at}),
-        }
-
     search = (params.get('search') or '').strip()
     transport_type = (params.get('transport_type') or '').strip()
     role = (params.get('role') or '').strip()

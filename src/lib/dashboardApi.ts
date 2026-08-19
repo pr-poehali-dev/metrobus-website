@@ -36,7 +36,6 @@ export interface DashboardData {
   month: string;
   clusters: Cluster[];
   viewMode: DashboardViewMode;
-  statsCollectionStartedAt: string | null;
 }
 
 export async function fetchDashboardStats(monthOffset: number, viewMode: DashboardViewMode = 'passengers'): Promise<DashboardData> {

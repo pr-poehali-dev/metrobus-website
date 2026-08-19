@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
 import TopSection from '@/components/metrobus/TopSection';
 import MainTabs from '@/components/metrobus/MainTabs';
 import SiteFooter from '@/components/metrobus/SiteFooter';
@@ -11,9 +10,9 @@ import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashb
 
 const ICQR_URL = 'https://icqr.ru';
 
+const MONTH_OFFSET = 0;
+
 const Index = () => {
-  const isMobile = useIsMobile();
-  const [monthOffset, setMonthOffset] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('passengers');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +27,7 @@ const Index = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchDashboardStats(monthOffset, viewMode)
+    fetchDashboardStats(MONTH_OFFSET, viewMode)
       .then((res) => {
         if (!cancelled) setData(res);
       })
@@ -38,16 +37,14 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [monthOffset, viewMode]);
+  }, [viewMode]);
 
   const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, routesCount: 0, byType: [
     { type: 'bus' as TransportType, label: 'Автобус', average: 0, count: 0 },
     { type: 'tram' as TransportType, label: 'Трамвай', average: 0, count: 0 },
     { type: 'trolley' as TransportType, label: 'Троллейбус', average: 0, count: 0 },
   ] };
-  const timeline = data?.timeline ?? [];
   const clusters = data?.clusters ?? [];
-  const currentMonthLabel = data?.month ?? '';
 
   const trend = summary.average - summary.prevAverage;
   const trendUp = trend >= 0;
@@ -61,18 +58,12 @@ const Index = () => {
           onTabChange={setActiveTab}
           viewMode={viewMode}
           setViewMode={setViewMode}
-          monthOffset={monthOffset}
-          setMonthOffset={setMonthOffset}
           loading={loading}
-          isMobile={isMobile}
           summary={summary}
-          timeline={timeline}
           clusters={clusters}
-          currentMonthLabel={currentMonthLabel}
           trend={trend}
           trendUp={trendUp}
           onCityDialogOpen={() => setCityDialogOpen(true)}
-          statsCollectionStartedAt={data?.statsCollectionStartedAt ?? null}
         />
       </TopSection>
 

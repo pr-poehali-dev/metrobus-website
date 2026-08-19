@@ -152,40 +152,6 @@ export async function setCommentVerified(id: number, verified: boolean): Promise
   return res.ok;
 }
 
-export async function fetchStatsCollectionSettings(): Promise<{ statsCollectionStartedAt: string | null } | null> {
-  const token = getAdminToken();
-  if (!token) return null;
-
-  const res = await fetch(`${func2url['admin-reviews']}?action=get_settings`, {
-    headers: { 'X-Admin-Token': token },
-  });
-
-  if (res.status === 401) {
-    clearAdminToken();
-    return null;
-  }
-  if (!res.ok) return null;
-  return res.json();
-}
-
-export async function setStatsCollectionEnabled(enabled: boolean): Promise<{ statsCollectionStartedAt: string | null } | null> {
-  const token = getAdminToken();
-  if (!token) return null;
-
-  const res = await fetch(func2url['admin-reviews'], {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-    body: JSON.stringify({ action: 'set_stats_collection', enabled }),
-  });
-
-  if (res.status === 401) {
-    clearAdminToken();
-    return null;
-  }
-  if (!res.ok) return null;
-  return res.json();
-}
-
 export interface ModerationListItem {
   id: number;
   created_at: string;

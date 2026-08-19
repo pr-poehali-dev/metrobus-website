@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -7,18 +7,7 @@ import AccessForm from '@/components/metrobus/AccessForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
 import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
-import { DashboardSummary, TimelinePoint, Cluster } from '@/lib/dashboardApi';
-
-const RatingChart = lazy(() =>
-  import('@/components/metrobus/RatingChart').catch(() => {
-    const key = 'rating-chart-reload';
-    if (!sessionStorage.getItem(key)) {
-      sessionStorage.setItem(key, '1');
-      window.location.reload();
-    }
-    return { default: () => null };
-  })
-);
+import { DashboardSummary, Cluster } from '@/lib/dashboardApi';
 
 const transportIcon: Record<TransportType, string> = {
   bus: 'Bus',
@@ -46,18 +35,12 @@ interface MainTabsProps {
   onTabChange: (tab: string) => void;
   viewMode: ViewMode;
   setViewMode: (v: ViewMode) => void;
-  monthOffset: number;
-  setMonthOffset: (fn: (m: number) => number) => void;
   loading: boolean;
-  isMobile: boolean;
   summary: DashboardSummary;
-  timeline: TimelinePoint[];
   clusters: Cluster[];
-  currentMonthLabel: string;
   trend: number;
   trendUp: boolean;
   onCityDialogOpen: () => void;
-  statsCollectionStartedAt: string | null;
 }
 
 export default function MainTabs({
@@ -65,18 +48,12 @@ export default function MainTabs({
   onTabChange,
   viewMode,
   setViewMode,
-  monthOffset,
-  setMonthOffset,
   loading,
-  isMobile,
   summary,
-  timeline,
   clusters,
-  currentMonthLabel,
   trend,
   trendUp,
   onCityDialogOpen,
-  statsCollectionStartedAt,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -219,37 +196,9 @@ export default function MainTabs({
 
           {/* Хронология по дням */}
           <div className="mt-4 rounded-xl border border-border p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Оценки по дням</h3>
-                <p className="text-sm text-muted-foreground">{currentMonthLabel}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline" size="icon" className="h-9 w-9"
-                  onClick={() => setMonthOffset((m) => m - 1)}
-                  aria-label="Предыдущий месяц"
-                >
-                  <Icon name="ChevronLeft" size={18} />
-                </Button>
-                <Button
-                  variant="outline" size="icon" className="h-9 w-9"
-                  onClick={() => setMonthOffset((m) => Math.min(0, m + 1))}
-                  disabled={monthOffset >= 0}
-                  aria-label="Следующий месяц"
-                >
-                  <Icon name="ChevronRight" size={18} />
-                </Button>
-              </div>
-            </div>
-            <div className="mt-4">
-              {loading || timeline.length === 0 ? (
-                <div className="h-[180px] animate-pulse rounded-lg bg-secondary" />
-              ) : (
-                <Suspense fallback={<div className="h-[180px] animate-pulse rounded-lg bg-secondary" />}>
-                  <RatingChart data={timeline} detailed={!isMobile} collecting={!!statsCollectionStartedAt} />
-                </Suspense>
-              )}
+            <h3 className="font-semibold">Оценки по дням</h3>
+            <div className="mt-4 flex h-[180px] items-center justify-center rounded-lg bg-secondary">
+              <p className="text-sm text-muted-foreground">Идёт сбор и накопление информации</p>
             </div>
           </div>
 
