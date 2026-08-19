@@ -4,6 +4,7 @@ import TopSection from '@/components/metrobus/TopSection';
 import MainTabs from '@/components/metrobus/MainTabs';
 import SiteFooter from '@/components/metrobus/SiteFooter';
 import InfoDialogs from '@/components/metrobus/InfoDialogs';
+import InstallAppBanner from '@/components/metrobus/InstallAppBanner';
 import { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
 import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashboardApi';
@@ -75,6 +76,8 @@ const Index = () => {
       </TopSection>
 
       <SiteFooter />
+
+      <InstallAppBanner />
 
       <InfoDialogs
         aboutOpen={aboutOpen}
