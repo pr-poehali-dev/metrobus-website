@@ -71,6 +71,7 @@ const Index = () => {
         onAboutOpen={() => setAboutOpen(true)}
         showDashboardButton={activeTab === 'passengers'}
         onMyRatingsOpen={handleMyRatingsOpen}
+        onCityDialogOpen={() => setCityDialogOpen(true)}
       >
         {/* NAV TABS */}
         <MainTabs
@@ -87,7 +88,6 @@ const Index = () => {
           metric1={metric1}
           metric2={metric2}
           records={records}
-          onCityDialogOpen={() => setCityDialogOpen(true)}
         />
       </TopSection>
 

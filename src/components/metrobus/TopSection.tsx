@@ -7,10 +7,11 @@ interface TopSectionProps {
   onAboutOpen: () => void;
   showDashboardButton: boolean;
   onMyRatingsOpen: () => void;
+  onCityDialogOpen: () => void;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onCityDialogOpen, children }: TopSectionProps) {
   return (
     <>
       {/* HEADER */}
@@ -45,13 +46,23 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
       <main id="top" className="mx-auto max-w-5xl scroll-mt-16 px-4">
         {/* HERO */}
         <section className="pt-10 pb-8 sm:pt-16 sm:pb-12">
-          <button
-            type="button"
-            onClick={onAboutOpen}
-            className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-foreground"
-          >
-            Проект компании ООО "Медиа-Инкод"
-          </button>
+          <div className="flex items-start justify-between gap-3">
+            <button
+              type="button"
+              onClick={onAboutOpen}
+              className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-foreground"
+            >
+              Проект компании ООО "Медиа-Инкод"
+            </button>
+            <button
+              type="button"
+              onClick={onCityDialogOpen}
+              className="flex shrink-0 items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+            >
+              <Icon name="MapPin" size={12} />
+              Санкт-Петербург
+            </button>
+          </div>
           <h1 className="text-xl font-bold leading-tight sm:text-4xl">Ваш вклад в транспорт будущего</h1>
           <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">Оценивайте свои поездки и маршруты общественного транспорта - без приложения, без регистрации и без сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

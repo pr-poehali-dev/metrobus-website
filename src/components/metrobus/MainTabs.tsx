@@ -55,7 +55,6 @@ interface MainTabsProps {
   metric1: DashboardMetric;
   metric2: DashboardMetric;
   records: DashboardRecord[];
-  onCityDialogOpen: () => void;
 }
 
 export default function MainTabs({
@@ -72,7 +71,6 @@ export default function MainTabs({
   metric1,
   metric2,
   records,
-  onCityDialogOpen,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -141,14 +139,6 @@ export default function MainTabs({
               <h2 className="text-2xl font-bold sm:text-3xl">
                 {viewMode === 'passengers' ? 'Дашборд пассажира' : 'Дашборд наблюдателя'}
               </h2>
-              <button
-                type="button"
-                onClick={onCityDialogOpen}
-                className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
-              >
-                <Icon name="MapPin" size={12} />
-                Санкт-Петербург
-              </button>
             </div>
             <ViewModeToggle
               value={viewMode}
