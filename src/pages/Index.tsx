@@ -72,6 +72,7 @@ const Index = () => {
           trend={trend}
           trendUp={trendUp}
           onCityDialogOpen={() => setCityDialogOpen(true)}
+          statsCollectionStartedAt={data?.statsCollectionStartedAt ?? null}
         />
       </TopSection>
 
