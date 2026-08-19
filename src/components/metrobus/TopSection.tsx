@@ -6,10 +6,11 @@ interface TopSectionProps {
   icqrUrl: string;
   onAboutOpen: () => void;
   showDashboardButton: boolean;
+  onMyRatingsOpen: () => void;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, children }: TopSectionProps) {
   return (
     <>
       {/* HEADER */}
@@ -24,13 +25,20 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
               <span className="text-[11px] font-medium text-muted-foreground">Цифровые сервисы пассажира</span>
             </span>
           </a>
-          <a href={icqrUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm" className="h-9 gap-1.5 px-3">
-              <Icon name="Star" size={15} />
-              <span className="hidden sm:inline">Оценить поездку</span>
-              <span className="inline sm:hidden">Оценить</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-9 gap-1.5 px-3" onClick={onMyRatingsOpen}>
+              <Icon name="UserCheck" size={15} />
+              <span className="hidden sm:inline">Мои оценки</span>
+              <span className="inline sm:hidden">Мои</span>
             </Button>
-          </a>
+            <a href={icqrUrl} target="_blank" rel="noopener noreferrer">
+              <Button size="sm" className="h-9 gap-1.5 px-3">
+                <Icon name="Star" size={15} />
+                <span className="hidden sm:inline">Оценить поездку</span>
+                <span className="inline sm:hidden">Оценить</span>
+              </Button>
+            </a>
+          </div>
         </div>
       </header>
 

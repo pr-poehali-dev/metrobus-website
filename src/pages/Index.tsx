@@ -54,9 +54,24 @@ const Index = () => {
   const trend = summary.average - summary.prevAverage;
   const trendUp = trend >= 0;
 
+  const handleMyRatingsOpen = () => {
+    setActiveTab('passengers');
+    setDataScope('mine');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <TopSection icqrUrl={ICQR_URL} onAboutOpen={() => setAboutOpen(true)} showDashboardButton={activeTab === 'passengers'}>
+      <TopSection
+        icqrUrl={ICQR_URL}
+        onAboutOpen={() => setAboutOpen(true)}
+        showDashboardButton={activeTab === 'passengers'}
+        onMyRatingsOpen={handleMyRatingsOpen}
+      >
         {/* NAV TABS */}
         <MainTabs
           activeTab={activeTab}
