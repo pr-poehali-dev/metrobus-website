@@ -57,7 +57,6 @@ interface MainTabsProps {
   trend: number;
   trendUp: boolean;
   onCityDialogOpen: () => void;
-  statsCollectionStartedAt: string | null;
 }
 
 export default function MainTabs({
@@ -76,7 +75,6 @@ export default function MainTabs({
   trend,
   trendUp,
   onCityDialogOpen,
-  statsCollectionStartedAt,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -247,7 +245,7 @@ export default function MainTabs({
                 <div className="h-[180px] animate-pulse rounded-lg bg-secondary" />
               ) : (
                 <Suspense fallback={<div className="h-[180px] animate-pulse rounded-lg bg-secondary" />}>
-                  <RatingChart data={timeline} detailed={!isMobile} collecting={!!statsCollectionStartedAt} />
+                  <RatingChart data={timeline} detailed={!isMobile} />
                 </Suspense>
               )}
             </div>

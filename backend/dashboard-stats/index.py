@@ -56,12 +56,9 @@ def handler(event: dict, context) -> dict:
     '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
     хронологию по дням выбранного месяца и кластеры комментариев (только вручную проверенных
     модератором в админ-консоли, comment_verified = true).
-    Хронология по дням (timeline) учитывает только записи после даты старта сбора статистики
-    (app_settings.stats_collection_started_at), которую включает администратор в консоли модерации.
-    Пока сбор не включён — timeline пустой.
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers');
         context - объект с request_id.
-    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, statsCollectionStartedAt }.
+    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode }.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -169,31 +166,25 @@ def handler(event: dict, context) -> dict:
         )
         routes_count = int(cur.fetchone()['cnt'])
 
-        cur.execute("SELECT value FROM app_settings WHERE key = 'stats_collection_started_at'")
-        settings_row = cur.fetchone()
-        stats_collection_started_at = settings_row['value'] if settings_row else None
-
+        cur.execute(
+            f"""
+            SELECT EXTRACT(DAY FROM rated_at)::int AS day, transport_type,
+                   AVG(rating) AS value, COUNT(*) AS cnt
+            FROM transport_passenger_ratings
+            WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
+              AND is_draft = false AND {role_filter}
+            GROUP BY day, transport_type
+            ORDER BY day
+            """,
+            (date(year, month, 1),),
+        )
         timeline_rows: dict[int, dict] = {}
-        if stats_collection_started_at:
-            cur.execute(
-                f"""
-                SELECT EXTRACT(DAY FROM rated_at)::int AS day, transport_type,
-                       AVG(rating) AS value, COUNT(*) AS cnt
-                FROM transport_passenger_ratings
-                WHERE date_trunc('month', rated_at) = date_trunc('month', %s::date)
-                  AND is_draft = false AND {role_filter}
-                  AND rated_at >= %s::timestamp
-                GROUP BY day, transport_type
-                ORDER BY day
-                """,
-                (date(year, month, 1), stats_collection_started_at),
-            )
-            for r in cur.fetchall():
-                key = normalize_transport(r['transport_type'])
-                if key not in ('bus', 'tram', 'trolley'):
-                    continue
-                day_bucket = timeline_rows.setdefault(r['day'], {})
-                day_bucket[key] = {'value': float(r['value']), 'count': int(r['cnt'])}
+        for r in cur.fetchall():
+            key = normalize_transport(r['transport_type'])
+            if key not in ('bus', 'tram', 'trolley'):
+                continue
+            day_bucket = timeline_rows.setdefault(r['day'], {})
+            day_bucket[key] = {'value': float(r['value']), 'count': int(r['cnt'])}
 
         if month == 12:
             days_in_month = 31
@@ -253,7 +244,6 @@ def handler(event: dict, context) -> dict:
             'month': f'{MONTHS[month - 1]}, {year}',
             'clusters': clusters,
             'viewMode': view_mode,
-            'statsCollectionStartedAt': stats_collection_started_at,
         }
 
         return {

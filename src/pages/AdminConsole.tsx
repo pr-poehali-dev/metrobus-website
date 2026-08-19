@@ -9,7 +9,6 @@ import Icon from '@/components/ui/icon';
 import ModerationQueue from '@/components/admin/ModerationQueue';
 import SalesStats from '@/components/admin/SalesStats';
 import IcqrSyncStatus from '@/components/admin/IcqrSyncStatus';
-import StatsCollectionToggle from '@/components/admin/StatsCollectionToggle';
 import ReviewDetailDialog from '@/components/admin/ReviewDetailDialog';
 import {
   loginWithPin,
@@ -209,7 +208,6 @@ export default function AdminConsole() {
             <Badge variant="secondary">{total.toLocaleString('ru-RU')}</Badge>
           </div>
           <div className="flex items-center gap-3">
-            <StatsCollectionToggle />
             <IcqrSyncStatus />
             <Button variant="outline" size="sm" onClick={logout} className="gap-1.5">
               <Icon name="LogOut" size={14} />
