@@ -63,11 +63,11 @@ def handler(event: dict, context) -> dict:
     и dataScope (мои/все), определяемого наличием параметра myToken:
       - Мои: metric1 = кол-во своих оценённых поездок/наблюдений (is_draft=false),
              metric2 = прирост своих записей за последние 7 дней,
-             records = последние 8 своих записей (все статусы, включая черновики).
+             records = последние 3 своих записи (все статусы, включая черновики).
       - Все: metric1 = кол-во оценённых поездок/наблюдений по городу (is_draft=false),
              metric2 = покрытие маршрутов (кол-во разных route_number с оценкой из общего
              числа активных маршрутов города, взятого из app_settings.total_active_routes_count),
-             records = последние 8 опубликованных записей по городу (is_draft=false).
+             records = последние 3 опубликованные записи по городу (is_draft=false).
     Если передан параметр myToken — данные фильтруются только оценками этого пользователя
     ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
@@ -336,7 +336,7 @@ def handler(event: dict, context) -> dict:
             FROM transport_passenger_ratings
             WHERE {records_filter}
             ORDER BY rated_at DESC
-            LIMIT 8
+            LIMIT 3
             """,
             records_params,
         )
