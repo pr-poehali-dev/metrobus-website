@@ -58,7 +58,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
             <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="sm:w-auto">
               <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto">
                 <Icon name="Star" size={18} />
-                Оценить поездку
+                Оценить
               </Button>
             </a>
             {showDashboardButton && (
