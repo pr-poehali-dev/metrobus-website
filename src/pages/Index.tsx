@@ -25,8 +25,20 @@ const Index = () => {
 
   useEffect(() => {
     triggerIcqrSync();
-    captureMyRatingsTokenFromUrl();
+    const { scrollToDashboard, tokenCaptured } = captureMyRatingsTokenFromUrl();
     setMyToken(getMyRatingsToken());
+
+    if (tokenCaptured) {
+      setActiveTab('passengers');
+      setDataScope('mine');
+    }
+    if (scrollToDashboard) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    }
   }, []);
 
   useEffect(() => {
