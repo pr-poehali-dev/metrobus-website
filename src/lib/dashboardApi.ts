@@ -45,6 +45,13 @@ export interface Cluster {
   examples: string[];
 }
 
+export interface TopActiveUser {
+  rank: number;
+  label: string;
+  count: number;
+  isMe: boolean;
+}
+
 export type DashboardViewMode = 'passengers' | 'observers';
 export type DashboardDataScope = 'mine' | 'all';
 
@@ -58,6 +65,7 @@ export interface DashboardData {
   metric1: DashboardMetric;
   metric2: DashboardMetric;
   records: DashboardRecord[];
+  topActiveUsers: TopActiveUser[];
 }
 
 export async function fetchDashboardStats(

@@ -70,10 +70,15 @@ def handler(event: dict, context) -> dict:
              records = последние 3 опубликованные записи по городу (is_draft=false).
     Если передан параметр myToken — данные фильтруются только оценками этого пользователя
     ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
+    Также всегда возвращается публичный общегородской рейтинг topActiveUsers — топ-10 пассажиров
+    (viewMode=passengers, is_draft=false) по количеству оставленных оценок, с анонимизированными
+    подписями вида "Пассажир #XXXX" (последние 4 символа rating_client_id) и флагом isMe для
+    текущего пользователя, если передан myToken.
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
         myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
         context - объект с request_id.
-    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, records }.
+    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, records,
+        topActiveUsers }.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -358,6 +363,30 @@ def handler(event: dict, context) -> dict:
         if data_scope == 'all':
             metric2['total'] = metric2_total
 
+        # ===== Публичный рейтинг активности: топ-10 пассажиров по кол-ву опубликованных оценок =====
+        # Не зависит от viewMode/dataScope — всегда общегородской, только среди пассажиров (не наблюдателей).
+        cur.execute(
+            """
+            SELECT rating_client_id, COUNT(*) AS cnt
+            FROM transport_passenger_ratings
+            WHERE is_draft = false AND rating_client_id IS NOT NULL
+              AND is_passenger IS DISTINCT FROM false
+            GROUP BY rating_client_id
+            ORDER BY cnt DESC, rating_client_id
+            LIMIT 10
+            """
+        )
+        top_active_users = []
+        for rank, r in enumerate(cur.fetchall(), start=1):
+            client_id = r['rating_client_id']
+            suffix = client_id[-4:] if client_id else '????'
+            top_active_users.append({
+                'rank': rank,
+                'label': f'Пассажир #{suffix}',
+                'count': int(r['cnt']),
+                'isMe': bool(my_token) and client_id == my_token,
+            })
+
         result = {
             'summary': {
                 'average': round(current_average, 2),
@@ -374,6 +403,7 @@ def handler(event: dict, context) -> dict:
             'metric1': metric1,
             'metric2': metric2,
             'records': records,
+            'topActiveUsers': top_active_users,
         }
 
         return {

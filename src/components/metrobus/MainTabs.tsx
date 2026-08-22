@@ -7,7 +7,7 @@ import AccessForm from '@/components/metrobus/AccessForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
-import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord } from '@/lib/dashboardApi';
+import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord, TopActiveUser } from '@/lib/dashboardApi';
 
 const STATUS_LABELS: Record<DashboardRecord['status'], { text: string; className: string }> = {
   published: { text: 'Опубликовано', className: 'bg-transport-tram/10 text-transport-tram' },
@@ -55,6 +55,7 @@ interface MainTabsProps {
   metric1: DashboardMetric;
   metric2: DashboardMetric;
   records: DashboardRecord[];
+  topActiveUsers: TopActiveUser[];
 }
 
 export default function MainTabs({
@@ -71,6 +72,7 @@ export default function MainTabs({
   metric1,
   metric2,
   records,
+  topActiveUsers,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -286,6 +288,48 @@ export default function MainTabs({
             <div className="mt-4 flex h-[180px] items-center justify-center rounded-lg bg-secondary">
               <p className="text-sm text-muted-foreground">Идёт сбор и накопление информации</p>
             </div>
+          </div>
+
+          {/* Рейтинг самых активных пассажиров */}
+          <div className="mt-8">
+            <div className="flex items-center gap-2">
+              <Icon name="Trophy" size={18} className="text-muted-foreground" />
+              <h3 className="text-lg font-semibold">Самые активные пассажиры города</h3>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Топ-10 по количеству оставленных оценок. Имена не раскрываются — только анонимный идентификатор.
+            </p>
+            {topActiveUsers.length === 0 && !loading && (
+              <p className="mt-4 text-sm text-muted-foreground">Пока недостаточно данных для рейтинга.</p>
+            )}
+            {topActiveUsers.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {topActiveUsers.map((u) => (
+                  <div
+                    key={u.rank}
+                    className={`flex items-center gap-3 rounded-xl border p-3 sm:p-4 ${
+                      u.isMe ? 'border-primary bg-primary/5' : 'border-border'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono-num text-sm font-bold ${
+                        u.rank <= 3 ? 'bg-amber-500/15 text-amber-600' : 'bg-secondary text-muted-foreground'
+                      }`}
+                    >
+                      {u.rank}
+                    </span>
+                    <span className="flex-1 truncate font-medium">
+                      {u.label}
+                      {u.isMe && <span className="ml-2 text-xs font-normal text-primary">Это вы</span>}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5 font-mono-num text-sm font-semibold">
+                      <Icon name="Star" size={14} className="fill-amber-500 text-amber-500" />
+                      {u.count.toLocaleString('ru-RU')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* AI-кластеры */}
