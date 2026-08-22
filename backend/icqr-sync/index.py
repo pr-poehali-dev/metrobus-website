@@ -22,6 +22,60 @@ def fetch_page(page: int, per_page: int = 100):
         return json.loads(resp.read().decode('utf-8'))
 
 
+def fetch_all_routes_count():
+    '''Запрашивает у ICQR Admin API полный список маршрутов и возвращает их количество.
+    Перебирает известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как оба варианта
+    встречаются в данных ICQR. Если справочник маршрутов на стороне ICQR ещё пуст (Data: []),
+    возвращает None — тогда сохранённое ранее значение не перезаписывается.'''
+    token = os.environ['ICQR_API_ADMIN_TOKEN']
+    for location in ('8-812', 'SPB'):
+        body = json.dumps({'Command': 'get_all_routes', 'Command_params': {'location': location}}).encode('utf-8')
+        req = urllib.request.Request(
+            f"{ICQR_BASE_URL}/api/index.php",
+            data=body,
+            method='POST',
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {token}',
+                'Accept': 'application/json',
+            },
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            payload = json.loads(resp.read().decode('utf-8'))
+        if payload.get('Request_status', {}).get('Code') != 'Ok':
+            continue
+        routes = payload.get('Data') or []
+        if routes:
+            return len(routes)
+    return None
+
+
+def update_active_routes_count(cur):
+    '''Раз в сутки обновляет app_settings.total_active_routes_count реальным числом маршрутов из ICQR (get_all_routes).
+    Не дергает Admin API при каждом вызове синхронизации, чтобы не замедлять частый триггер с фронтенда.'''
+    cur.execute(
+        "SELECT value, updated_at FROM app_settings WHERE key = 'total_active_routes_count'"
+    )
+    row = cur.fetchone()
+    if row and row[1] and (datetime.now() - row[1]).total_seconds() < 86400:
+        return None
+
+    try:
+        count = fetch_all_routes_count()
+    except Exception:
+        return None
+    if not count:
+        return None
+    cur.execute(
+        """
+        INSERT INTO app_settings (key, value, updated_at) VALUES ('total_active_routes_count', %s, now())
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+        """,
+        (str(count),),
+    )
+    return count
+
+
 def fetch_rating_details(rating_id: int):
     '''Запрашивает у ICQR Admin API карточку отзыва с геоданными (page_opened_*, submit_*), vehicle_number и т.д.'''
     token = os.environ['ICQR_API_ADMIN_TOKEN']
@@ -183,10 +237,13 @@ def log_sync_result(cur, status: str, synced_count: int, error_message: str = No
 def handler(event: dict, context) -> dict:
     '''Синхронизирует одобренные отзывы пассажиров с ICQR Public API в локальную таблицу transport_passenger_ratings,
     затем дозагружает геоданные (координаты открытия формы и отправки оценки, расстояние между ними) через ICQR Admin API.
+    Не чаще раза в сутки также обновляет app_settings.total_active_routes_count реальным количеством маршрутов
+    ОРГП Санкт-Петербурга через ICQR Admin API (get_all_routes), которое используется на дашборде как знаменатель
+    метрики "покрытие маршрутов".
     При GET с параметром status=1 возвращает статус последней синхронизации без запуска новой.
     Args: event - dict с httpMethod, queryStringParameters (status); context - объект с request_id.
-    Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей
-        или статусом последней синхронизации.
+    Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей,
+        актуальным числом активных маршрутов (если обновлялось) или статусом последней синхронизации.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -306,11 +363,17 @@ def handler(event: dict, context) -> dict:
         except Exception as ge:
             geo_error = str(ge)
 
+        routes_count = update_active_routes_count(cur)
+
         log_sync_result(cur, 'ok', total_upserted, geo_error)
         return {
             'statusCode': 200,
             'headers': headers,
-            'body': json.dumps({'synced': total_upserted, 'geoEnriched': geo_enriched}),
+            'body': json.dumps({
+                'synced': total_upserted,
+                'geoEnriched': geo_enriched,
+                'activeRoutesCount': routes_count,
+            }),
         }
     except Exception as e:
         log_sync_result(cur, 'error', total_upserted, str(e))
