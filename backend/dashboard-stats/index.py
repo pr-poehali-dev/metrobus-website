@@ -70,13 +70,14 @@ def handler(event: dict, context) -> dict:
              records = последние 3 опубликованные записи по городу (is_draft=false).
     Если передан параметр myToken — данные фильтруются только оценками этого пользователя
     ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
-    Также всегда возвращается публичный общегородской рейтинг topActiveUsers — топ-10 пассажиров
-    (viewMode=passengers, is_draft=false) по количеству оставленных оценок, с анонимизированными
-    подписями вида "Пассажир #XXXX" (последние 4 символа rating_client_id) и флагом isMe для
-    текущего пользователя, если передан myToken. Если передан myToken, также возвращается myRank —
-    место текущего пользователя в этом же общегородском рейтинге (rank, count, totalUsers), даже
-    если он не входит в топ-10; myRank = null, если myToken не передан или у пользователя ещё нет
-    опубликованных пассажирских оценок.
+    Также всегда возвращается публичный общегородской рейтинг topActiveUsers — топ-10 по количеству
+    опубликованных записей (is_draft=false) в рамках выбранного viewMode: для 'passengers' считаются
+    пассажирские оценки, для 'observers' — наблюдения, с анонимизированными подписями вида
+    "Пассажир #XXXX" / "Наблюдатель #XXXX" (последние 4 символа rating_client_id) и флагом isMe для
+    текущего пользователя, если передан myToken. Рейтинг не зависит от dataScope. Если передан
+    myToken, также возвращается myRank — место текущего пользователя в этом же рейтинге его роли
+    (rank, count, totalUsers), даже если он не входит в топ-10; myRank = null, если myToken не
+    передан или у пользователя ещё нет опубликованных записей выбранной роли.
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
         myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
         context - объект с request_id.
@@ -366,14 +367,17 @@ def handler(event: dict, context) -> dict:
         if data_scope == 'all':
             metric2['total'] = metric2_total
 
-        # ===== Публичный рейтинг активности: топ-10 пассажиров по кол-ву опубликованных оценок =====
-        # Не зависит от viewMode/dataScope — всегда общегородской, только среди пассажиров (не наблюдателей).
+        # ===== Публичный рейтинг активности: топ-10 по кол-ву опубликованных оценок =====
+        # Зависит от viewMode: для 'passengers' считаются пассажирские оценки, для 'observers' — наблюдения.
+        # Не зависит от dataScope — всегда общегородской в рамках выбранной роли (не фильтруется по my_token).
+        role_filter_plain = 'is_passenger IS DISTINCT FROM false' if view_mode == 'passengers' else 'is_passenger = false'
+        rank_label = 'Пассажир' if view_mode == 'passengers' else 'Наблюдатель'
         cur.execute(
-            """
+            f"""
             SELECT rating_client_id, COUNT(*) AS cnt
             FROM transport_passenger_ratings
             WHERE is_draft = false AND rating_client_id IS NOT NULL
-              AND is_passenger IS DISTINCT FROM false
+              AND {role_filter_plain}
             GROUP BY rating_client_id
             ORDER BY cnt DESC, rating_client_id
             LIMIT 10
@@ -385,21 +389,21 @@ def handler(event: dict, context) -> dict:
             suffix = client_id[-4:] if client_id else '????'
             top_active_users.append({
                 'rank': rank,
-                'label': f'Пассажир #{suffix}',
+                'label': f'{rank_label} #{suffix}',
                 'count': int(r['cnt']),
                 'isMe': bool(my_token) and client_id == my_token,
             })
 
-        # Моё место в общегородском рейтинге (даже если оно за пределами топ-10)
+        # Моё место в общегородском рейтинге этой же роли (даже если оно за пределами топ-10)
         my_rank = None
         if my_token:
             cur.execute(
-                """
+                f"""
                 WITH counts AS (
                     SELECT rating_client_id, COUNT(*) AS cnt
                     FROM transport_passenger_ratings
                     WHERE is_draft = false AND rating_client_id IS NOT NULL
-                      AND is_passenger IS DISTINCT FROM false
+                      AND {role_filter_plain}
                     GROUP BY rating_client_id
                 ),
                 ranked AS (

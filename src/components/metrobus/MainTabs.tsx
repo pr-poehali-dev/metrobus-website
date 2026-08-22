@@ -168,7 +168,7 @@ export default function MainTabs({
             </div>
           )}
 
-          {dataScope === 'mine' && viewMode === 'passengers' && myRank && (
+          {dataScope === 'mine' && myRank && (
             <div className="mt-4 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono-num text-base font-bold text-primary">
                 {myRank.rank}
@@ -176,7 +176,10 @@ export default function MainTabs({
               <span>
                 Ваше место в общегородском рейтинге активности:{' '}
                 <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
-                ({myRank.count.toLocaleString('ru-RU')} {myRank.count === 1 ? 'оценка' : 'оценок'})
+                ({myRank.count.toLocaleString('ru-RU')}{' '}
+                {viewMode === 'passengers'
+                  ? myRank.count === 1 ? 'оценка' : 'оценок'
+                  : myRank.count === 1 ? 'наблюдение' : 'наблюдений'})
               </span>
             </div>
           )}
@@ -305,14 +308,18 @@ export default function MainTabs({
             </div>
           </div>
 
-          {/* Рейтинг самых активных пассажиров */}
+          {/* Рейтинг самых активных пассажиров/наблюдателей */}
           <div className="mt-8">
             <div className="flex items-center gap-2">
               <Icon name="Trophy" size={18} className="text-muted-foreground" />
-              <h3 className="text-lg font-semibold">Самые активные пассажиры города</h3>
+              <h3 className="text-lg font-semibold">
+                {viewMode === 'passengers' ? 'Самые активные пассажиры города' : 'Самые активные наблюдатели города'}
+              </h3>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Топ-10 по количеству оставленных оценок. Имена не раскрываются — только анонимный идентификатор.
+              {viewMode === 'passengers'
+                ? 'Топ-10 по количеству оставленных оценок. Имена не раскрываются — только анонимный идентификатор.'
+                : 'Топ-10 по количеству отправленных наблюдений. Имена не раскрываются — только анонимный идентификатор.'}
             </p>
             {topActiveUsers.length === 0 && !loading && (
               <p className="mt-4 text-sm text-muted-foreground">Пока недостаточно данных для рейтинга.</p>
