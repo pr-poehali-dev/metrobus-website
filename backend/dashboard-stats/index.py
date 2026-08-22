@@ -73,12 +73,15 @@ def handler(event: dict, context) -> dict:
     Также всегда возвращается публичный общегородской рейтинг topActiveUsers — топ-10 пассажиров
     (viewMode=passengers, is_draft=false) по количеству оставленных оценок, с анонимизированными
     подписями вида "Пассажир #XXXX" (последние 4 символа rating_client_id) и флагом isMe для
-    текущего пользователя, если передан myToken.
+    текущего пользователя, если передан myToken. Если передан myToken, также возвращается myRank —
+    место текущего пользователя в этом же общегородском рейтинге (rank, count, totalUsers), даже
+    если он не входит в топ-10; myRank = null, если myToken не передан или у пользователя ещё нет
+    опубликованных пассажирских оценок.
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
         myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
         context - объект с request_id.
     Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, records,
-        topActiveUsers }.
+        topActiveUsers, myRank }.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -387,6 +390,36 @@ def handler(event: dict, context) -> dict:
                 'isMe': bool(my_token) and client_id == my_token,
             })
 
+        # Моё место в общегородском рейтинге (даже если оно за пределами топ-10)
+        my_rank = None
+        if my_token:
+            cur.execute(
+                """
+                WITH counts AS (
+                    SELECT rating_client_id, COUNT(*) AS cnt
+                    FROM transport_passenger_ratings
+                    WHERE is_draft = false AND rating_client_id IS NOT NULL
+                      AND is_passenger IS DISTINCT FROM false
+                    GROUP BY rating_client_id
+                ),
+                ranked AS (
+                    SELECT rating_client_id, cnt,
+                           RANK() OVER (ORDER BY cnt DESC, rating_client_id) AS rnk,
+                           COUNT(*) OVER () AS total_users
+                    FROM counts
+                )
+                SELECT rnk, cnt, total_users FROM ranked WHERE rating_client_id = %s
+                """,
+                (my_token,),
+            )
+            my_rank_row = cur.fetchone()
+            if my_rank_row:
+                my_rank = {
+                    'rank': int(my_rank_row['rnk']),
+                    'count': int(my_rank_row['cnt']),
+                    'totalUsers': int(my_rank_row['total_users']),
+                }
+
         result = {
             'summary': {
                 'average': round(current_average, 2),
@@ -404,6 +437,7 @@ def handler(event: dict, context) -> dict:
             'metric2': metric2,
             'records': records,
             'topActiveUsers': top_active_users,
+            'myRank': my_rank,
         }
 
         return {

@@ -52,6 +52,12 @@ export interface TopActiveUser {
   isMe: boolean;
 }
 
+export interface MyRank {
+  rank: number;
+  count: number;
+  totalUsers: number;
+}
+
 export type DashboardViewMode = 'passengers' | 'observers';
 export type DashboardDataScope = 'mine' | 'all';
 
@@ -66,6 +72,7 @@ export interface DashboardData {
   metric2: DashboardMetric;
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
+  myRank: MyRank | null;
 }
 
 export async function fetchDashboardStats(

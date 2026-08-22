@@ -7,7 +7,7 @@ import AccessForm from '@/components/metrobus/AccessForm';
 import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
-import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord, TopActiveUser } from '@/lib/dashboardApi';
+import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord, TopActiveUser, MyRank } from '@/lib/dashboardApi';
 
 const STATUS_LABELS: Record<DashboardRecord['status'], { text: string; className: string }> = {
   published: { text: 'Опубликовано', className: 'bg-transport-tram/10 text-transport-tram' },
@@ -56,6 +56,7 @@ interface MainTabsProps {
   metric2: DashboardMetric;
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
+  myRank: MyRank | null;
 }
 
 export default function MainTabs({
@@ -73,6 +74,7 @@ export default function MainTabs({
   metric2,
   records,
   topActiveUsers,
+  myRank,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -162,6 +164,19 @@ export default function MainTabs({
               <Icon name="Fingerprint" size={16} className="shrink-0 text-amber-600" />
               <span>
                 Не нашли ваши оценки в этом браузере. Поставьте оценку на ICQR.RU — и она появится здесь автоматически.
+              </span>
+            </div>
+          )}
+
+          {dataScope === 'mine' && viewMode === 'passengers' && myRank && (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono-num text-base font-bold text-primary">
+                {myRank.rank}
+              </span>
+              <span>
+                Ваше место в общегородском рейтинге активности:{' '}
+                <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
+                ({myRank.count.toLocaleString('ru-RU')} {myRank.count === 1 ? 'оценка' : 'оценок'})
               </span>
             </div>
           )}

@@ -66,6 +66,7 @@ const Index = () => {
   const metric2 = data?.metric2 ?? { value: 0, label: '' };
   const records = data?.records ?? [];
   const topActiveUsers = data?.topActiveUsers ?? [];
+  const myRank = data?.myRank ?? null;
 
   const handleMyRatingsOpen = () => {
     setActiveTab('passengers');
@@ -102,6 +103,7 @@ const Index = () => {
           metric2={metric2}
           records={records}
           topActiveUsers={topActiveUsers}
+          myRank={myRank}
         />
       </TopSection>
 
