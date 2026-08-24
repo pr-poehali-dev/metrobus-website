@@ -162,9 +162,7 @@ export default function MainTabs({
           {dataScope === 'mine' && !hasMyToken && (
             <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
               <Icon name="Fingerprint" size={16} className="shrink-0 text-amber-600" />
-              <span>
-                Этот браузер ещё не привязан к вашему профилю. Перейдите в раздел «Мои оценки» на ICQR.RU и оттуда откройте ссылку на дашборд — после этого ваши оценки и место в рейтинге будут отображаться здесь автоматически.
-              </span>
+              <span>Этот браузер ещё не привязан к вашему профилю. Используя кнопку на карте ICQR.RU, откройте ссылку на дашборд — после этого ваши оценки и место в рейтинге будут отображаться здесь автоматически.</span>
             </div>
           )}
 
