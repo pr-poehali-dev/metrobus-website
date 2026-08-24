@@ -1,0 +1,72 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import Icon from '@/components/ui/icon';
+import AccessForm from '@/components/metrobus/AccessForm';
+import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
+
+export default function RoleSection({
+  icon, title, value, bullets, role, showCarrierActions,
+}: {
+  icon: string;
+  title: string;
+  value: string;
+  bullets: string[];
+  role: 'carrier' | 'regulator';
+  showCarrierActions?: boolean;
+}) {
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-2">
+      <div>
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary">
+          <Icon name={icon} size={24} className="text-foreground" />
+        </div>
+        <h2 className="text-2xl font-bold sm:text-3xl">{title}</h2>
+        <p className="mt-3 text-base text-muted-foreground">{value}</p>
+        <ul className="mt-5 space-y-2.5">
+          {bullets.map((b) => (
+            <li key={b} className="flex items-start gap-2.5 text-sm">
+              <Icon name="Check" size={18} className="mt-0.5 shrink-0 text-transport-tram" />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+
+        {showCarrierActions && (
+          <div className="mt-6 rounded-2xl border-2 border-primary/20 bg-primary/5 p-4 sm:p-5">
+            <p className="text-sm font-medium text-foreground">Уже подключены к сервису?</p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto" onClick={() => setLoginOpen(true)}>
+                <Icon name="LogIn" size={18} />
+                Вход в кабинет
+              </Button>
+              <Link to="/carrier-demo" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 w-full gap-2 border-2 border-primary text-base text-primary hover:bg-primary hover:text-primary-foreground sm:w-auto"
+                >
+                  <Icon name="FlaskConical" size={18} />
+                  Демо-режим
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+      <div id={role === 'carrier' ? 'carrier-form' : undefined} className="scroll-mt-20 rounded-2xl border border-border bg-card p-5 sm:p-6">
+        <h3 className="font-semibold">Заявка на подключение</h3>
+        <p className="mt-1 mb-5 text-sm text-muted-foreground">
+          Оставьте контакты — мы расскажем о доступе к данным.
+        </p>
+        <AccessForm role={role} />
+      </div>
+
+      {showCarrierActions && (
+        <CarrierLoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+      )}
+    </div>
+  );
+}
