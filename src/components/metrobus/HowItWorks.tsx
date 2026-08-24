@@ -6,7 +6,7 @@ export default function HowItWorks() {
       <h2 className="text-2xl font-bold sm:text-3xl">Как это работает</h2>
       <div className="mt-6 overflow-hidden rounded-xl border border-border">
         <img
-          src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/files/67a650ef-1a75-487f-b615-e728a5601603.jpg"
+          src="/bortovoy-nomer-example.jpg"
           alt="Пример расположения короткого бортового номера на транспорте"
           className="h-auto w-full object-cover"
         />
