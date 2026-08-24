@@ -23,13 +23,18 @@ def fetch_page(page: int, per_page: int = 100):
 
 
 def fetch_all_routes_count():
-    '''Запрашивает у ICQR Admin API полный список маршрутов и возвращает их количество.
-    Перебирает известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как оба варианта
-    встречаются в данных ICQR. Если справочник маршрутов на стороне ICQR ещё пуст (Data: []),
-    возвращает None — тогда сохранённое ранее значение не перезаписывается.'''
+    '''Запрашивает у ICQR Admin API общее количество маршрутов (get_all_routes).
+    ICQR возвращает Data в виде {items: [...], pagination: {total, ...}, ...} — реальное общее
+    число маршрутов лежит в Data.pagination.total (per_page=1 запрашивается, чтобы не тянуть
+    список целиком). Перебирает известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как
+    оба варианта встречаются в данных ICQR. Возвращает None, если ни один запрос не дал результата —
+    тогда сохранённое ранее значение не перезаписывается.'''
     token = os.environ['ICQR_API_ADMIN_TOKEN']
     for location in ('8-812', 'SPB'):
-        body = json.dumps({'Command': 'get_all_routes', 'Command_params': {'location': location}}).encode('utf-8')
+        body = json.dumps({
+            'Command': 'get_all_routes',
+            'Command_params': {'location': location, 'per_page': 1},
+        }).encode('utf-8')
         req = urllib.request.Request(
             f"{ICQR_BASE_URL}/api/index.php",
             data=body,
@@ -44,9 +49,10 @@ def fetch_all_routes_count():
             payload = json.loads(resp.read().decode('utf-8'))
         if payload.get('Request_status', {}).get('Code') != 'Ok':
             continue
-        routes = payload.get('Data') or []
-        if routes:
-            return len(routes)
+        data = payload.get('Data') or {}
+        total = (data.get('pagination') or {}).get('total')
+        if total:
+            return int(total)
     return None
 
 
