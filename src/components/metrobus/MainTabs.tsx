@@ -83,9 +83,7 @@ export default function MainTabs({
           <Icon name="Users" size={15} />Пассажирам
         </TabsTrigger>
         <TabsTrigger value="carrier" className="h-10 gap-1.5 text-[13px] sm:text-sm">Перевозчикам</TabsTrigger>
-        <TabsTrigger value="regulator" className="h-10 gap-1.5 text-[13px] sm:text-sm">
-          <Icon name="Landmark" size={15} />Регулятору
-        </TabsTrigger>
+        <TabsTrigger value="regulator" className="h-10 gap-1.5 text-[13px] sm:text-sm">Заказчикам</TabsTrigger>
       </TabsList>
 
       {/* ===== ПАССАЖИРЫ ===== */}
