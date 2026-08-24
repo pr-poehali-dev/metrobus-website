@@ -85,7 +85,7 @@ export default function InstallAppBanner() {
         {!showIosHint && (
           <Button
             size="sm"
-            className="h-9 shrink-0 gap-1.5 px-3 bg-[#447BBA] hover:bg-[#3a6aa0] text-white"
+            className="h-9 shrink-0 gap-1.5 px-3"
             onClick={handleInstall}
           >
             <Icon name="Download" size={15} />
