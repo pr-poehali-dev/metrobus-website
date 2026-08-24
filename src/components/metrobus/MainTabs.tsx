@@ -94,6 +94,9 @@ export default function MainTabs({
       <TabsContent value="passengers" className="mt-8 space-y-16">
         {/* С.1 — Что это */}
         <section>
+          <p className="mb-4 text-base font-medium text-muted-foreground">
+            Первая в России система, где оценки проверяются геометрией.
+          </p>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { icon: 'Timer', title: 'Быстро', text: 'Ввели короткий номер с борта — поставили оценку. Пассажир ли вы или наблюдатель — способ один и тот же.' },
