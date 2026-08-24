@@ -70,22 +70,26 @@ export default function InstallAppBanner() {
 
         {showIosHint ? (
           <div className="flex-1 text-sm">
-            <p className="font-semibold">Быстрый доступ с экрана смартфона</p>
+            <p className="font-semibold">Добавить симпатичную иконку</p>
             <p className="mt-0.5 text-muted-foreground">
               Нажмите <Icon name="Share" size={13} className="mx-0.5 inline -translate-y-px" /> и выберите «На экран «Домой»»
             </p>
           </div>
         ) : (
           <div className="flex-1 text-sm">
-            <p className="font-semibold">Быстрый доступ с экрана смартфона</p>
-            <p className="mt-0.5 text-muted-foreground">Добавить симпатичную иконку</p>
+            <p className="font-semibold">Добавить симпатичную иконку</p>
+            <p className="mt-0.5 text-muted-foreground">Быстрый доступ с экрана смартфона</p>
           </div>
         )}
 
         {!showIosHint && (
-          <Button size="sm" className="h-9 shrink-0 gap-1.5 px-3" onClick={handleInstall}>
+          <Button
+            size="sm"
+            className="h-9 shrink-0 gap-1.5 px-3 bg-[#447BBA] hover:bg-[#3a6aa0] text-white"
+            onClick={handleInstall}
+          >
             <Icon name="Download" size={15} />
-            Установить
+            Добавить
           </Button>
         )}
 
