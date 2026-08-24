@@ -62,21 +62,23 @@ export default function InstallAppBanner() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-background px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] animate-fade-in">
       <div className="mx-auto flex max-w-5xl items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
-          <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-6 w-6 object-contain" />
-        </span>
+        <img
+          src="/icon-192.png"
+          alt="МЕТРОБУС.РФ"
+          className="h-10 w-10 shrink-0 rounded-lg border border-border object-contain"
+        />
 
         {showIosHint ? (
           <div className="flex-1 text-sm">
-            <p className="font-semibold">Установите приложение</p>
+            <p className="font-semibold">Быстрый доступ с экрана смартфона</p>
             <p className="mt-0.5 text-muted-foreground">
               Нажмите <Icon name="Share" size={13} className="mx-0.5 inline -translate-y-px" /> и выберите «На экран «Домой»»
             </p>
           </div>
         ) : (
           <div className="flex-1 text-sm">
-            <p className="font-semibold">Установите приложение</p>
-            <p className="mt-0.5 text-muted-foreground">Быстрый доступ прямо с главного экрана</p>
+            <p className="font-semibold">Быстрый доступ с экрана смартфона</p>
+            <p className="mt-0.5 text-muted-foreground">Добавить симпатичную иконку</p>
           </div>
         )}
 
