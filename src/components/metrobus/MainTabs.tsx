@@ -121,7 +121,7 @@ export default function MainTabs({
             {[
               { n: 1, icon: 'Hash', title: 'Найдите короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
               { n: 2, icon: 'Grid3x3', title: 'Используйте его на главной странице ICQR.RU', text: 'Результат - карта маршрута для этого транспорта.' },
-              { n: 3, icon: 'Star', title: 'Проверяешь данные и ставишь оценку', text: 'При желании пишешь короткий комментарий.' },
+              { n: 3, icon: 'Star', title: 'Проверьте данные и поставьте оценку', text: 'При желании пишешь короткий комментарий.' },
             ].map((s) => (
               <div key={s.n} className="flex items-start gap-4 rounded-xl border border-border p-4 sm:p-5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-mono text-sm font-semibold text-primary-foreground">
