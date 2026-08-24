@@ -117,7 +117,14 @@ export default function MainTabs({
         {/* С.2 — Как работает */}
         <section>
           <h2 className="text-2xl font-bold sm:text-3xl">Как это работает</h2>
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 overflow-hidden rounded-xl border border-border">
+            <img
+              src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/files/67a650ef-1a75-487f-b615-e728a5601603.jpg"
+              alt="Пример расположения короткого бортового номера на транспорте"
+              className="h-auto w-full object-cover"
+            />
+          </div>
+          <div className="mt-3 space-y-3">
             {[
               { n: 1, icon: 'Hash', title: 'Найдите короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
               { n: 2, icon: 'Grid3x3', title: 'Используйте его на главной странице ICQR.RU', text: 'Результат - карта маршрута для этого транспорта.' },
