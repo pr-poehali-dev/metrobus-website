@@ -99,11 +99,11 @@ export default function AccessForm({ role }: Props) {
         />
         <Label htmlFor={`${role}-agree`} className="text-xs font-normal leading-relaxed text-muted-foreground">
           Я согласен с{' '}
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline transition-colors hover:text-primary active:text-primary">
             Пользовательским соглашением
           </a>{' '}
           и{' '}
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline transition-colors hover:text-primary active:text-primary">
             Политикой конфиденциальности
           </a>
         </Label>

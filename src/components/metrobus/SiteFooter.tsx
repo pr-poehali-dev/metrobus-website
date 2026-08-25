@@ -15,13 +15,13 @@ export default function SiteFooter() {
             </div>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">Цифровые сервисы пассажира.<br />Оплата проезда. Смарт-информирование. Обратная связь.</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground sm:mt-auto">
-              <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">ВКонтакте</a>
-              <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">Телеграм</a>
-              <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">MAX</a>
+              <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary hover:underline active:text-primary">ВКонтакте</a>
+              <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary hover:underline active:text-primary">Телеграм</a>
+              <a href={SOCIAL_LINKS.max} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary hover:underline active:text-primary">MAX</a>
             </div>
           </div>
           <div className="space-y-4 text-sm text-muted-foreground sm:mt-10 sm:text-right">
-            <a href="mailto:support@icqr.ru" className="flex items-center gap-2 hover:text-foreground sm:justify-end">
+            <a href="mailto:support@icqr.ru" className="flex items-center gap-2 transition-colors hover:text-primary active:text-primary sm:justify-end">
               <Icon name="Mail" size={15} />
               support@icqr.ru
             </a>
@@ -39,8 +39,8 @@ export default function SiteFooter() {
         </div>
         <div className="mt-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <a href="/terms" className="underline hover:text-foreground">Пользовательское соглашение</a>
-            <a href="/privacy" className="underline hover:text-foreground">Политика конфиденциальности</a>
+            <a href="/terms" className="underline transition-colors hover:text-primary active:text-primary">Пользовательское соглашение</a>
+            <a href="/privacy" className="underline transition-colors hover:text-primary active:text-primary">Политика конфиденциальности</a>
           </div>
           <span>© ООО «МЕДИА-ИНКОД», {new Date().getFullYear()}</span>
         </div>

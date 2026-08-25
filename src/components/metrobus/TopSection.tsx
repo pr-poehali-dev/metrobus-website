@@ -52,7 +52,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
             <button
               type="button"
               onClick={onAboutOpen}
-              className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-foreground"
+              className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-primary active:text-primary"
             >
               Проект компании ООО "Медиа-Инкод"
             </button>
