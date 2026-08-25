@@ -43,9 +43,9 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
         </div>
       </header>
 
-      <main id="top" className="mx-auto max-w-5xl scroll-mt-16 px-4">
-        {/* HERO */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#447BBA]/20 via-[#447BBA]/[0.06] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
+      {/* HERO */}
+      <section id="top" className="relative overflow-hidden scroll-mt-16 bg-gradient-to-b from-[#447BBA]/[0.14] via-[#447BBA]/[0.04] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
+        <div className="mx-auto max-w-5xl px-4">
           <div className="flex items-start justify-between gap-3">
             <button
               type="button"
@@ -81,8 +81,10 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
               </a>
             )}
           </div>
-        </section>
+        </div>
+      </section>
 
+      <main className="mx-auto max-w-5xl px-4">
         {children}
       </main>
     </>
