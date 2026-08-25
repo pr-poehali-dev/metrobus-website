@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import ThemeToggle from '@/components/metrobus/ThemeToggle';
 
 interface TopSectionProps {
   icqrUrl: string;
@@ -39,6 +40,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
                 <span className="inline sm:hidden">Оценить</span>
               </Button>
             </a>
+            <ThemeToggle />
           </div>
         </div>
       </header>
