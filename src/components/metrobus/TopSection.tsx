@@ -45,7 +45,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
 
       <main id="top" className="mx-auto max-w-5xl scroll-mt-16 px-4">
         {/* HERO */}
-        <section className="pt-10 pb-8 sm:pt-16 sm:pb-12">
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#447BBA]/20 via-[#447BBA]/[0.06] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
           <div className="flex items-start justify-between gap-3">
             <button
               type="button"
