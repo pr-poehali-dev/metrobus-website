@@ -196,11 +196,15 @@ export default function PassengerDashboard({
                   <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${transportBg[r.transportType]}`}>
                     <Icon name={transportIcon[r.transportType]} size={15} className={transportClass[r.transportType]} />
                   </span>
-                  <span className="font-semibold">
-                    Маршрут №{r.routeNumber ?? '—'}
-                  </span>
-                  {viewMode === 'passengers' && r.vehicleNumber && (
-                    <span className="text-xs text-muted-foreground">борт {r.vehicleNumber}</span>
+                  {viewMode === 'passengers' && r.vehicleNumber ? (
+                    <>
+                      <span className="font-semibold">Борт {r.vehicleNumber}</span>
+                      <span className="text-xs text-muted-foreground">маршрут №{r.routeNumber ?? '—'}</span>
+                    </>
+                  ) : (
+                    <span className="font-semibold">
+                      Маршрут №{r.routeNumber ?? '—'}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
