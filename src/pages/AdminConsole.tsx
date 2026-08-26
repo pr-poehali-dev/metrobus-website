@@ -9,6 +9,7 @@ import Icon from '@/components/ui/icon';
 import ModerationQueue from '@/components/admin/ModerationQueue';
 import SalesStats from '@/components/admin/SalesStats';
 import IcqrSyncStatus from '@/components/admin/IcqrSyncStatus';
+import ChangelogManager from '@/components/admin/ChangelogManager';
 import ReviewDetailDialog from '@/components/admin/ReviewDetailDialog';
 import {
   loginWithPin,
@@ -237,6 +238,10 @@ export default function AdminConsole() {
               <Icon name="Wallet" size={14} />
               Касса и продажи
             </TabsTrigger>
+            <TabsTrigger value="changelog" className="gap-1.5">
+              <Icon name="History" size={14} />
+              История обновлений
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="registry">
@@ -424,6 +429,10 @@ export default function AdminConsole() {
 
           <TabsContent value="sales">
             <SalesStats />
+          </TabsContent>
+
+          <TabsContent value="changelog">
+            <ChangelogManager />
           </TabsContent>
         </Tabs>
       </main>

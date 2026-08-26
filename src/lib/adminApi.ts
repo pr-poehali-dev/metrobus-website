@@ -305,6 +305,73 @@ export async function fetchSalesStats(dateFrom?: string, dateTo?: string): Promi
   return res.json();
 }
 
+export interface ChangelogEntry {
+  id: number;
+  entryDate: string;
+  title: string;
+  items: string[];
+  published: boolean;
+  sortOrder: number;
+}
+
+export async function fetchChangelogPublic(): Promise<ChangelogEntry[]> {
+  const res = await fetch(func2url['changelog']);
+  if (!res.ok) throw new Error('changelog_failed');
+  const data = await res.json();
+  return data.items;
+}
+
+export async function fetchChangelogAdmin(): Promise<ChangelogEntry[] | null> {
+  const token = getAdminToken();
+  if (!token) return null;
+  const res = await fetch(func2url['changelog'], {
+    headers: { 'X-Admin-Token': token },
+  });
+  if (res.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+  if (!res.ok) throw new Error('changelog_failed');
+  const data = await res.json();
+  return data.items;
+}
+
+export async function saveChangelogEntry(entry: {
+  id?: number;
+  entryDate: string;
+  title: string;
+  items: string[];
+  published: boolean;
+  sortOrder?: number;
+}): Promise<boolean> {
+  const token = getAdminToken();
+  if (!token) return false;
+  const res = await fetch(func2url['changelog'], {
+    method: entry.id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify(entry),
+  });
+  if (res.status === 401) {
+    clearAdminToken();
+    return false;
+  }
+  return res.ok;
+}
+
+export async function deleteChangelogEntry(id: number): Promise<boolean> {
+  const token = getAdminToken();
+  if (!token) return false;
+  const res = await fetch(`${func2url['changelog']}?id=${id}`, {
+    method: 'DELETE',
+    headers: { 'X-Admin-Token': token },
+  });
+  if (res.status === 401) {
+    clearAdminToken();
+    return false;
+  }
+  return res.ok;
+}
+
 export async function moderateRating(
   ratingId: number,
   action: 'approve' | 'reject' | 'reset',
