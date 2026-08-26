@@ -26,7 +26,12 @@ const Changelog = () => {
               <img
                 src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/6754a78d-4309-49c8-86c9-4a7a5753b358.jpg"
                 alt="МЕТРОБУС.РФ"
-                className="h-full w-full rounded-lg object-contain"
+                className="h-full w-full rounded-lg object-contain dark:hidden"
+              />
+              <img
+                src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/3fe1dd32-9ba8-4936-97c3-f668390d24e8.png"
+                alt="МЕТРОБУС.РФ"
+                className="hidden h-full w-full rounded-lg object-contain dark:block"
               />
             </span>
             <span className="flex flex-col leading-tight">
