@@ -20,7 +20,8 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <a href="#top" className="flex items-center gap-2">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary">
-              <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
+              <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain dark:hidden" />
+              <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ad43e99a-45cd-411d-b75d-75d7774f4441.png" alt="МЕТРОБУС.РФ" className="hidden h-full w-full object-contain dark:block" />
             </span>
             <span className="flex flex-col leading-tight">
               <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>

@@ -9,7 +9,8 @@ export default function SiteFooter() {
           <div className="flex flex-col sm:h-full">
             <div className="flex items-center gap-2">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-primary">
-                <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
+                <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain dark:hidden" />
+                <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ad43e99a-45cd-411d-b75d-75d7774f4441.png" alt="МЕТРОБУС.РФ" className="hidden h-full w-full object-contain dark:block" />
               </span>
               <span className="font-bold">МЕТРОБУС.РФ</span>
             </div>
