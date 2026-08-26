@@ -94,7 +94,7 @@ export default function MainTabs({
             'Данные для управленческих решений',
           ]}
           role="carrier"
-          showCarrierActions
+          showLoginActions
         />
       </TabsContent>
 
@@ -110,6 +110,7 @@ export default function MainTabs({
             'Независимый источник данных',
           ]}
           role="regulator"
+          showLoginActions
         />
       </TabsContent>
     </Tabs>

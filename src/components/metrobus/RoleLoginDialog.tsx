@@ -14,12 +14,27 @@ import Icon from '@/components/ui/icon';
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  role: 'carrier' | 'regulator';
 }
 
-// Визуализация экрана входа для перевозчика. Логин и пароль выдаются
+const ROLE_CONFIG: Record<Props['role'], { title: string; description: string; org: string }> = {
+  carrier: {
+    title: 'Вход для перевозчика',
+    description: 'Логин и пароль выдаются вашей организации после подключения к сервису.',
+    org: 'вашей организации',
+  },
+  regulator: {
+    title: 'Вход для заказчика',
+    description: 'Логин и пароль выдаются вашему ведомству после подключения к сервису.',
+    org: 'вашему ведомству',
+  },
+};
+
+// Визуализация экрана входа для перевозчика/заказчика. Логин и пароль выдаются
 // организацией после подключения — здесь только демонстрация формы.
-export default function CarrierLoginDialog({ open, onOpenChange }: Props) {
+export default function RoleLoginDialog({ open, onOpenChange, role }: Props) {
   const [submitted, setSubmitted] = useState(false);
+  const config = ROLE_CONFIG[role];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +53,9 @@ export default function CarrierLoginDialog({ open, onOpenChange }: Props) {
           <div className="mx-auto mb-1 flex h-11 w-11 items-center justify-center rounded-xl bg-secondary">
             <Icon name="Lock" size={20} className="text-foreground" />
           </div>
-          <DialogTitle className="text-center">Вход для перевозчика</DialogTitle>
+          <DialogTitle className="text-center">{config.title}</DialogTitle>
           <DialogDescription className="text-center">
-            Логин и пароль выдаются вашей организации после подключения к сервису.
+            {config.description}
           </DialogDescription>
         </DialogHeader>
 
@@ -57,12 +72,12 @@ export default function CarrierLoginDialog({ open, onOpenChange }: Props) {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="carrier-login">Логин</Label>
-              <Input id="carrier-login" placeholder="Выдаётся при подключении" className="h-11 text-base" />
+              <Label htmlFor={`${role}-login`}>Логин</Label>
+              <Input id={`${role}-login`} placeholder="Выдаётся при подключении" className="h-11 text-base" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="carrier-password">Пароль</Label>
-              <Input id="carrier-password" type="password" placeholder="••••••••" className="h-11 text-base" />
+              <Label htmlFor={`${role}-password`}>Пароль</Label>
+              <Input id={`${role}-password`} type="password" placeholder="••••••••" className="h-11 text-base" />
             </div>
             <Button type="submit" className="h-11 w-full text-base">
               Войти

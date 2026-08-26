@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminConsole from "./pages/AdminConsole";
 import CarrierDemo from "./pages/CarrierDemo";
+import RegulatorDemo from "./pages/RegulatorDemo";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Changelog from "./pages/Changelog";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/service/mb-console" element={<AdminConsole />} />
             <Route path="/carrier-demo" element={<CarrierDemo />} />
+            <Route path="/regulator-demo" element={<RegulatorDemo />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/changelog" element={<Changelog />} />

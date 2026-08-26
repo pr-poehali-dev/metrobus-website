@@ -3,19 +3,20 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import AccessForm from '@/components/metrobus/AccessForm';
-import CarrierLoginDialog from '@/components/metrobus/CarrierLoginDialog';
+import RoleLoginDialog from '@/components/metrobus/RoleLoginDialog';
 
 export default function RoleSection({
-  icon, title, value, bullets, role, showCarrierActions,
+  icon, title, value, bullets, role, showLoginActions,
 }: {
   icon: string;
   title: string;
   value: string;
   bullets: string[];
   role: 'carrier' | 'regulator';
-  showCarrierActions?: boolean;
+  showLoginActions?: boolean;
 }) {
   const [loginOpen, setLoginOpen] = useState(false);
+  const demoPath = role === 'carrier' ? '/carrier-demo' : '/regulator-demo';
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
@@ -34,7 +35,7 @@ export default function RoleSection({
           ))}
         </ul>
 
-        {showCarrierActions && (
+        {showLoginActions && (
           <div className="mt-6 rounded-2xl border-2 border-primary/20 bg-primary/5 p-4 sm:p-5">
             <p className="text-sm font-medium text-foreground">Уже подключены к сервису?</p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -42,7 +43,7 @@ export default function RoleSection({
                 <Icon name="LogIn" size={18} />
                 Вход в кабинет
               </Button>
-              <Link to="/carrier-demo" className="w-full sm:w-auto">
+              <Link to={demoPath} className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   variant="outline"
@@ -56,7 +57,7 @@ export default function RoleSection({
           </div>
         )}
       </div>
-      <div id={role === 'carrier' ? 'carrier-form' : undefined} className="scroll-mt-20 rounded-2xl border border-border bg-card p-5 sm:p-6">
+      <div id={role === 'carrier' ? 'carrier-form' : 'regulator-form'} className="scroll-mt-20 rounded-2xl border border-border bg-card p-5 sm:p-6">
         <h3 className="font-semibold">Заявка на подключение</h3>
         <p className="mt-1 mb-5 text-sm text-muted-foreground">
           Оставьте контакты — мы расскажем о доступе к данным.
@@ -64,8 +65,8 @@ export default function RoleSection({
         <AccessForm role={role} />
       </div>
 
-      {showCarrierActions && (
-        <CarrierLoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+      {showLoginActions && (
+        <RoleLoginDialog open={loginOpen} onOpenChange={setLoginOpen} role={role} />
       )}
     </div>
   );
