@@ -199,7 +199,7 @@ export default function PassengerDashboard({
                   <span className="font-semibold">
                     Маршрут №{r.routeNumber ?? '—'}
                   </span>
-                  {r.vehicleNumber && (
+                  {viewMode === 'passengers' && r.vehicleNumber && (
                     <span className="text-xs text-muted-foreground">борт {r.vehicleNumber}</span>
                   )}
                 </div>
