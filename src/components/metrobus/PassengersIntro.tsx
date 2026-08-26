@@ -10,7 +10,7 @@ export default function PassengersIntro() {
         {[
           { icon: 'Timer', title: 'Быстро', text: 'Ввели короткий номер с борта — поставили оценку разовой поездке или регулярному маршруту.' },
           { icon: 'UserX', title: 'Анонимно', text: 'Укажите свой статус и пишите как есть. Ваша правдивая оценка помогает городу.' },
-          { icon: 'Megaphone', title: 'Эффективно', text: 'Оценки увидят и перевозчики, и организатор перевозок. Найти их можно будет позже — они не потеряются.' },
+          { icon: 'Megaphone', title: 'Эффективно', text: 'Оценки увидят и перевозчики, и заказчики перевозок (регулятор, в том числе). Найти их можно будет позже — они не потеряются.' },
         ].map((b) => (
           <div key={b.title} className="rounded-xl border border-border p-5">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
