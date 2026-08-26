@@ -29,7 +29,10 @@ const Changelog = () => {
                 className="h-full w-full rounded-lg object-contain"
               />
             </span>
-            <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
+              <span className="text-[11px] font-medium text-muted-foreground">Цифровые сервисы пассажира</span>
+            </span>
           </a>
           <a href="/" className="text-sm text-muted-foreground hover:text-foreground">На главную</a>
         </div>
