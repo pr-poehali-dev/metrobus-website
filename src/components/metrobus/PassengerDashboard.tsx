@@ -14,11 +14,6 @@ function formatRecordDate(iso: string | null) {
   return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-const transportIcon: Record<TransportType, string> = {
-  bus: 'Bus',
-  tram: 'TramFront',
-  trolley: 'BusFront',
-};
 const transportClass: Record<TransportType, string> = {
   bus: 'text-transport-bus',
   tram: 'text-transport-tram',
@@ -194,7 +189,11 @@ export default function PassengerDashboard({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${transportBg[r.transportType]}`}>
-                    <Icon name={transportIcon[r.transportType]} size={15} className={transportClass[r.transportType]} />
+                    <img
+                      src={transportImg[r.transportType]}
+                      alt={r.transportType}
+                      className="h-[18px] w-[12px] object-contain"
+                    />
                   </span>
                   {viewMode === 'passengers' && r.vehicleNumber ? (
                     <>

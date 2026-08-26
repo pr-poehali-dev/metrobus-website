@@ -15,12 +15,16 @@ import {
 
 const RatingChart = lazy(() => import('@/components/metrobus/RatingChart'));
 
-const transportIcon: Record<string, string> = { bus: 'Bus', tram: 'TramFront', trolley: 'BusFront' };
 const transportClass: Record<string, string> = {
   bus: 'text-transport-bus', tram: 'text-transport-tram', trolley: 'text-transport-trolley',
 };
 const transportBg: Record<string, string> = {
   bus: 'bg-transport-bus/10', tram: 'bg-transport-tram/10', trolley: 'bg-transport-trolley/10',
+};
+const transportImg: Record<string, string> = {
+  bus: '/icons/bus-transport.png',
+  tram: '/icons/tram-transport.png',
+  trolley: '/icons/trolley-transport.png',
 };
 
 export default function CarrierDemo() {
@@ -119,7 +123,11 @@ export default function CarrierDemo() {
             <div key={t.type} className="rounded-xl border border-border p-5">
               <div className="flex items-center gap-2.5">
                 <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${transportBg[t.type]}`}>
-                  <Icon name={transportIcon[t.type]} size={18} className={transportClass[t.type]} />
+                  <img
+                    src={transportImg[t.type]}
+                    alt={t.label}
+                    className="h-[22px] w-[15px] object-contain"
+                  />
                 </span>
                 <span className="font-semibold">{t.label}</span>
               </div>
@@ -172,7 +180,11 @@ export default function CarrierDemo() {
                     <TableCell className="font-mono-num font-semibold">№ {r.route}</TableCell>
                     <TableCell>
                       <span className="flex items-center gap-1.5">
-                        <Icon name={transportIcon[r.type]} size={15} className={transportClass[r.type]} />
+                        <img
+                          src={transportImg[r.type]}
+                          alt={r.type}
+                          className="h-[15px] w-[10px] object-contain"
+                        />
                         {r.type === 'tram' ? 'Трамвай' : 'Троллейбус'}
                       </span>
                     </TableCell>
