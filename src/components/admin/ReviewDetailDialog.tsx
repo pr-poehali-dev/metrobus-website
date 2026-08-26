@@ -141,7 +141,7 @@ export default function ReviewDetailDialog({
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                 <span className="text-muted-foreground">Роль (декларация пассажира)</span>
                 <span className="text-right">
-                  {item.isPassenger === null ? '—' : item.isPassenger ? 'Пассажир' : 'Наблюдатель'}
+                  {item.isPassenger === null ? '—' : item.isPassenger ? 'Пассажир' : 'Пользователь'}
                 </span>
                 <span className="text-muted-foreground">До ближайшей остановки</span>
                 <span className="text-right">{item.nearestStopDistanceM != null ? `${item.nearestStopDistanceM} м` : '—'}</span>

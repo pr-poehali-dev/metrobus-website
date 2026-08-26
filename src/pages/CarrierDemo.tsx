@@ -74,8 +74,8 @@ export default function CarrierDemo() {
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {viewMode === 'passengers'
-              ? 'Оценки от людей, которые ехали в вашем транспорте.'
-              : 'Оценки от людей, наблюдавших за транспортом со стороны. Показаны отдельно и не влияют на основной рейтинг парка.'}
+              ? 'Оценки комфорта поездок в вашем транспорте.'
+              : 'Оценки удобства ваших маршрутов. Показаны отдельно и не влияют на основной рейтинг парка.'}
           </p>
         </section>
 
@@ -97,7 +97,7 @@ export default function CarrierDemo() {
             <div className="mt-2 font-mono-num text-4xl font-bold leading-none">
               {summary.monthCount.toLocaleString('ru-RU')}
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">{viewMode === 'passengers' ? 'от пассажиров парка' : 'от наблюдателей'}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{viewMode === 'passengers' ? 'оценок поездок' : 'оценок маршрутов'}</p>
           </div>
           <div className="rounded-xl border border-border p-5">
             <p className="text-sm text-muted-foreground">Транспорта в парке</p>
@@ -195,7 +195,7 @@ export default function CarrierDemo() {
         <div className="mt-8">
           <div className="flex items-center gap-2">
             <Icon name="Sparkles" size={18} className="text-muted-foreground" />
-            <h3 className="text-lg font-semibold">{viewMode === 'passengers' ? 'О чём пишут пассажиры' : 'О чём пишут наблюдатели'}</h3>
+            <h3 className="text-lg font-semibold">О чём пишут пользователи</h3>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически. Примеры демонстрационные.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">

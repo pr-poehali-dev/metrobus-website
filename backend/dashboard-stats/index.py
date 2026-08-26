@@ -59,12 +59,12 @@ def handler(event: dict, context) -> dict:
     '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
     хронологию по дням выбранного месяца, кластеры комментариев (только вручную проверенных
     модератором в админ-консоли, comment_verified = true), а также 2 ключевые метрики и список
-    последних записей — набор которых зависит от комбинации viewMode (пассажиры/наблюдатели)
+    последних записей — набор которых зависит от комбинации viewMode (поездки/маршруты)
     и dataScope (мои/все), определяемого наличием параметра myToken:
-      - Мои: metric1 = кол-во своих оценённых поездок/наблюдений (is_draft=false),
+      - Мои: metric1 = кол-во своих оценённых поездок/маршрутов (is_draft=false),
              metric2 = прирост своих записей за последние 7 дней,
              records = последние 3 своих записи (все статусы, включая черновики).
-      - Все: metric1 = кол-во оценённых поездок/наблюдений по городу (is_draft=false),
+      - Все: metric1 = кол-во оценённых поездок/маршрутов по городу (is_draft=false),
              metric2 = покрытие маршрутов (кол-во разных route_number с оценкой из общего
              числа активных маршрутов города, взятого из app_settings.total_active_routes_count),
              records = последние 3 опубликованные записи по городу (is_draft=false).
@@ -72,8 +72,8 @@ def handler(event: dict, context) -> dict:
     ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
     Также всегда возвращается публичный общегородской рейтинг topActiveUsers — топ-10 по количеству
     опубликованных записей (is_draft=false) в рамках выбранного viewMode: для 'passengers' считаются
-    пассажирские оценки, для 'observers' — наблюдения, с анонимизированными подписями вида
-    "Пассажир #XXXX" / "Наблюдатель #XXXX" (последние 4 символа rating_client_id) и флагом isMe для
+    оценки поездок, для 'observers' — оценки маршрутов, с анонимизированными подписями вида
+    "Пользователь #XXXX" (последние 4 символа rating_client_id) и флагом isMe для
     текущего пользователя, если передан myToken. Рейтинг не зависит от dataScope. Если передан
     myToken, также возвращается myRank — место текущего пользователя в этом же рейтинге его роли
     (rank, count, totalUsers), даже если он не входит в топ-10; myRank = null, если myToken не
@@ -287,7 +287,7 @@ def handler(event: dict, context) -> dict:
                 no_date_params,
             )
             metric1_value = int(cur.fetchone()['cnt'])
-            metric1_label = 'Моих оценённых поездок' if view_mode == 'passengers' else 'Отправлено наблюдений'
+            metric1_label = 'Моих оценённых поездок' if view_mode == 'passengers' else 'Оценено маршрутов'
 
             # Метрика 2: прирост своих записей за последние 7 дней
             cur.execute(
@@ -310,7 +310,7 @@ def handler(event: dict, context) -> dict:
                 no_date_params,
             )
             metric1_value = int(cur.fetchone()['cnt'])
-            metric1_label = 'Оценено поездок по городу' if view_mode == 'passengers' else 'Наблюдений по городу'
+            metric1_label = 'Оценено поездок по городу' if view_mode == 'passengers' else 'Оценено маршрутов по городу'
 
             # Метрика 2: покрытие маршрутов — N маршрутов из M имеют хотя бы одну оценку
             cur.execute(
@@ -371,7 +371,7 @@ def handler(event: dict, context) -> dict:
         # Зависит от viewMode: для 'passengers' считаются пассажирские оценки, для 'observers' — наблюдения.
         # Не зависит от dataScope — всегда общегородской в рамках выбранной роли (не фильтруется по my_token).
         role_filter_plain = 'is_passenger IS DISTINCT FROM false' if view_mode == 'passengers' else 'is_passenger = false'
-        rank_label = 'Пассажир' if view_mode == 'passengers' else 'Наблюдатель'
+        rank_label = 'Пользователь'
         cur.execute(
             f"""
             SELECT rating_client_id, COUNT(*) AS cnt

@@ -71,7 +71,7 @@ export default function PassengerDashboard({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold sm:text-3xl">
-            {viewMode === 'passengers' ? 'Дашборд пассажира' : 'Дашборд наблюдателя'}
+            {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
           </h2>
         </div>
         <ViewModeToggle
@@ -85,8 +85,8 @@ export default function PassengerDashboard({
         {dataScope === 'mine'
           ? 'Показаны только ваши оценки, сохранённые при последнем визите на ICQR.RU в этом браузере.'
           : viewMode === 'passengers'
-          ? 'Оценки от людей, которые ехали в наземном общественном транспорте.'
-          : 'Оценки от людей, наблюдавших за работой наземного общественного транспорта со стороны.'}
+          ? 'Оценки комфорта поездок в наземном общественном транспорте.'
+          : 'Оценки удобства маршрутов наземного общественного транспорта.'}
       </p>
 
       {dataScope === 'mine' && !hasMyToken && (
@@ -106,8 +106,8 @@ export default function PassengerDashboard({
             <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
             ({myRank.count.toLocaleString('ru-RU')}{' '}
             {viewMode === 'passengers'
-              ? myRank.count === 1 ? 'оценка' : 'оценок'
-              : myRank.count === 1 ? 'наблюдение' : 'наблюдений'})
+              ? myRank.count === 1 ? 'оценка поездки' : 'оценок поездок'
+              : myRank.count === 1 ? 'оценка маршрута' : 'оценок маршрутов'})
           </span>
         </div>
       )}
@@ -180,8 +180,8 @@ export default function PassengerDashboard({
       <div className="mt-4">
         <h3 className="font-semibold">
           {dataScope === 'mine'
-            ? viewMode === 'passengers' ? 'Мои последние оценки' : 'Мои последние наблюдения'
-            : viewMode === 'passengers' ? 'Последние оценки по городу' : 'Последние наблюдения по городу'}
+            ? viewMode === 'passengers' ? 'Мои последние оценки поездок' : 'Мои последние оценки маршрутов'
+            : viewMode === 'passengers' ? 'Последние оценки поездок по городу' : 'Последние оценки маршрутов по городу'}
         </h3>
         {records.length === 0 && !loading && (
           <p className="mt-3 text-sm text-muted-foreground">
@@ -197,7 +197,7 @@ export default function PassengerDashboard({
                     <Icon name={transportIcon[r.transportType]} size={15} className={transportClass[r.transportType]} />
                   </span>
                   <span className="font-semibold">
-                    {viewMode === 'passengers' ? 'Маршрут' : 'Наблюдаемый маршрут'} №{r.routeNumber ?? '—'}
+                    Маршрут №{r.routeNumber ?? '—'}
                   </span>
                   {r.vehicleNumber && (
                     <span className="text-xs text-muted-foreground">борт {r.vehicleNumber}</span>
@@ -236,18 +236,18 @@ export default function PassengerDashboard({
         </div>
       </div>
 
-      {/* Рейтинг самых активных пассажиров/наблюдателей */}
+      {/* Рейтинг самых активных пользователей */}
       <div className="mt-8">
         <div className="flex items-center gap-2">
           <Icon name="Trophy" size={18} className="text-muted-foreground" />
           <h3 className="text-lg font-semibold">
-            {viewMode === 'passengers' ? 'Самые активные пассажиры города' : 'Самые активные наблюдатели города'}
+            {viewMode === 'passengers' ? 'Самые активные пользователи по поездкам' : 'Самые активные пользователи по маршрутам'}
           </h3>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {viewMode === 'passengers'
-            ? 'Топ-10 по количеству оставленных оценок. Имена не раскрываются — только анонимный идентификатор.'
-            : 'Топ-10 по количеству отправленных наблюдений. Имена не раскрываются — только анонимный идентификатор.'}
+            ? 'Топ-10 по количеству оставленных оценок поездок. Имена не раскрываются — только анонимный идентификатор.'
+            : 'Топ-10 по количеству оставленных оценок маршрутов. Имена не раскрываются — только анонимный идентификатор.'}
         </p>
         {topActiveUsers.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока недостаточно данных для рейтинга.</p>
@@ -286,7 +286,7 @@ export default function PassengerDashboard({
       <div className="mt-8">
         <div className="flex items-center gap-2">
           <Icon name="Sparkles" size={18} className="text-muted-foreground" />
-          <h3 className="text-lg font-semibold">О чём пишут пассажиры</h3>
+          <h3 className="text-lg font-semibold">О чём пишут пользователи</h3>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           Комментарии сгруппированы автоматически. Примеры обезличены.

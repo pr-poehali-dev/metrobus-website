@@ -36,11 +36,11 @@ export default function ViewModeToggle({
       >
         <ToggleGroupItem value="passengers" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
           <Icon name="Bus" size={13} />
-          Пассажиры
+          Поездки
         </ToggleGroupItem>
         <ToggleGroupItem value="observers" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
-          <Icon name="Eye" size={13} />
-          Наблюдатели
+          <Icon name="Route" size={13} />
+          Маршруты
         </ToggleGroupItem>
       </ToggleGroup>
     </div>

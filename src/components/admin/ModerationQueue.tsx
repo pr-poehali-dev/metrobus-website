@@ -206,9 +206,9 @@ export default function ModerationQueue() {
         <Select value={role} onValueChange={(v) => { setRole(v as typeof role); setPage(1); }}>
           <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Пассажир и наблюдатель</SelectItem>
+            <SelectItem value="all">Пассажир и пользователь</SelectItem>
             <SelectItem value="passenger">Пассажир</SelectItem>
-            <SelectItem value="observer">Наблюдатель</SelectItem>
+            <SelectItem value="observer">Пользователь</SelectItem>
           </SelectContent>
         </Select>
 
@@ -274,7 +274,7 @@ export default function ModerationQueue() {
                 <TableCell className="text-sm">{item.route_number ?? '—'}</TableCell>
                 <TableCell className="text-sm">
                   {isPassenger === true && 'Пассажир'}
-                  {isPassenger === false && 'Наблюдатель'}
+                  {isPassenger === false && 'Пользователь'}
                   {isPassenger === null && '—'}
                 </TableCell>
                 <TableCell className="max-w-[260px] truncate text-sm text-muted-foreground">{item.comment || '—'}</TableCell>
@@ -417,7 +417,7 @@ export default function ModerationQueue() {
                       <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                         <span className="text-muted-foreground">Роль (декларация пассажира)</span>
                         <span className="text-right">
-                          {isPassenger === null ? '—' : isPassenger ? 'Пассажир' : 'Наблюдатель'}
+                          {isPassenger === null ? '—' : isPassenger ? 'Пассажир' : 'Пользователь'}
                         </span>
                         <span className="text-muted-foreground">До ТС при открытии</span>
                         <span className="text-right">{typeof openedDist === 'number' ? `${openedDist} м` : '—'}</span>

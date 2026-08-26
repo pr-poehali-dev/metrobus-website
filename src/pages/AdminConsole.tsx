@@ -274,9 +274,9 @@ export default function AdminConsole() {
           <Select value={role} onValueChange={(v) => { setRole(v); setPage(1); }}>
             <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Пассажир и наблюдатель</SelectItem>
+              <SelectItem value="all">Пассажир и пользователь</SelectItem>
               <SelectItem value="passenger">Пассажир</SelectItem>
-              <SelectItem value="observer">Наблюдатель</SelectItem>
+              <SelectItem value="observer">Пользователь</SelectItem>
             </SelectContent>
           </Select>
 
@@ -357,7 +357,7 @@ export default function AdminConsole() {
                   <TableCell className="text-sm">{item.routeNumber ?? '—'}</TableCell>
                   <TableCell className="text-sm">
                     {item.isPassenger === true && 'Пассажир'}
-                    {item.isPassenger === false && 'Наблюдатель'}
+                    {item.isPassenger === false && 'Пользователь'}
                     {item.isPassenger === null && '—'}
                   </TableCell>
                   <TableCell className="max-w-[320px] text-sm text-muted-foreground">{item.comment || '—'}</TableCell>
