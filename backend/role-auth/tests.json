@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing credentials rejected",
+      "method": "POST",
+      "path": "/",
+      "body": {"role": "carrier", "login": "", "password": ""},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Wrong credentials rejected",
+      "method": "POST",
+      "path": "/",
+      "body": {"role": "carrier", "login": "carrier@demo.ru", "password": "wrong"},
+      "expectedStatus": 401
+    },
+    {
+      "name": "Session check without token",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401
+    }
+  ]
+}
