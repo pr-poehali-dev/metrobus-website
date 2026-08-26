@@ -42,6 +42,7 @@ export default function SiteFooter() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <a href="/terms" className="underline transition-colors hover:text-primary active:text-primary">Пользовательское соглашение</a>
             <a href="/privacy" className="underline transition-colors hover:text-primary active:text-primary">Политика конфиденциальности</a>
+            <a href="/changelog" className="underline transition-colors hover:text-primary active:text-primary">История обновлений</a>
           </div>
           <span>© ООО «МЕДИА-ИНКОД», {new Date().getFullYear()}</span>
         </div>

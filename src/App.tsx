@@ -11,6 +11,7 @@ import AdminConsole from "./pages/AdminConsole";
 import CarrierDemo from "./pages/CarrierDemo";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Changelog from "./pages/Changelog";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/carrier-demo" element={<CarrierDemo />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/changelog" element={<Changelog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
