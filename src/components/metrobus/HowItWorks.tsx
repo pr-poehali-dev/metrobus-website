@@ -14,7 +14,7 @@ export default function HowItWorks() {
       <div className="mt-3 space-y-3">
         {[
           { n: 1, icon: 'Hash', title: 'Найдите короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
-          { n: 2, icon: 'Grid3x3', title: 'Используйте цифровые сервисы ICQR.RU', text: 'Результат - карта маршрута для этого транспорта и кнопка "Оценить".' },
+          { n: 2, icon: 'Grid3x3', title: 'Используйте цифровые сервисы ICQR.RU', text: 'Результат - трасса маршрута для этого транспорта и кнопка "Оценить".' },
           { n: 3, icon: 'Star', title: 'Проверьте данные и поставьте оценку', text: 'Не смешивайте оценку поездки с оценкой маршрута. Это - разные вещи.' },
         ].map((s) => (
           <div key={s.n} className="flex items-start gap-4 rounded-xl border border-border p-4 sm:p-5">
