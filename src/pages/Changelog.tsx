@@ -22,8 +22,12 @@ const Changelog = () => {
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <a href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Icon name="Bus" size={18} className="text-primary-foreground" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
+              <img
+                src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/6754a78d-4309-49c8-86c9-4a7a5753b358.jpg"
+                alt="МЕТРОБУС.РФ"
+                className="h-full w-full rounded-lg object-contain"
+              />
             </span>
             <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
           </a>
