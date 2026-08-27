@@ -286,7 +286,7 @@ export default function PassengerDashboard({
       </div>
 
       {/* AI-кластеры */}
-      <div className="mt-8">
+      <div className="mt-8 hidden sm:block">
         <div className="flex items-center gap-2">
           <Icon name="Sparkles" size={18} className="text-muted-foreground" />
           <h3 className="text-lg font-semibold">О чём пишут пользователи</h3>
@@ -320,6 +320,14 @@ export default function PassengerDashboard({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Заглушка для мобильной версии */}
+      <div className="mt-8 flex items-center gap-3 rounded-xl border border-border p-4 sm:hidden">
+        <Icon name="Monitor" size={18} className="shrink-0 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          В версии для компьютера информация представлена более полно и подробно.
+        </p>
       </div>
     </section>
   );
