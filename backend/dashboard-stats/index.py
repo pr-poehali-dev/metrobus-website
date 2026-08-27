@@ -287,7 +287,7 @@ def handler(event: dict, context) -> dict:
                 no_date_params,
             )
             metric1_value = int(cur.fetchone()['cnt'])
-            metric1_label = 'Моих оценённых поездок' if view_mode == 'passengers' else 'Оценено маршрутов'
+            metric1_label = 'Моих оценённых записей'
 
             # Метрика 2: прирост своих записей за последние 7 дней
             cur.execute(
@@ -310,7 +310,7 @@ def handler(event: dict, context) -> dict:
                 no_date_params,
             )
             metric1_value = int(cur.fetchone()['cnt'])
-            metric1_label = 'Оценено поездок по городу' if view_mode == 'passengers' else 'Оценено маршрутов по городу'
+            metric1_label = 'Оценено записей по городу'
 
             # Метрика 2: покрытие маршрутов — N маршрутов из M имеют хотя бы одну оценку
             cur.execute(

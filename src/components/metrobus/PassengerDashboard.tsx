@@ -32,6 +32,15 @@ const transportImg: Record<TransportType, string> = {
   trolley: '/icons/trolley-transport.png',
 };
 
+function ModeBadge({ viewMode }: { viewMode: ViewMode }) {
+  return (
+    <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground">
+      <Icon name={viewMode === 'passengers' ? 'Bus' : 'Route'} size={12} />
+      {viewMode === 'passengers' ? 'Поездки' : 'Маршруты'}
+    </span>
+  );
+}
+
 interface PassengerDashboardProps {
   viewMode: ViewMode;
   setViewMode: (v: ViewMode) => void;
@@ -67,9 +76,7 @@ export default function PassengerDashboard({
 }: PassengerDashboardProps) {
   return (
     <section id="dashboard" className="scroll-mt-20">
-      <h2 className="text-2xl font-bold sm:text-3xl">
-        {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
-      </h2>
+      <h2 className="text-2xl font-bold sm:text-3xl">Дашборд</h2>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <TransportModeTabs value={viewMode} onChange={setViewMode} />
         <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />
@@ -77,9 +84,7 @@ export default function PassengerDashboard({
       <p className="mt-2 text-sm text-muted-foreground">
         {dataScope === 'mine'
           ? 'Показаны только ваши оценки, сохранённые при последнем визите на ICQR.RU в этом браузере.'
-          : viewMode === 'passengers'
-          ? 'Оценки комфорта поездок в наземном общественном транспорте.'
-          : 'Оценки удобства маршрутов наземного общественного транспорта.'}
+          : 'Оценки комфорта и удобства в наземном общественном транспорте.'}
       </p>
 
       {dataScope === 'mine' && !hasMyToken && (
@@ -105,15 +110,16 @@ export default function PassengerDashboard({
             Ваше место в общегородском рейтинге активности:{' '}
             <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
             ({myRank.count.toLocaleString('ru-RU')}{' '}
-            {viewMode === 'passengers'
-              ? myRank.count === 1 ? 'оценка поездки' : 'оценок поездок'
-              : myRank.count === 1 ? 'оценка маршрута' : 'оценок маршрутов'})
+            {myRank.count === 1 ? 'оценка' : 'оценок'})
           </span>
         </div>
       )}
 
       {/* KPI: метрика 1 + метрика 2 (зависят от Мои/Все) */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 flex justify-end">
+        <ModeBadge viewMode={viewMode} />
+      </div>
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-border p-5">
           <p className="text-sm text-muted-foreground">{metric1.label}</p>
           <div className="mt-2 font-mono-num text-4xl font-bold leading-none">
@@ -178,11 +184,12 @@ export default function PassengerDashboard({
 
       {/* Список последних записей */}
       <div className="mt-4">
-        <h3 className="font-semibold">
-          {dataScope === 'mine'
-            ? viewMode === 'passengers' ? 'Мои последние оценки поездок' : 'Мои последние оценки маршрутов'
-            : viewMode === 'passengers' ? 'Последние оценки поездок по городу' : 'Последние оценки маршрутов по городу'}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-semibold">
+            {dataScope === 'mine' ? 'Мои последние оценки' : 'Последние оценки по городу'}
+          </h3>
+          <ModeBadge viewMode={viewMode} />
+        </div>
         {records.length === 0 && !loading && (
           <p className="mt-3 text-sm text-muted-foreground">
             {dataScope === 'mine' ? 'Пока нет записей.' : 'Пока нет опубликованных записей.'}
@@ -246,11 +253,12 @@ export default function PassengerDashboard({
 
       {/* Рейтинг самых активных пользователей */}
       <div className="mt-8">
-        <div className="flex items-center gap-2">
-          <Icon name="Trophy" size={18} className="text-muted-foreground" />
-          <h3 className="text-lg font-semibold">
-            {viewMode === 'passengers' ? 'Топ-10 (поездки)' : 'Топ-10 (маршруты)'}
-          </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Icon name="Trophy" size={18} className="text-muted-foreground" />
+            <h3 className="text-lg font-semibold">Топ-10</h3>
+          </div>
+          <ModeBadge viewMode={viewMode} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           Имена не раскрываются — только анонимный идентификатор.
@@ -290,16 +298,15 @@ export default function PassengerDashboard({
 
       {/* AI-кластеры */}
       <div className="mt-8 hidden sm:block">
-        <div className="flex items-center gap-2">
-          <Icon name="Sparkles" size={18} className="text-muted-foreground" />
-          <h3 className="text-lg font-semibold">
-            {viewMode === 'passengers' ? 'О чём пишут пользователи (поездки)' : 'О чём пишут пользователи (маршруты)'}
-          </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Icon name="Sparkles" size={18} className="text-muted-foreground" />
+            <h3 className="text-lg font-semibold">О чём пишут пользователи</h3>
+          </div>
+          <ModeBadge viewMode={viewMode} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          {viewMode === 'passengers'
-            ? 'Комментарии к оценкам поездок сгруппированы автоматически. Примеры обезличены.'
-            : 'Комментарии к оценкам маршрутов сгруппированы автоматически. Примеры обезличены.'}
+          Комментарии сгруппированы автоматически. Примеры обезличены.
         </p>
         {clusters.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока нет отзывов с комментариями.</p>
