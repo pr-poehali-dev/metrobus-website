@@ -94,7 +94,6 @@ const Index = () => {
         onAboutOpen={() => setAboutOpen(true)}
         showDashboardButton={activeTab === 'passengers'}
         onMyRatingsOpen={handleMyRatingsOpen}
-        onCityDialogOpen={() => setCityDialogOpen(true)}
         onHowItWorksOpen={() => handleNavScroll('how-it-works')}
         onDashboardOpen={() => handleNavScroll('dashboard')}
       >
@@ -116,6 +115,7 @@ const Index = () => {
           records={records}
           topActiveUsers={topActiveUsers}
           myRank={myRank}
+          onCityDialogOpen={() => setCityDialogOpen(true)}
         />
       </TopSection>
 

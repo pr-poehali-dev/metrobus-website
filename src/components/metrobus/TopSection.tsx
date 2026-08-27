@@ -9,13 +9,12 @@ interface TopSectionProps {
   onAboutOpen: () => void;
   showDashboardButton: boolean;
   onMyRatingsOpen: () => void;
-  onCityDialogOpen: () => void;
   onHowItWorksOpen: () => void;
   onDashboardOpen: () => void;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onCityDialogOpen, onHowItWorksOpen, onDashboardOpen, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onHowItWorksOpen, onDashboardOpen, children }: TopSectionProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
@@ -100,16 +99,6 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
       {/* HERO */}
       <section id="top" className="relative overflow-hidden scroll-mt-16 bg-gradient-to-b from-[#447BBA]/[0.14] via-[#447BBA]/[0.04] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
         <div className="mx-auto max-w-5xl px-4">
-          <div className="mb-3 flex items-start justify-end gap-3">
-            <button
-              type="button"
-              onClick={onCityDialogOpen}
-              className="flex shrink-0 items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
-            >
-              <Icon name="MapPin" size={12} />
-              Санкт-Петербург
-            </button>
-          </div>
           <h1 className="text-xl font-bold leading-tight sm:text-4xl">Ваш вклад в транспорт будущего</h1>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">Оценивайте комфорт поездок и удобство маршрутов общественного транспорта - без приложения, регистрации и сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

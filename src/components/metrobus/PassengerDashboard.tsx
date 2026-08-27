@@ -56,6 +56,7 @@ interface PassengerDashboardProps {
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;
+  onCityDialogOpen: () => void;
 }
 
 export default function PassengerDashboard({
@@ -73,10 +74,21 @@ export default function PassengerDashboard({
   records,
   topActiveUsers,
   myRank,
+  onCityDialogOpen,
 }: PassengerDashboardProps) {
   return (
     <section id="dashboard" className="scroll-mt-20">
-      <h2 className="text-2xl font-bold sm:text-3xl">Дашборд</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold sm:text-3xl">Дашборд</h2>
+        <button
+          type="button"
+          onClick={onCityDialogOpen}
+          className="flex shrink-0 items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+        >
+          <Icon name="MapPin" size={12} />
+          Санкт-Петербург
+        </button>
+      </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <TransportModeTabs value={viewMode} onChange={setViewMode} />
         <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />

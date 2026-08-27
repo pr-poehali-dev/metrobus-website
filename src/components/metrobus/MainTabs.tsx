@@ -24,6 +24,7 @@ interface MainTabsProps {
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;
+  onCityDialogOpen: () => void;
 }
 
 export default function MainTabs({
@@ -43,6 +44,7 @@ export default function MainTabs({
   records,
   topActiveUsers,
   myRank,
+  onCityDialogOpen,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -82,6 +84,7 @@ export default function MainTabs({
           records={records}
           topActiveUsers={topActiveUsers}
           myRank={myRank}
+          onCityDialogOpen={onCityDialogOpen}
         />
       </TabsContent>
 
