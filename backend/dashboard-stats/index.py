@@ -346,7 +346,7 @@ def handler(event: dict, context) -> dict:
             covered_routes = int(cur.fetchone()['cnt'])
             metric2_value = covered_routes
             metric2_total = total_routes
-            metric2_label = 'Покрытие маршрутов'
+            metric2_label = 'Покрытие'
 
             # Список: последние опубликованные записи по городу
             records_filter = f"is_draft = false AND {role_filter}"
