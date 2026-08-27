@@ -46,10 +46,10 @@ export default function MainTabs({
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
       <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
         <TabsTrigger value="passengers" className="h-10 gap-1.5 text-[13px] sm:text-sm">
-          <Icon name="Users" size={15} />Пассажирам
+          <Icon name="Users" size={15} className="shrink-0" />Пассажирам
         </TabsTrigger>
         <TabsTrigger value="carrier" className="h-10 gap-1.5 text-[13px] sm:text-sm">
-          <Icon name="Building2" size={15} />Перевозчикам
+          <Icon name="Building2" size={15} className="shrink-0" />Перевозчикам
         </TabsTrigger>
         <TabsTrigger value="regulator" className="h-10 gap-1.5 text-[13px] sm:text-sm">
           <Icon name="Landmark" size={15} />Заказчикам
