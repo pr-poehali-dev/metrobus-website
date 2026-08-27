@@ -208,10 +208,7 @@ export default function PassengerDashboard({
                     />
                   </span>
                   {viewMode === 'passengers' && r.vehicleNumber ? (
-                    <>
-                      <span className="font-semibold">Борт {r.vehicleNumber}</span>
-                      <span className="text-xs text-muted-foreground">маршрут №{r.routeNumber ?? '—'}</span>
-                    </>
+                    <span className="font-semibold">Борт {r.vehicleNumber}</span>
                   ) : (
                     <span className="font-semibold">
                       Маршрут №{r.routeNumber ?? '—'}
@@ -225,15 +222,20 @@ export default function PassengerDashboard({
                   <span className="text-xs text-muted-foreground">{formatRecordDate(r.ratedAt)}</span>
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Icon
-                    key={i}
-                    name="Star"
-                    size={14}
-                    className={i < r.rating ? 'fill-amber-500 text-amber-500' : 'text-border'}
-                  />
-                ))}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Icon
+                      key={i}
+                      name="Star"
+                      size={14}
+                      className={i < r.rating ? 'fill-amber-500 text-amber-500' : 'text-border'}
+                    />
+                  ))}
+                </div>
+                {viewMode === 'passengers' && r.vehicleNumber && (
+                  <span className="text-xs text-muted-foreground">Маршрут №{r.routeNumber ?? '—'}</span>
+                )}
               </div>
               {r.comment && (
                 <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>
