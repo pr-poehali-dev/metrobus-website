@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
 import SeoHead from '@/components/metrobus/SeoHead';
-import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
+import TransportModeTabs from '@/components/metrobus/TransportModeTabs';
+import { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import {
   carrierDemoSummary,
   carrierDemoByType,
@@ -80,7 +81,7 @@ export default function CarrierDemo() {
               <h1 className="text-xl font-bold sm:text-2xl">{summary.fleetName}</h1>
               <Badge variant="secondary">демо</Badge>
             </div>
-            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+            <TransportModeTabs value={viewMode} onChange={setViewMode} />
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {viewMode === 'passengers'

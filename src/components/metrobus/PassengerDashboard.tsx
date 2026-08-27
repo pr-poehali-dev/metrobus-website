@@ -1,5 +1,6 @@
 import Icon from '@/components/ui/icon';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
+import TransportModeTabs from '@/components/metrobus/TransportModeTabs';
 import ShareMyRatingsButton from '@/components/metrobus/ShareMyRatingsButton';
 import { TransportType } from '@/lib/mockData';
 import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord, TopActiveUser, MyRank } from '@/lib/dashboardApi';
@@ -67,17 +68,13 @@ export default function PassengerDashboard({
   return (
     <section id="dashboard" className="scroll-mt-20">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
-          </h2>
+        <h2 className="text-2xl font-bold sm:text-3xl">
+          {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />
+          <TransportModeTabs value={viewMode} onChange={setViewMode} />
         </div>
-        <ViewModeToggle
-          value={viewMode}
-          onChange={setViewMode}
-          dataScope={dataScope}
-          onDataScopeChange={setDataScope}
-        />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {dataScope === 'mine'
