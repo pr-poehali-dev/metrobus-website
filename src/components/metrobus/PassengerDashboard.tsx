@@ -1,5 +1,6 @@
 import Icon from '@/components/ui/icon';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
+import ShareMyRatingsButton from '@/components/metrobus/ShareMyRatingsButton';
 import { TransportType } from '@/lib/mockData';
 import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord, TopActiveUser, MyRank } from '@/lib/dashboardApi';
 
@@ -36,6 +37,7 @@ interface PassengerDashboardProps {
   dataScope: DataScope;
   setDataScope: (v: DataScope) => void;
   hasMyToken: boolean;
+  myToken: string | null;
   loading: boolean;
   summary: DashboardSummary;
   clusters: Cluster[];
@@ -52,6 +54,7 @@ export default function PassengerDashboard({
   dataScope,
   setDataScope,
   hasMyToken,
+  myToken,
   loading,
   summary,
   clusters,
@@ -88,6 +91,13 @@ export default function PassengerDashboard({
         <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
           <Icon name="Fingerprint" size={16} className="shrink-0 text-amber-600" />
           <span>Этот браузер ещё не связан с вашей активностью. Используйте смартфон и кнопку "5*" на карте ICQR.RU для перехода на этот дашборд — после этого ваши оценки и место в рейтинге будут отображаться здесь автоматически.</span>
+        </div>
+      )}
+
+      {dataScope === 'mine' && hasMyToken && myToken && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm">
+          <span className="text-muted-foreground">Хотите посмотреть свои оценки на компьютере, в комфортной обстановке?</span>
+          <ShareMyRatingsButton token={myToken} />
         </div>
       )}
 

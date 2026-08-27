@@ -59,3 +59,15 @@ export function getMyRatingsToken(): string | null {
     return null;
   }
 }
+
+/**
+ * Формирует персональную ссылку на дашборд "Мои оценки" с токеном пользователя.
+ * Открыв её в любом браузере (например на компьютере), пользователь сразу увидит свои оценки —
+ * токен подхватывается функцией captureMyRatingsTokenFromUrl().
+ */
+export function buildMyRatingsShareUrl(token: string): string {
+  const url = new URL(window.location.origin + '/');
+  url.searchParams.set(URL_PARAM, token);
+  url.hash = DASHBOARD_HASH;
+  return url.toString();
+}

@@ -15,6 +15,7 @@ interface MainTabsProps {
   dataScope: DataScope;
   setDataScope: (v: DataScope) => void;
   hasMyToken: boolean;
+  myToken: string | null;
   loading: boolean;
   summary: DashboardSummary;
   clusters: Cluster[];
@@ -33,6 +34,7 @@ export default function MainTabs({
   dataScope,
   setDataScope,
   hasMyToken,
+  myToken,
   loading,
   summary,
   clusters,
@@ -71,6 +73,7 @@ export default function MainTabs({
           dataScope={dataScope}
           setDataScope={setDataScope}
           hasMyToken={hasMyToken}
+          myToken={myToken}
           loading={loading}
           summary={summary}
           clusters={clusters}

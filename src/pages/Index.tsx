@@ -96,6 +96,7 @@ const Index = () => {
           dataScope={dataScope}
           setDataScope={setDataScope}
           hasMyToken={!!myToken}
+          myToken={myToken}
           loading={loading}
           summary={summary}
           clusters={clusters}
