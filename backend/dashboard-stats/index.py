@@ -324,7 +324,7 @@ def handler(event: dict, context) -> dict:
                 no_date_params,
             )
             metric1_value = int(cur.fetchone()['cnt'])
-            metric1_label = 'Оценено записей по городу'
+            metric1_label = 'Оценено'
 
             # Метрика 2: покрытие маршрутов — N маршрутов из M имеют хотя бы одну оценку
             cur.execute(
