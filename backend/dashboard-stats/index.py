@@ -71,15 +71,19 @@ STATUS_LABELS = {True: 'draft', False: 'published'}
 def handler(event: dict, context) -> dict:
     '''Возвращает агрегированные данные дашборда оценок: сводку, разбивку по видам транспорта,
     хронологию по дням выбранного месяца, кластеры комментариев (только вручную проверенных
-    модератором в админ-консоли, comment_verified = true), а также 2 ключевые метрики и список
+    модератором в админ-консоли, comment_verified = true), а также до 3 ключевых метрик и список
     последних записей — набор которых зависит от комбинации viewMode (поездки/маршруты)
     и dataScope (мои/все), определяемого наличием параметра myToken:
       - Мои: metric1 = кол-во своих оценённых поездок/маршрутов (is_draft=false),
-             metric2 = прирост своих записей за последние 7 дней,
+             metric2 = прирост своих записей за последние 7 дней, metric3 = null,
              records = последние 3 своих записи (все статусы, включая черновики).
       - Все: metric1 = кол-во оценённых поездок/маршрутов по городу (is_draft=false),
              metric2 = покрытие маршрутов (кол-во разных route_number с оценкой из общего
              числа активных маршрутов города, взятого из app_settings.total_active_routes_count),
+             metric3 = только для viewMode='passengers': охват уникальных ТС (кол-во разных
+             vehicle_number с оценкой из общего числа бортов города, взятого из
+             app_settings.total_active_vehicles_count; временная оценочная цифра до появления
+             точных данных из API ICQR), для viewMode='observers' metric3 = null,
              records = последние 3 опубликованные записи по городу (is_draft=false).
     Если передан параметр myToken — данные фильтруются только оценками этого пользователя
     ICQR.RU (сопоставление по полю rating_client_id, которое ICQR присваивает пользователю).
@@ -94,8 +98,8 @@ def handler(event: dict, context) -> dict:
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
         myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
         context - объект с request_id.
-    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, records,
-        topActiveUsers, myRank }.
+    Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, metric3,
+        records, topActiveUsers, myRank }.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -313,6 +317,7 @@ def handler(event: dict, context) -> dict:
             )
             metric2_value = int(cur.fetchone()['cnt'])
             metric2_label = 'Прирост за 7 дней'
+            metric3 = None
 
             # Список: последние N своих записей (все статусы, включая черновики)
             records_filter = role_filter
@@ -347,6 +352,28 @@ def handler(event: dict, context) -> dict:
             metric2_value = covered_routes
             metric2_total = total_routes
             metric2_label = 'Покрытие'
+
+            # Метрика 3 (только для поездок): охват уникальных ТС — N бортов из M получили оценку
+            metric3 = None
+            if view_mode == 'passengers':
+                cur.execute(
+                    "SELECT value FROM app_settings WHERE key = 'total_active_vehicles_count'"
+                )
+                vehicles_settings_row = cur.fetchone()
+                try:
+                    total_vehicles = int(vehicles_settings_row['value']) if vehicles_settings_row and vehicles_settings_row['value'] else None
+                except (TypeError, ValueError):
+                    total_vehicles = None
+
+                cur.execute(
+                    f"""
+                    SELECT COUNT(DISTINCT vehicle_number) AS cnt FROM transport_passenger_ratings
+                    WHERE vehicle_number IS NOT NULL AND is_draft = false AND {role_filter}
+                    """,
+                    no_date_params,
+                )
+                covered_vehicles = int(cur.fetchone()['cnt'])
+                metric3 = {'value': covered_vehicles, 'label': 'Охват ТС', 'total': total_vehicles}
 
             # Список: последние опубликованные записи по городу
             records_filter = f"is_draft = false AND {role_filter}"
@@ -453,6 +480,7 @@ def handler(event: dict, context) -> dict:
             'dataScope': data_scope,
             'metric1': metric1,
             'metric2': metric2,
+            'metric3': metric3,
             'records': records,
             'topActiveUsers': top_active_users,
             'myRank': my_rank,

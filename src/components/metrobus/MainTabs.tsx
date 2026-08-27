@@ -21,6 +21,7 @@ interface MainTabsProps {
   clusters: Cluster[];
   metric1: DashboardMetric;
   metric2: DashboardMetric;
+  metric3: DashboardMetric | null;
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;
@@ -41,6 +42,7 @@ export default function MainTabs({
   clusters,
   metric1,
   metric2,
+  metric3,
   records,
   topActiveUsers,
   myRank,
@@ -81,6 +83,7 @@ export default function MainTabs({
           clusters={clusters}
           metric1={metric1}
           metric2={metric2}
+          metric3={metric3}
           records={records}
           topActiveUsers={topActiveUsers}
           myRank={myRank}

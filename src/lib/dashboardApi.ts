@@ -70,6 +70,7 @@ export interface DashboardData {
   dataScope: DashboardDataScope;
   metric1: DashboardMetric;
   metric2: DashboardMetric;
+  metric3: DashboardMetric | null;
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;

@@ -53,6 +53,7 @@ interface PassengerDashboardProps {
   clusters: Cluster[];
   metric1: DashboardMetric;
   metric2: DashboardMetric;
+  metric3: DashboardMetric | null;
   records: DashboardRecord[];
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;
@@ -71,6 +72,7 @@ export default function PassengerDashboard({
   clusters,
   metric1,
   metric2,
+  metric3,
   records,
   topActiveUsers,
   myRank,
@@ -131,7 +133,7 @@ export default function PassengerDashboard({
       <div className="mt-6 flex justify-end">
         <ModeBadge viewMode={viewMode} />
       </div>
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <div className={`mt-3 grid gap-4 sm:grid-cols-2 ${metric3 ? 'lg:grid-cols-3' : ''}`}>
         <div className="rounded-xl border border-border p-5">
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Icon name="CheckCircle2" size={15} />
@@ -170,6 +172,28 @@ export default function PassengerDashboard({
             </>
           )}
         </div>
+        {metric3 && dataScope === 'all' && (
+          <div className="rounded-xl border border-border p-5">
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Icon name="Bus" size={15} />
+              {metric3.label}
+            </p>
+            <div className="mt-2 flex items-end gap-1.5">
+              <span className="font-mono-num text-4xl font-bold leading-none">{metric3.value.toLocaleString('ru-RU')}</span>
+              {typeof metric3.total === 'number' && (
+                <span className="text-lg text-muted-foreground">из {metric3.total.toLocaleString('ru-RU')}</span>
+              )}
+            </div>
+            {typeof metric3.total === 'number' && metric3.total > 0 && (
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${Math.min(100, (metric3.value / metric3.total) * 100)}%` }}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Разбивка по типам */}

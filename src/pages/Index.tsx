@@ -64,6 +64,7 @@ const Index = () => {
   const clusters = data?.clusters ?? [];
   const metric1 = data?.metric1 ?? { value: 0, label: '' };
   const metric2 = data?.metric2 ?? { value: 0, label: '' };
+  const metric3 = data?.metric3 ?? null;
   const records = data?.records ?? [];
   const topActiveUsers = data?.topActiveUsers ?? [];
   const myRank = data?.myRank ?? null;
@@ -112,6 +113,7 @@ const Index = () => {
           clusters={clusters}
           metric1={metric1}
           metric2={metric2}
+          metric3={metric3}
           records={records}
           topActiveUsers={topActiveUsers}
           myRank={myRank}
