@@ -82,6 +82,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <TopSection
         icqrUrl={ICQR_URL}
+        onAboutOpen={() => setAboutOpen(true)}
         showDashboardButton={activeTab === 'passengers'}
         onMyRatingsOpen={handleMyRatingsOpen}
         onCityDialogOpen={() => setCityDialogOpen(true)}
@@ -107,7 +108,7 @@ const Index = () => {
         />
       </TopSection>
 
-      <SiteFooter onAboutOpen={() => setAboutOpen(true)} />
+      <SiteFooter />
 
       <InstallAppBanner />
 

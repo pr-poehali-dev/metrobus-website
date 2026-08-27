@@ -5,13 +5,14 @@ import ThemeToggle from '@/components/metrobus/ThemeToggle';
 
 interface TopSectionProps {
   icqrUrl: string;
+  onAboutOpen: () => void;
   showDashboardButton: boolean;
   onMyRatingsOpen: () => void;
   onCityDialogOpen: () => void;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, showDashboardButton, onMyRatingsOpen, onCityDialogOpen, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onCityDialogOpen, children }: TopSectionProps) {
   return (
     <>
       {/* HEADER */}
@@ -40,7 +41,12 @@ export default function TopSection({ icqrUrl, showDashboardButton, onMyRatingsOp
       {/* HERO */}
       <section id="top" className="relative overflow-hidden scroll-mt-16 bg-gradient-to-b from-[#447BBA]/[0.14] via-[#447BBA]/[0.04] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
         <div className="mx-auto max-w-5xl px-4">
-          <div className="mb-3 flex items-start justify-end gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <button
+              type="button"
+              onClick={onAboutOpen}
+              className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-primary active:text-primary"
+            >Проекты компании</button>
             <button
               type="button"
               onClick={onCityDialogOpen}

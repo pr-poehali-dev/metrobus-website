@@ -1,11 +1,7 @@
 import Icon from '@/components/ui/icon';
 import { SOCIAL_LINKS } from '@/lib/socialLinks';
 
-interface SiteFooterProps {
-  onAboutOpen: () => void;
-}
-
-export default function SiteFooter({ onAboutOpen }: SiteFooterProps) {
+export default function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/30">
       <div className="mx-auto max-w-5xl px-4 py-10">
@@ -17,13 +13,6 @@ export default function SiteFooter({ onAboutOpen }: SiteFooterProps) {
                 <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ad43e99a-45cd-411d-b75d-75d7774f4441.png" alt="МЕТРОБУС.РФ" className="hidden h-full w-full object-contain dark:block" />
               </span>
               <span className="font-bold">МЕТРОБУС.РФ</span>
-              <button
-                type="button"
-                onClick={onAboutOpen}
-                className="text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-primary active:text-primary"
-              >
-                Проекты компании
-              </button>
             </div>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">Оплата проезда. Смарт-информирование. Обратная связь.</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground sm:mt-auto">
