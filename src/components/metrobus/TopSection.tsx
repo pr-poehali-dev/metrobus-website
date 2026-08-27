@@ -33,13 +33,6 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
               <Icon name="UserCheck" size={15} />
               <span>Мои оценки</span>
             </Button>
-            <a href={icqrUrl} target="_blank" rel="noopener noreferrer">
-              <Button size="sm" className="h-9 gap-1.5 px-3">
-                <Icon name="Star" size={15} />
-                <span className="hidden sm:inline">Оценить</span>
-                <span className="inline sm:hidden">Оценить</span>
-              </Button>
-            </a>
             <ThemeToggle />
           </div>
         </div>
