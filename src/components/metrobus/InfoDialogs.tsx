@@ -20,7 +20,7 @@ export default function InfoDialogs({
     <>
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader className="text-left">
             <DialogTitle>О компании</DialogTitle>
             <DialogDescription className="pt-2 text-left text-foreground">
               В 2023 году мы стали агентами СПб ГКУ «Организатор перевозок» по приему безналичных
