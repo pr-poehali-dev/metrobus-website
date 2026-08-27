@@ -67,14 +67,12 @@ export default function PassengerDashboard({
 }: PassengerDashboardProps) {
   return (
     <section id="dashboard" className="scroll-mt-20">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold sm:text-3xl">
-          {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
-        </h2>
-        <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />
-      </div>
-      <div className="mt-4">
+      <h2 className="text-2xl font-bold sm:text-3xl">
+        {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
+      </h2>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <TransportModeTabs value={viewMode} onChange={setViewMode} />
+        <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {dataScope === 'mine'
