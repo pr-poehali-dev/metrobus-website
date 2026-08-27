@@ -248,9 +248,7 @@ export default function PassengerDashboard({
           </h3>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          {viewMode === 'passengers'
-            ? 'Топ-10 по количеству оставленных оценок поездок. Имена не раскрываются — только анонимный идентификатор.'
-            : 'Топ-10 по количеству оставленных оценок маршрутов. Имена не раскрываются — только анонимный идентификатор.'}
+          Имена не раскрываются — только анонимный идентификатор.
         </p>
         {topActiveUsers.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока недостаточно данных для рейтинга.</p>
