@@ -198,7 +198,7 @@ export default function PassengerDashboard({
       <div className="mt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="font-semibold">
-            {dataScope === 'mine' ? 'Мои последние оценки' : 'Последние оценки по городу'}
+            {dataScope === 'mine' ? 'Мои последние оценки' : 'Последние оценки'}
           </h3>
           <ModeBadge viewMode={viewMode} />
         </div>
