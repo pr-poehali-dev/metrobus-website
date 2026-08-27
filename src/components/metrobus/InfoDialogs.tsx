@@ -48,7 +48,7 @@ export default function InfoDialogs({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Icon name="MapPin" size={18} />
-              Сервис работает в Санкт-Петербурге
+              Мы идем к вам
             </DialogTitle>
             <DialogDescription className="pt-2 text-left text-foreground">
               Запустить цифровые сервисы в другом городе или регионе технически не сложно —
