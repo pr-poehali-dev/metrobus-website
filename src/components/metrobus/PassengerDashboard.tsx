@@ -244,7 +244,7 @@ export default function PassengerDashboard({
         <div className="flex items-center gap-2">
           <Icon name="Trophy" size={18} className="text-muted-foreground" />
           <h3 className="text-lg font-semibold">
-            {viewMode === 'passengers' ? 'Самые активные пользователи по поездкам' : 'Самые активные пользователи по маршрутам'}
+            {viewMode === 'passengers' ? 'Топ-10 (поездки)' : 'Топ-10 (маршруты)'}
           </h3>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
