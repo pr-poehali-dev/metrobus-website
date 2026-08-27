@@ -232,7 +232,7 @@ export default function PassengerDashboard({
       </div>
 
       {/* Хронология по дням */}
-      <div className="mt-4 rounded-xl border border-border p-5">
+      <div className="mt-4 hidden rounded-xl border border-border p-5 sm:block">
         <h3 className="font-semibold">Оценки по дням</h3>
         <div className="mt-4 flex h-[180px] items-center justify-center rounded-lg bg-secondary">
           <p className="text-sm text-muted-foreground">Идёт сбор и накопление информации</p>
