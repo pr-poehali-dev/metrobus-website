@@ -29,10 +29,9 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
             </span>
           </a>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-9 gap-1.5 px-3" onClick={onMyRatingsOpen}>
+            <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex" onClick={onMyRatingsOpen}>
               <Icon name="UserCheck" size={15} />
-              <span className="hidden sm:inline">Мои оценки</span>
-              <span className="inline sm:hidden">Мои</span>
+              <span>Мои оценки</span>
             </Button>
             <a href={icqrUrl} target="_blank" rel="noopener noreferrer">
               <Button size="sm" className="h-9 gap-1.5 px-3">
