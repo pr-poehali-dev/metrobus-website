@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /service/mb-console
 
 User-agent: Bingbot
 Allow: /
+Disallow: /service/mb-console
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +14,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /service/mb-console
+
+Sitemap: https://xn--90aivcdt6a.xn--p1ai/sitemap.xml
