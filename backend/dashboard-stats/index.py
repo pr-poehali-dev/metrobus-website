@@ -18,7 +18,7 @@ MONTHS = [
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
 ]
 
-CLUSTER_RULES = [
+CLUSTER_RULES_TRIPS = [
     {'key': 'delays', 'label': 'Опоздания', 'icon': 'Clock', 'positive': False,
      'words': ['опозд', 'задерж', 'долго ждал', 'не приход', 'жд']},
     {'key': 'crowded', 'label': 'Переполненность', 'icon': 'Users', 'positive': False,
@@ -31,6 +31,19 @@ CLUSTER_RULES = [
      'words': ['спасибо', 'вежлив', 'отличн', 'вовремя', 'комфорт', 'доволен']},
 ]
 
+CLUSTER_RULES_ROUTES = [
+    {'key': 'route', 'label': 'Маршрут', 'icon': 'Milestone', 'positive': False,
+     'words': ['кружит', 'объезд', 'нелогичн', 'петля', 'крюк', 'напрямую не', 'долго едет']},
+    {'key': 'stops', 'label': 'Остановки', 'icon': 'MapPin', 'positive': False,
+     'words': ['далеко до остановк', 'нет остановки', 'убрали остановку', 'неудобн останов', 'не доезжа']},
+    {'key': 'interval', 'label': 'Интервал', 'icon': 'Clock', 'positive': False,
+     'words': ['редко ходит', 'долго ждать', 'большой интервал', 'не дождеш', 'ходит редко']},
+    {'key': 'transfer', 'label': 'Пересадки', 'icon': 'ArrowLeftRight', 'positive': False,
+     'words': ['пересадк', 'стыков', 'неудобная пересад']},
+    {'key': 'positive', 'label': 'Позитив', 'icon': 'Smile', 'positive': True,
+     'words': ['удобно', 'логично', 'спасибо', 'отличн', 'вовремя', 'доволен']},
+]
+
 
 def normalize_transport(t: str) -> str:
     t = (t or '').lower()
@@ -41,11 +54,11 @@ def normalize_transport(t: str) -> str:
     return t or 'bus'
 
 
-def classify_comment(comment: str):
+def classify_comment(comment: str, rules: list):
     if not comment:
         return None
     text = comment.lower()
-    for rule in CLUSTER_RULES:
+    for rule in rules:
         for w in rule['words']:
             if w in text:
                 return rule
@@ -255,10 +268,11 @@ def handler(event: dict, context) -> dict:
             no_date_params,
         )
         comments = [r['comment'] for r in cur.fetchall()]
-        cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in CLUSTER_RULES}
+        cluster_rules = CLUSTER_RULES_TRIPS if view_mode == 'passengers' else CLUSTER_RULES_ROUTES
+        cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in cluster_rules}
         classified_total = 0
         for c in comments:
-            match = classify_comment(c)
+            match = classify_comment(c, cluster_rules)
             if match:
                 bucket = cluster_counts[match['key']]
                 bucket['count'] += 1
@@ -267,7 +281,7 @@ def handler(event: dict, context) -> dict:
                     bucket['examples'].append(c)
 
         clusters = []
-        for rule in CLUSTER_RULES:
+        for rule in cluster_rules:
             bucket = cluster_counts[rule['key']]
             share = round((bucket['count'] / classified_total) * 100) if classified_total else 0
             clusters.append({
