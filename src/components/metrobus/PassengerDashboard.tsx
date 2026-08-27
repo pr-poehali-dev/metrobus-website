@@ -130,10 +130,7 @@ export default function PassengerDashboard({
       )}
 
       {/* KPI: метрика 1 + метрика 2 (зависят от Мои/Все) */}
-      <div className="mt-6 flex justify-end">
-        <ModeBadge viewMode={viewMode} />
-      </div>
-      <div className={`mt-3 grid gap-4 sm:grid-cols-2 ${metric3 ? 'lg:grid-cols-3' : ''}`}>
+      <div className={`mt-6 grid gap-4 sm:grid-cols-2 ${metric3 ? 'lg:grid-cols-3' : ''}`}>
         <div className="rounded-xl border border-border p-5">
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Icon name="CheckCircle2" size={15} />
