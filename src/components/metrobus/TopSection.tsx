@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import ThemeToggle from '@/components/metrobus/ThemeToggle';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface TopSectionProps {
   icqrUrl: string;
@@ -9,10 +10,20 @@ interface TopSectionProps {
   showDashboardButton: boolean;
   onMyRatingsOpen: () => void;
   onCityDialogOpen: () => void;
+  onHowItWorksOpen: () => void;
+  onDashboardOpen: () => void;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onCityDialogOpen, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onCityDialogOpen, onHowItWorksOpen, onDashboardOpen, children }: TopSectionProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const navLinks = [
+    { label: 'Как это работает', icon: 'ListChecks', onClick: onHowItWorksOpen },
+    { label: 'Дашборд', icon: 'ChartLine', onClick: onDashboardOpen },
+    { label: 'О компании', icon: 'Building2', onClick: onAboutOpen },
+  ];
+
   return (
     <>
       {/* HEADER */}
@@ -28,25 +39,68 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
               <span className="text-[11px] font-medium text-muted-foreground">Цифровые сервисы пассажира</span>
             </span>
           </a>
+
+          <nav className="hidden items-center gap-5 md:flex">
+            {navLinks.map((link) => (
+              <button
+                key={link.label}
+                type="button"
+                onClick={link.onClick}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary active:text-primary"
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
+
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex" onClick={onMyRatingsOpen}>
               <Icon name="UserCheck" size={15} />
               <span>Мои оценки</span>
             </Button>
             <ThemeToggle />
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-9 w-9 md:hidden"
+              onClick={() => setMenuOpen(true)}
+            >
+              <Icon name="Menu" size={18} />
+              <span className="sr-only">Меню</span>
+            </Button>
           </div>
         </div>
       </header>
 
+      {/* MOBILE MENU */}
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent side="right" className="w-3/4 sm:max-w-xs">
+          <SheetHeader>
+            <SheetTitle>Навигация</SheetTitle>
+          </SheetHeader>
+          <nav className="mt-6 flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <button
+                key={link.label}
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  link.onClick();
+                }}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                <Icon name={link.icon} size={17} className="text-muted-foreground" />
+                {link.label}
+              </button>
+            ))}
+          </nav>
+        </SheetContent>
+      </Sheet>
+
       {/* HERO */}
       <section id="top" className="relative overflow-hidden scroll-mt-16 bg-gradient-to-b from-[#447BBA]/[0.14] via-[#447BBA]/[0.04] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
         <div className="mx-auto max-w-5xl px-4">
-          <div className="flex items-start justify-between gap-3">
-            <button
-              type="button"
-              onClick={onAboutOpen}
-              className="mb-3 text-sm font-medium text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-primary active:text-primary"
-            >Проекты компании</button>
+          <div className="mb-3 flex items-start justify-end gap-3">
             <button
               type="button"
               onClick={onCityDialogOpen}

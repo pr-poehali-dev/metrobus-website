@@ -2,7 +2,7 @@ import Icon from '@/components/ui/icon';
 
 export default function HowItWorks() {
   return (
-    <section>
+    <section id="how-it-works" className="scroll-mt-20">
       <h2 className="text-2xl font-bold sm:text-3xl">Как это работает</h2>
       <p className="mt-2 text-base text-muted-foreground">Первая в России система, где оценки проверяются геометрией.</p>
       <div className="mt-6 overflow-hidden rounded-xl border border-border">

@@ -78,6 +78,15 @@ const Index = () => {
     });
   };
 
+  const handleNavScroll = (sectionId: string) => {
+    setActiveTab('passengers');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <TopSection
@@ -86,6 +95,8 @@ const Index = () => {
         showDashboardButton={activeTab === 'passengers'}
         onMyRatingsOpen={handleMyRatingsOpen}
         onCityDialogOpen={() => setCityDialogOpen(true)}
+        onHowItWorksOpen={() => handleNavScroll('how-it-works')}
+        onDashboardOpen={() => handleNavScroll('dashboard')}
       >
         {/* NAV TABS */}
         <MainTabs
