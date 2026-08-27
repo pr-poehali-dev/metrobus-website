@@ -18,12 +18,24 @@ export default function RoleSection({
   const [loginOpen, setLoginOpen] = useState(false);
   const demoPath = role === 'carrier' ? '/carrier-demo' : '/regulator-demo';
 
+  const seoHeadings = role === 'carrier'
+    ? {
+        h2: 'Оценка качества перевозок для перевозчиков общественного транспорта',
+        h3: 'Личный кабинет перевозчика: мониторинг оценок автобусов, трамваев и троллейбусов',
+      }
+    : {
+        h2: 'Независимый мониторинг перевозок для заказчиков транспортных услуг и регуляторов',
+        h3: 'Контроль качества наземного общественного транспорта на основе оценок пассажиров',
+      };
+
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div>
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary">
           <Icon name={icon} size={24} className="text-foreground" />
         </div>
+        <h2 className="sr-only">{seoHeadings.h2}</h2>
+        <h3 className="sr-only">{seoHeadings.h3}</h3>
         <h2 className="text-2xl font-bold sm:text-3xl">{title}</h2>
         <p className="mt-3 text-base text-muted-foreground">{value}</p>
         <ul className="mt-5 space-y-2.5">
