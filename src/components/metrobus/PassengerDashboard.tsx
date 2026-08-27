@@ -301,9 +301,7 @@ export default function PassengerDashboard({
           </div>
           <ModeBadge viewMode={viewMode} />
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Имена не раскрываются — только анонимный идентификатор.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Используется анонимный идентификатор.</p>
         {topActiveUsers.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока недостаточно данных для рейтинга.</p>
         )}
