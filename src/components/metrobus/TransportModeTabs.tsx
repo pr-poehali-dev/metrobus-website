@@ -1,4 +1,3 @@
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { ViewMode } from '@/components/metrobus/ViewModeToggle';
 
@@ -10,17 +9,35 @@ export default function TransportModeTabs({
   onChange: (v: ViewMode) => void;
 }) {
   return (
-    <Tabs value={value} onValueChange={(v) => onChange(v as ViewMode)}>
-      <TabsList className="h-9 gap-1 rounded-lg border border-border bg-transparent p-1">
-        <TabsTrigger value="passengers" className="h-7 gap-1.5 rounded-md px-3 text-xs data-[state=active]:bg-secondary data-[state=active]:shadow-none">
-          <Icon name="Bus" size={13} />
-          Поездки
-        </TabsTrigger>
-        <TabsTrigger value="observers" className="h-7 gap-1.5 rounded-md px-3 text-xs data-[state=active]:bg-secondary data-[state=active]:shadow-none">
-          <Icon name="Route" size={13} />
-          Маршруты
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
+    <div role="tablist" className="flex items-center gap-4 border-b border-border">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={value === 'passengers'}
+        onClick={() => onChange('passengers')}
+        className={`flex items-center gap-1.5 border-b-2 pb-2 text-sm font-medium transition-colors ${
+          value === 'passengers'
+            ? 'border-primary text-foreground'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        <Icon name="Bus" size={14} />
+        Поездки
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={value === 'observers'}
+        onClick={() => onChange('observers')}
+        className={`flex items-center gap-1.5 border-b-2 pb-2 text-sm font-medium transition-colors ${
+          value === 'observers'
+            ? 'border-primary text-foreground'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        <Icon name="Route" size={14} />
+        Маршруты
+      </button>
+    </div>
   );
 }

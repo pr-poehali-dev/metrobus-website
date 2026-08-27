@@ -71,10 +71,10 @@ export default function PassengerDashboard({
         <h2 className="text-2xl font-bold sm:text-3xl">
           {viewMode === 'passengers' ? 'Дашборд поездок' : 'Дашборд маршрутов'}
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />
-          <TransportModeTabs value={viewMode} onChange={setViewMode} />
-        </div>
+        <ViewModeToggle dataScope={dataScope} onDataScopeChange={setDataScope} />
+      </div>
+      <div className="mt-4">
+        <TransportModeTabs value={viewMode} onChange={setViewMode} />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {dataScope === 'mine'
