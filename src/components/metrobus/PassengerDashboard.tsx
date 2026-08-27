@@ -254,27 +254,27 @@ export default function PassengerDashboard({
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_LABELS[r.status].className}`}>
-                    {STATUS_LABELS[r.status].text}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{formatRecordDate(r.ratedAt)}</span>
-                </div>
+                <span className="text-xs text-muted-foreground">{formatRecordDate(r.ratedAt)}</span>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Icon
-                      key={i}
-                      name="Star"
-                      size={14}
-                      className={i < r.rating ? 'fill-amber-500 text-amber-500' : 'text-border'}
-                    />
-                  ))}
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Icon
+                        key={i}
+                        name="Star"
+                        size={14}
+                        className={i < r.rating ? 'fill-amber-500 text-amber-500' : 'text-border'}
+                      />
+                    ))}
+                  </div>
+                  {viewMode === 'passengers' && r.vehicleNumber && (
+                    <span className="text-xs text-muted-foreground">Маршрут №{r.routeNumber ?? '—'}</span>
+                  )}
                 </div>
-                {viewMode === 'passengers' && r.vehicleNumber && (
-                  <span className="text-xs text-muted-foreground">Маршрут №{r.routeNumber ?? '—'}</span>
-                )}
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_LABELS[r.status].className}`}>
+                  {STATUS_LABELS[r.status].text}
+                </span>
               </div>
               {r.comment && (
                 <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>
