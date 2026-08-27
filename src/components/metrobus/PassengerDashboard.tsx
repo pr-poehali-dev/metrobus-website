@@ -292,10 +292,14 @@ export default function PassengerDashboard({
       <div className="mt-8 hidden sm:block">
         <div className="flex items-center gap-2">
           <Icon name="Sparkles" size={18} className="text-muted-foreground" />
-          <h3 className="text-lg font-semibold">О чём пишут пользователи</h3>
+          <h3 className="text-lg font-semibold">
+            {viewMode === 'passengers' ? 'О чём пишут пользователи (поездки)' : 'О чём пишут пользователи (маршруты)'}
+          </h3>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Комментарии сгруппированы автоматически. Примеры обезличены.
+          {viewMode === 'passengers'
+            ? 'Комментарии к оценкам поездок сгруппированы автоматически. Примеры обезличены.'
+            : 'Комментарии к оценкам маршрутов сгруппированы автоматически. Примеры обезличены.'}
         </p>
         {clusters.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока нет отзывов с комментариями.</p>
