@@ -133,13 +133,19 @@ export default function PassengerDashboard({
       </div>
       <div className="mt-3 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-border p-5">
-          <p className="text-sm text-muted-foreground">{metric1.label}</p>
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Icon name="CheckCircle2" size={15} />
+            {metric1.label}
+          </p>
           <div className="mt-2 font-mono-num text-4xl font-bold leading-none">
             {metric1.value.toLocaleString('ru-RU')}
           </div>
         </div>
         <div className="rounded-xl border border-border p-5">
-          <p className="text-sm text-muted-foreground">{metric2.label}</p>
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Icon name={dataScope === 'mine' ? 'TrendingUp' : 'Route'} size={15} />
+            {metric2.label}
+          </p>
           {dataScope === 'mine' ? (
             <div className={`mt-2 flex items-center gap-1.5 font-mono-num text-4xl font-bold leading-none ${metric2.value > 0 ? 'text-transport-tram' : ''}`}>
               <Icon name="TrendingUp" size={22} className={metric2.value > 0 ? 'text-transport-tram' : 'text-muted-foreground'} />
