@@ -3,9 +3,6 @@ import Icon from '@/components/ui/icon';
 export default function PassengersIntro() {
   return (
     <section>
-      <p className="mb-4 text-base font-medium text-muted-foreground">
-        Первая в России система, где оценки проверяются геометрией.
-      </p>
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           { icon: 'Timer', title: 'Быстро', text: 'Ввели короткий номер с борта — поставили оценку разовой поездке или регулярному маршруту.' },
