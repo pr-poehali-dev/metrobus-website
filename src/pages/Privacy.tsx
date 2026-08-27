@@ -1,4 +1,5 @@
 import Icon from '@/components/ui/icon';
+import Breadcrumbs from '@/components/metrobus/Breadcrumbs';
 
 const Privacy = () => {
   return (
@@ -16,6 +17,7 @@ const Privacy = () => {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10">
+        <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Политика конфиденциальности' }]} />
         <h1 className="text-2xl font-bold sm:text-3xl">Политика конфиденциальности</h1>
         <p className="mt-2 text-sm text-muted-foreground">Дата публикации: 21.07.2026</p>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Icon from '@/components/ui/icon';
+import Breadcrumbs from '@/components/metrobus/Breadcrumbs';
 import { fetchChangelogPublic, ChangelogEntry } from '@/lib/adminApi';
 
 function formatDate(iso: string) {
@@ -44,6 +45,7 @@ const Changelog = () => {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10">
+        <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'История обновлений' }]} />
         <h1 className="text-2xl font-bold sm:text-3xl">История обновлений</h1>
         <p className="mt-2 text-sm text-muted-foreground">Ключевые изменения сервиса МЕТРОБУС.РФ</p>
 
