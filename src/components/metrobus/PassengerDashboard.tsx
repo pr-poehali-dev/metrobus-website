@@ -344,9 +344,7 @@ export default function PassengerDashboard({
           </div>
           <ModeBadge viewMode={viewMode} />
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Комментарии сгруппированы автоматически. Примеры обезличены.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически.</p>
         {clusters.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока нет отзывов с комментариями.</p>
         )}
