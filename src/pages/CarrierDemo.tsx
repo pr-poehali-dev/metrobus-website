@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
+import SeoHead from '@/components/metrobus/SeoHead';
 import ViewModeToggle, { ViewMode } from '@/components/metrobus/ViewModeToggle';
 import {
   carrierDemoSummary,
@@ -40,6 +41,11 @@ export default function CarrierDemo() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="Личный кабинет перевозчика — демо | МЕТРОБУС.РФ"
+        description="Демо-кабинет перевозчика: мониторинг оценок комфорта поездок и удобства маршрутов, динамика по автобусам, трамваям и троллейбусам в реальном времени."
+        path="/carrier-demo"
+      />
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2">
