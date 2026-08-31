@@ -26,12 +26,6 @@ export default function InstallAppBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // TODO: временно для отладки — показать баннер всегда
-    setShowIosHint(isIos());
-    setVisible(true);
-    return;
-
-    // eslint-disable-next-line no-unreachable
     if (isStandalone() || localStorage.getItem(DISMISS_KEY) === '1') return;
 
     if (isIos()) {
