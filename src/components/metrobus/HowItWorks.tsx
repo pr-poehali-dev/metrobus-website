@@ -1,4 +1,3 @@
-import Icon from '@/components/ui/icon';
 import howItWorksImg from '@/assets/how-it-works.png';
 
 export default function HowItWorks() {
@@ -15,26 +14,13 @@ export default function HowItWorks() {
       </div>
       <div className="mt-3 space-y-3">
         {[
-          { n: 1, icon: 'Hash', title: 'Найдите короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
-          { n: 2, icon: 'Grid3x3', title: 'Используйте цифровые сервисы ICQR.RU', text: 'Результат - трасса маршрута для этого транспорта и кнопка "Оценить".' },
-          { n: 3, icon: 'Star', title: 'Проверьте данные и поставьте оценку', text: 'Не смешивайте оценку поездки с оценкой маршрута. Это - разные вещи.' },
+          { n: 1, title: 'Найдите короткий бортовой номер', text: 'Он нанесён на кузов и внутри салона транспорта (4 - 6 цифр).' },
+          { n: 2, title: 'Используйте цифровые сервисы ICQR.RU', text: 'Результат - трасса маршрута для этого транспорта и кнопка "Оценить".' },
+          { n: 3, title: 'Проверьте данные и поставьте оценку', text: 'Не смешивайте оценку поездки с оценкой маршрута. Это - разные вещи.' },
         ].map((s) => (
-          <div key={s.n} className="rounded-xl border border-border p-4 sm:flex sm:items-start sm:gap-4 sm:p-5">
-            <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-mono text-sm font-semibold text-primary-foreground sm:flex">
-              {s.n}
-            </span>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <Icon name={s.icon} size={16} className="text-muted-foreground shrink-0" />
-                <h3 className="font-semibold">{s.title}</h3>
-              </div>
-              <div className="mt-1 flex items-start gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary font-mono text-[11px] font-semibold text-primary-foreground sm:hidden">
-                  {s.n}
-                </span>
-                <p className="text-sm text-muted-foreground">{s.text}</p>
-              </div>
-            </div>
+          <div key={s.n} className="rounded-xl border border-border p-4 sm:p-5">
+            <h3 className="font-semibold">{`${s.n}. ${s.title}`}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{s.text}</p>
           </div>
         ))}
       </div>
