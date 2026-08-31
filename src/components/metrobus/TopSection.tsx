@@ -54,8 +54,12 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           </nav>
 
           <div className="flex items-center gap-2">
-            <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="hidden sm:block">
-              <Button size="sm" variant="outline" className="h-9 gap-1.5 px-3">
+            <a href={icqrUrl} target="_blank" rel="noopener noreferrer">
+              <Button size="icon" variant="outline" className="h-9 w-9 sm:hidden">
+                <Icon name="Star" size={16} />
+                <span className="sr-only">Оценить</span>
+              </Button>
+              <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex">
                 <Icon name="Star" size={15} />
                 <span>Оценить</span>
               </Button>
