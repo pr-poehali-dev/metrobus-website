@@ -103,7 +103,7 @@ export default function PassengerDashboard({
                 : 'bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
             }`}
           >
-            <Icon name="Milestone" size={12} />
+            <Icon name="Milestone" size={12} className={myRoutes.length > 0 ? '' : 'hidden sm:block'} />
             {myRoutes.length > 0 ? (
               <span className="hidden sm:inline">{`Маршруты: ${myRoutes.join(', ')}`}</span>
             ) : (
