@@ -26,6 +26,8 @@ interface MainTabsProps {
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;
   onCityDialogOpen: () => void;
+  myRoutes: string[];
+  onMyRoutesOpen: () => void;
 }
 
 export default function MainTabs({
@@ -47,6 +49,8 @@ export default function MainTabs({
   topActiveUsers,
   myRank,
   onCityDialogOpen,
+  myRoutes,
+  onMyRoutesOpen,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -88,6 +92,8 @@ export default function MainTabs({
           topActiveUsers={topActiveUsers}
           myRank={myRank}
           onCityDialogOpen={onCityDialogOpen}
+          myRoutes={myRoutes}
+          onMyRoutesOpen={onMyRoutesOpen}
         />
       </TabsContent>
 

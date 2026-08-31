@@ -11,10 +11,11 @@ interface TopSectionProps {
   onMyRatingsOpen: () => void;
   onHowItWorksOpen: () => void;
   onDashboardOpen: () => void;
+  onMyRoutesOpen: () => void;
   children: ReactNode;
 }
 
-export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onHowItWorksOpen, onDashboardOpen, children }: TopSectionProps) {
+export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, onMyRatingsOpen, onHowItWorksOpen, onDashboardOpen, onMyRoutesOpen, children }: TopSectionProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
@@ -109,12 +110,15 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
               </Button>
             </a>
             {showDashboardButton && (
-              <a href="#dashboard" className="sm:w-auto">
-                <Button size="lg" variant="outline" className="h-12 w-full gap-2 text-base sm:w-auto">
-                  <Icon name="ChartLine" size={18} />
-                  Смотреть дашборд
-                </Button>
-              </a>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 w-full gap-2 text-base sm:w-auto"
+                onClick={onMyRoutesOpen}
+              >
+                <Icon name="Milestone" size={18} />
+                Мои маршруты
+              </Button>
             )}
           </div>
         </div>

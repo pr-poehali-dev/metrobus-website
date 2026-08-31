@@ -11,6 +11,12 @@
       "method": "GET",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "Get dashboard stats filtered by routes",
+      "method": "GET",
+      "path": "/?routes=1,2,3",
+      "expectedStatus": 200
     }
   ]
 }

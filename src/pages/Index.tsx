@@ -4,10 +4,12 @@ import MainTabs from '@/components/metrobus/MainTabs';
 import SiteFooter from '@/components/metrobus/SiteFooter';
 import InfoDialogs from '@/components/metrobus/InfoDialogs';
 import InstallAppBanner from '@/components/metrobus/InstallAppBanner';
+import MyRoutesDialog from '@/components/metrobus/MyRoutesDialog';
 import { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import { TransportType } from '@/lib/mockData';
 import { fetchDashboardStats, triggerIcqrSync, DashboardData } from '@/lib/dashboardApi';
 import { captureMyRatingsTokenFromUrl, getMyRatingsToken } from '@/lib/myRatingsToken';
+import { getMyRoutes, setMyRoutes as saveMyRoutes } from '@/lib/myRoutes';
 
 const ICQR_URL = 'https://icqr.ru';
 
@@ -21,12 +23,15 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [cityDialogOpen, setCityDialogOpen] = useState(false);
+  const [myRoutesDialogOpen, setMyRoutesDialogOpen] = useState(false);
+  const [myRoutes, setMyRoutesState] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('passengers');
 
   useEffect(() => {
     triggerIcqrSync();
     const { scrollToDashboard, tokenCaptured } = captureMyRatingsTokenFromUrl();
     setMyToken(getMyRatingsToken());
+    setMyRoutesState(getMyRoutes());
 
     if (tokenCaptured) {
       setActiveTab('passengers');
@@ -44,7 +49,7 @@ const Index = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchDashboardStats(MONTH_OFFSET, viewMode, dataScope, myToken)
+    fetchDashboardStats(MONTH_OFFSET, viewMode, dataScope, myToken, myRoutes)
       .then((res) => {
         if (!cancelled) setData(res);
       })
@@ -54,7 +59,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [viewMode, dataScope, myToken]);
+  }, [viewMode, dataScope, myToken, myRoutes]);
 
   const summary = data?.summary ?? { average: 0, prevAverage: 0, monthCount: 0, routesCount: 0, byType: [
     { type: 'bus' as TransportType, label: 'Автобус', average: 0, count: 0 },
@@ -88,6 +93,17 @@ const Index = () => {
     });
   };
 
+  const handleMyRoutesApply = (routes: string[]) => {
+    saveMyRoutes(routes);
+    setMyRoutesState(routes);
+    setActiveTab('passengers');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <TopSection
@@ -97,6 +113,7 @@ const Index = () => {
         onMyRatingsOpen={handleMyRatingsOpen}
         onHowItWorksOpen={() => handleNavScroll('how-it-works')}
         onDashboardOpen={() => handleNavScroll('dashboard')}
+        onMyRoutesOpen={() => setMyRoutesDialogOpen(true)}
       >
         {/* NAV TABS */}
         <MainTabs
@@ -118,6 +135,8 @@ const Index = () => {
           topActiveUsers={topActiveUsers}
           myRank={myRank}
           onCityDialogOpen={() => setCityDialogOpen(true)}
+          myRoutes={myRoutes}
+          onMyRoutesOpen={() => setMyRoutesDialogOpen(true)}
         />
       </TopSection>
 
@@ -130,6 +149,13 @@ const Index = () => {
         setAboutOpen={setAboutOpen}
         cityDialogOpen={cityDialogOpen}
         setCityDialogOpen={setCityDialogOpen}
+      />
+
+      <MyRoutesDialog
+        open={myRoutesDialogOpen}
+        onOpenChange={setMyRoutesDialogOpen}
+        routes={myRoutes}
+        onApply={handleMyRoutesApply}
       />
     </div>
   );

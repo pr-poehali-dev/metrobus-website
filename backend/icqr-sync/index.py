@@ -22,56 +22,95 @@ def fetch_page(page: int, per_page: int = 100):
         return json.loads(resp.read().decode('utf-8'))
 
 
-def fetch_all_routes_count():
-    '''Запрашивает у ICQR Admin API общее количество маршрутов (get_all_routes).
-    ICQR возвращает Data в виде {items: [...], pagination: {total, ...}, ...} — реальное общее
-    число маршрутов лежит в Data.pagination.total (per_page=1 запрашивается, чтобы не тянуть
-    список целиком). Перебирает известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как
-    оба варианта встречаются в данных ICQR. Возвращает None, если ни один запрос не дал результата —
-    тогда сохранённое ранее значение не перезаписывается.'''
+def fetch_routes_page(location: str, page: int, per_page: int = 200):
     token = os.environ['ICQR_API_ADMIN_TOKEN']
-    for location in ('8-812', 'SPB'):
-        body = json.dumps({
-            'Command': 'get_all_routes',
-            'Command_params': {'location': location, 'per_page': 1},
-        }).encode('utf-8')
-        req = urllib.request.Request(
-            f"{ICQR_BASE_URL}/api/index.php",
-            data=body,
-            method='POST',
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': f'Bearer {token}',
-                'Accept': 'application/json',
-            },
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            payload = json.loads(resp.read().decode('utf-8'))
-        if payload.get('Request_status', {}).get('Code') != 'Ok':
-            continue
-        data = payload.get('Data') or {}
-        total = (data.get('pagination') or {}).get('total')
-        if total:
-            return int(total)
-    return None
-
-
-def update_active_routes_count(cur):
-    '''Раз в сутки обновляет app_settings.total_active_routes_count реальным числом маршрутов из ICQR (get_all_routes).
-    Не дергает Admin API при каждом вызове синхронизации, чтобы не замедлять частый триггер с фронтенда.'''
-    cur.execute(
-        "SELECT value, updated_at FROM app_settings WHERE key = 'total_active_routes_count'"
+    body = json.dumps({
+        'Command': 'get_all_routes',
+        'Command_params': {'location': location, 'page': page, 'per_page': per_page},
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        f"{ICQR_BASE_URL}/api/index.php",
+        data=body,
+        method='POST',
+        headers={
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}',
+            'Accept': 'application/json',
+        },
     )
-    row = cur.fetchone()
-    if row and row[1] and (datetime.now() - row[1]).total_seconds() < 86400:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
+def fetch_all_routes_list(location: str):
+    '''Постранично выгружает полный список маршрутов ICQR Admin API (get_all_routes) для заданного
+    кода локации. Возвращает список сырых элементов Data.items (id, route_number, title, ...) или
+    пустой список, если запрос не удался/локация неизвестна.'''
+    items = []
+    page = 1
+    per_page = 200
+    while True:
+        payload = fetch_routes_page(location, page, per_page)
+        if payload.get('Request_status', {}).get('Code') != 'Ok':
+            break
+        data = payload.get('Data') or {}
+        page_items = data.get('items') or []
+        items.extend(page_items)
+        pagination = data.get('pagination') or {}
+        total_pages = pagination.get('total_pages') or 1
+        if not page_items or page >= total_pages:
+            break
+        page += 1
+    return items
+
+
+def sync_routes_list(cur):
+    '''Раз в сутки полностью пересинхронизирует справочник маршрутов ICQR (get_all_routes) в таблицу
+    transport_routes и заодно обновляет app_settings.total_active_routes_count реальным числом
+    маршрутов (без отдельного лёгкого запроса — используется тот же полный список). Перебирает
+    известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как оба варианта встречаются
+    в данных ICQR. Не дергает Admin API при каждом вызове синхронизации, чтобы не замедлять
+    частый триггер с фронтенда. Возвращает кол-во синхронизированных маршрутов или None, если
+    пропущено (недавно обновлялось) или запрос не удался.'''
+    cur.execute("SELECT MAX(synced_at) FROM transport_routes")
+    last_synced = cur.fetchone()[0]
+    if last_synced and (datetime.now() - last_synced).total_seconds() < 86400:
         return None
 
-    try:
-        count = fetch_all_routes_count()
-    except Exception:
+    items = []
+    for location in ('8-812', 'SPB'):
+        try:
+            items = fetch_all_routes_list(location)
+        except Exception:
+            items = []
+        if items:
+            break
+    if not items:
         return None
-    if not count:
-        return None
+
+    seen = set()
+    for item in items:
+        route_number = str(item.get('route_number') or item.get('number') or '').strip()
+        if not route_number:
+            continue
+        transport_type = (item.get('transport_type') or item.get('type') or '').strip().lower()
+        key = (route_number, transport_type)
+        if key in seen:
+            continue
+        seen.add(key)
+        cur.execute(
+            """
+            INSERT INTO transport_routes (icqr_route_id, route_number, title, transport_type, synced_at)
+            VALUES (%s, %s, %s, %s, now())
+            ON CONFLICT (route_number, transport_type) DO UPDATE SET
+                icqr_route_id = EXCLUDED.icqr_route_id,
+                title = EXCLUDED.title,
+                synced_at = now()
+            """,
+            (item.get('id'), route_number, item.get('title'), transport_type),
+        )
+
+    count = len(seen)
     cur.execute(
         """
         INSERT INTO app_settings (key, value, updated_at) VALUES ('total_active_routes_count', %s, now())
@@ -243,13 +282,15 @@ def log_sync_result(cur, status: str, synced_count: int, error_message: str = No
 def handler(event: dict, context) -> dict:
     '''Синхронизирует одобренные отзывы пассажиров с ICQR Public API в локальную таблицу transport_passenger_ratings,
     затем дозагружает геоданные (координаты открытия формы и отправки оценки, расстояние между ними) через ICQR Admin API.
-    Не чаще раза в сутки также обновляет app_settings.total_active_routes_count реальным количеством маршрутов
-    ОРГП Санкт-Петербурга через ICQR Admin API (get_all_routes), которое используется на дашборде как знаменатель
-    метрики "покрытие маршрутов".
+    Не чаще раза в сутки также полностью пересинхронизирует справочник маршрутов ОРГП Санкт-Петербурга
+    (таблица transport_routes) через ICQR Admin API (get_all_routes) — список не зависит от того, есть ли по
+    маршруту одобренные отзывы, и используется для фильтра "Мои маршруты" на дашборде. Заодно обновляет
+    app_settings.total_active_routes_count реальным количеством маршрутов, которое используется на дашборде
+    как знаменатель метрики "покрытие маршрутов".
     При GET с параметром status=1 возвращает статус последней синхронизации без запуска новой.
     Args: event - dict с httpMethod, queryStringParameters (status); context - объект с request_id.
     Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей,
-        актуальным числом активных маршрутов (если обновлялось) или статусом последней синхронизации.
+        актуальным числом синхронизированных маршрутов (если обновлялось) или статусом последней синхронизации.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -369,7 +410,7 @@ def handler(event: dict, context) -> dict:
         except Exception as ge:
             geo_error = str(ge)
 
-        routes_count = update_active_routes_count(cur)
+        routes_count = sync_routes_list(cur)
 
         log_sync_result(cur, 'ok', total_upserted, geo_error)
         return {

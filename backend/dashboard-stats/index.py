@@ -95,8 +95,13 @@ def handler(event: dict, context) -> dict:
     myToken, также возвращается myRank — место текущего пользователя в этом же рейтинге его роли
     (rank, count, totalUsers), даже если он не входит в топ-10; myRank = null, если myToken не
     передан или у пользователя ещё нет опубликованных записей выбранной роли.
+    Если передан параметр routes (список номеров маршрутов через запятую, сохранённый пользователем
+    локально как "Мои маршруты") — абсолютно все разделы ответа (summary, timeline, clusters, metric1-3,
+    records, topActiveUsers, myRank) фильтруются только оценками по этим маршрутам; знаменатель метрики
+    "Покрытие" в этом случае — количество выбранных маршрутов, а не общее число маршрутов города.
     Args: event - dict с httpMethod и queryStringParameters (monthOffset, viewMode: 'passengers'|'observers',
-        myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки");
+        myToken: опциональный идентификатор пользователя ICQR.RU для фильтра "мои оценки",
+        routes: опциональный список номеров маршрутов через запятую для фильтра "Мои маршруты");
         context - объект с request_id.
     Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, metric3,
         records, topActiveUsers, myRank }.
@@ -145,6 +150,21 @@ def handler(event: dict, context) -> dict:
             token_param = ()
     else:
         token_param = ()
+
+    # Фильтр "Мои маршруты" — необязательный список номеров маршрутов, выбранный пользователем
+    # локально (localStorage) и переданный в параметре routes через запятую. Применяется ко всем
+    # разделам дашборда: сводке, разбивке по транспорту, хронологии, кластерам, KPI, списку записей
+    # и общегородскому рейтингу активности.
+    routes_raw = (params.get('routes') or '').strip()
+    routes_list = [r.strip() for r in routes_raw.split(',') if r.strip()] if routes_raw else []
+    if routes_list:
+        role_filter += ' AND route_number = ANY(%s)'
+        token_param = token_param + (routes_list,)
+        routes_filter_sql = ' AND route_number = ANY(%s)'
+        routes_filter_param = (routes_list,)
+    else:
+        routes_filter_sql = ''
+        routes_filter_param = ()
 
     today = date.today()
     year = today.year
@@ -331,15 +351,19 @@ def handler(event: dict, context) -> dict:
             metric1_value = int(cur.fetchone()['cnt'])
             metric1_label = 'Оценено'
 
-            # Метрика 2: покрытие маршрутов — N маршрутов из M имеют хотя бы одну оценку
-            cur.execute(
-                "SELECT value FROM app_settings WHERE key = 'total_active_routes_count'"
-            )
-            settings_row = cur.fetchone()
-            try:
-                total_routes = int(settings_row['value']) if settings_row and settings_row['value'] else None
-            except (TypeError, ValueError):
-                total_routes = None
+            # Метрика 2: покрытие маршрутов — N маршрутов из M имеют хотя бы одну оценку.
+            # При активном фильтре "Мои маршруты" знаменатель — кол-во выбранных маршрутов, а не весь город.
+            if routes_list:
+                total_routes = len(routes_list)
+            else:
+                cur.execute(
+                    "SELECT value FROM app_settings WHERE key = 'total_active_routes_count'"
+                )
+                settings_row = cur.fetchone()
+                try:
+                    total_routes = int(settings_row['value']) if settings_row and settings_row['value'] else None
+                except (TypeError, ValueError):
+                    total_routes = None
 
             cur.execute(
                 f"""
@@ -412,6 +436,7 @@ def handler(event: dict, context) -> dict:
         # Зависит от viewMode: для 'passengers' считаются пассажирские оценки, для 'observers' — наблюдения.
         # Не зависит от dataScope — всегда общегородской в рамках выбранной роли (не фильтруется по my_token).
         role_filter_plain = 'is_passenger IS DISTINCT FROM false' if view_mode == 'passengers' else 'is_passenger = false'
+        role_filter_plain += routes_filter_sql
         rank_label = 'Пользователь'
         cur.execute(
             f"""
@@ -422,7 +447,8 @@ def handler(event: dict, context) -> dict:
             GROUP BY rating_client_id
             ORDER BY cnt DESC, rating_client_id
             LIMIT 10
-            """
+            """,
+            routes_filter_param,
         )
         top_active_users = []
         for rank, r in enumerate(cur.fetchall(), start=1):
@@ -455,7 +481,7 @@ def handler(event: dict, context) -> dict:
                 )
                 SELECT rnk, cnt, total_users FROM ranked WHERE rating_client_id = %s
                 """,
-                (my_token,),
+                routes_filter_param + (my_token,),
             )
             my_rank_row = cur.fetchone()
             if my_rank_row:

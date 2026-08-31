@@ -61,6 +61,8 @@ interface PassengerDashboardProps {
   topActiveUsers: TopActiveUser[];
   myRank: MyRank | null;
   onCityDialogOpen: () => void;
+  myRoutes: string[];
+  onMyRoutesOpen: () => void;
 }
 
 export default function PassengerDashboard({
@@ -80,19 +82,35 @@ export default function PassengerDashboard({
   topActiveUsers,
   myRank,
   onCityDialogOpen,
+  myRoutes,
+  onMyRoutesOpen,
 }: PassengerDashboardProps) {
   return (
     <section id="dashboard" className="scroll-mt-20">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-bold sm:text-3xl">Дашборд</h2>
-        <button
-          type="button"
-          onClick={onCityDialogOpen}
-          className="flex shrink-0 items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
-        >
-          <Icon name="MapPin" size={12} />
-          Санкт-Петербург
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onMyRoutesOpen}
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+              myRoutes.length > 0
+                ? 'bg-primary/10 text-primary hover:bg-primary/15'
+                : 'bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
+            }`}
+          >
+            <Icon name="Milestone" size={12} />
+            {myRoutes.length > 0 ? `Маршруты: ${myRoutes.join(', ')}` : 'Мои маршруты'}
+          </button>
+          <button
+            type="button"
+            onClick={onCityDialogOpen}
+            className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+          >
+            <Icon name="MapPin" size={12} />
+            Санкт-Петербург
+          </button>
+        </div>
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <TransportModeTabs value={viewMode} onChange={setViewMode} />

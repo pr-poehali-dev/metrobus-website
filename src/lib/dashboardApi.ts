@@ -81,15 +81,30 @@ export async function fetchDashboardStats(
   viewMode: DashboardViewMode = 'passengers',
   dataScope: DashboardDataScope = 'all',
   myToken?: string | null,
+  myRoutes?: string[] | null,
 ): Promise<DashboardData> {
   const params = new URLSearchParams({ monthOffset: String(monthOffset), viewMode, dataScope });
   if (dataScope === 'mine' && myToken) {
     params.set('myToken', myToken);
   }
+  if (myRoutes && myRoutes.length > 0) {
+    params.set('routes', myRoutes.join(','));
+  }
   const url = `${func2url['dashboard-stats']}?${params.toString()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('dashboard_stats_failed');
   return res.json();
+}
+
+export async function fetchRoutesList(): Promise<string[]> {
+  try {
+    const res = await fetch(func2url['routes-list']);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.routes ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function triggerIcqrSync(): Promise<void> {
