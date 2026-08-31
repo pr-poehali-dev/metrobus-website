@@ -20,22 +20,20 @@ export default function HowItWorks() {
           { n: 3, icon: 'Star', title: 'Проверьте данные и поставьте оценку', text: 'Не смешивайте оценку поездки с оценкой маршрута. Это - разные вещи.' },
         ].map((s) => (
           <div key={s.n} className="rounded-xl border border-border p-4 sm:flex sm:items-start sm:gap-4 sm:p-5">
-            <div className="flex items-center gap-2 sm:hidden">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-mono text-sm font-semibold text-primary-foreground">
-                {s.n}
-              </span>
-              <Icon name={s.icon} size={16} className="text-muted-foreground" />
-              <h3 className="font-semibold">{s.title}</h3>
-            </div>
             <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-mono text-sm font-semibold text-primary-foreground sm:flex">
               {s.n}
             </span>
             <div className="min-w-0">
-              <div className="hidden items-center gap-2 sm:flex">
-                <Icon name={s.icon} size={16} className="text-muted-foreground" />
+              <div className="flex items-center gap-2">
+                <Icon name={s.icon} size={16} className="text-muted-foreground shrink-0" />
                 <h3 className="font-semibold">{s.title}</h3>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground sm:mt-1">{s.text}</p>
+              <div className="mt-1 flex items-start gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary font-mono text-[11px] font-semibold text-primary-foreground sm:hidden">
+                  {s.n}
+                </span>
+                <p className="text-sm text-muted-foreground">{s.text}</p>
+              </div>
             </div>
           </div>
         ))}
