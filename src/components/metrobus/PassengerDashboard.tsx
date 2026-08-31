@@ -105,12 +105,7 @@ export default function PassengerDashboard({
           >
             <Icon name="Milestone" size={12} />
             {myRoutes.length > 0 ? (
-              <>
-                <span className="sm:hidden">
-                  {myRoutes.length > 3 ? `${myRoutes.slice(0, 3).join(', ')}…` : myRoutes.join(', ')}
-                </span>
-                <span className="hidden sm:inline">{`Маршруты: ${myRoutes.join(', ')}`}</span>
-              </>
+              <span className="hidden sm:inline">{`Маршруты: ${myRoutes.join(', ')}`}</span>
             ) : (
               'Мои маршруты'
             )}
