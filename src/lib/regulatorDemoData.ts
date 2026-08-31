@@ -97,54 +97,50 @@ export function regulatorDemoCarriers(mode: ViewMode) {
 }
 
 const clustersByMode = {
+  // Поездки — впечатления от конкретной поездки: салон, водитель, комфорт
   passengers: [
     {
-      key: 'delays', label: 'Опоздания', icon: 'Clock', share: 31, positive: false,
+      key: 'clean', label: 'Чистота', icon: 'Sparkles', share: 30, positive: true,
       examples: [
-        'Автобус 42 регулярно опаздывает в час пик',
-        'Троллейбус 12 не пришёл по расписанию два раза за неделю',
+        'Салон был чистым и ухоженным',
+        'Новый транспорт радует состоянием салона',
       ],
     },
     {
-      key: 'crowded', label: 'Переполненность', icon: 'Users', share: 24, positive: false,
+      key: 'driver', label: 'Манера вождения', icon: 'UserCog', share: 27, positive: false,
       examples: [
-        'В автобусе 56 вечером не хватает мест',
-        'На маршруте 12 давка в час пик',
+        'Водитель был вежлив и вёл аккуратно',
+        'Резкое торможение сделало поездку некомфортной',
       ],
     },
     {
-      key: 'clean', label: 'Чистота', icon: 'Sparkles', share: 17, positive: true,
+      key: 'positive', label: 'Позитив', icon: 'Smile', share: 43, positive: true,
       examples: [
-        'Трамвай 3 всегда чистый и опрятный',
-        'Новые автобусы на 96 маршруте радуют',
-      ],
-    },
-    {
-      key: 'positive', label: 'Позитив', icon: 'Smile', share: 28, positive: true,
-      examples: [
-        'Водитель трамвая 3 очень вежливый',
+        'Комфортная поездка, всё понравилось',
         'В целом транспорт стал ходить точнее',
       ],
     },
   ],
+  // Маршруты — системные проблемы: расписание и достаточность транспорта на линии
   observers: [
     {
-      key: 'delays', label: 'Опоздания', icon: 'Clock', share: 44, positive: false,
+      key: 'delays', label: 'Опоздания', icon: 'Clock', share: 48, positive: false,
       examples: [
-        'Ждал автобус 42 на остановке — приехал с опозданием',
-        'Заметил, что трамвай 9 сильно выбивается из расписания',
+        'Транспорт регулярно опаздывает в час пик',
+        'Интервалы движения сильно выбиваются из расписания',
       ],
     },
     {
-      key: 'driver', label: 'Манера вождения', icon: 'UserCog', share: 26, positive: false,
+      key: 'crowded', label: 'Переполненность', icon: 'Users', share: 29, positive: false,
       examples: [
-        'Автобус 56 резко тормозил на перекрёстке',
+        'Вечером в салоне не хватает мест',
+        'В час пик на линии не хватает единиц транспорта',
       ],
     },
     {
-      key: 'positive', label: 'Позитив', icon: 'Smile', share: 30, positive: true,
+      key: 'positive', label: 'Позитив', icon: 'Smile', share: 23, positive: true,
       examples: [
-        'Трамвай 3 приехал точно по расписанию',
+        'Расписание стало соблюдаться точнее',
       ],
     },
   ],

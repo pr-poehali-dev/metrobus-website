@@ -96,54 +96,51 @@ export function carrierDemoRoutes(mode: ViewMode) {
 }
 
 const clustersByMode = {
+  // Поездки — впечатления от конкретной поездки: салон, водитель, комфорт
   passengers: [
     {
-      key: 'delays', label: 'Опоздания', icon: 'Clock', share: 34, positive: false,
+      key: 'clean', label: 'Чистота', icon: 'Sparkles', share: 34, positive: true,
       examples: [
-        'Троллейбус 12 не пришёл по расписанию два раза за неделю',
-        'На маршруте 8 бывают долгие интервалы между рейсами',
+        'Трамвай был чистым и ухоженным',
+        'В троллейбусе приятно находиться — салон в порядке',
       ],
     },
     {
-      key: 'crowded', label: 'Переполненность', icon: 'Users', share: 21, positive: false,
+      key: 'driver', label: 'Манера вождения', icon: 'UserCog', share: 29, positive: false,
       examples: [
-        'В трамвае 9 вечером не хватает мест',
-        'На маршруте 12 давка в час пик',
+        'Водитель вёл машину аккуратно и вежливо',
+        'Резкое торможение на повороте — неприятно',
       ],
     },
     {
-      key: 'clean', label: 'Чистота', icon: 'Sparkles', share: 18, positive: true,
+      key: 'positive', label: 'Позитив', icon: 'Smile', share: 37, positive: true,
       examples: [
-        'Трамвай 3 всегда чистый и опрятный',
-        'Новые троллейбусы на 17 маршруте радуют',
-      ],
-    },
-    {
-      key: 'positive', label: 'Позитив', icon: 'Smile', share: 27, positive: true,
-      examples: [
-        'Водитель трамвая 3 очень вежливый',
-        'Трамвай 3 — лучший маршрут по комфорту',
+        'Комфортная и спокойная поездка',
+        'Один из лучших маршрутов по уровню комфорта',
       ],
     },
   ],
+  // Маршруты — системные проблемы: расписание и достаточность транспорта на линии
   observers: [
     {
-      key: 'delays', label: 'Опоздания', icon: 'Clock', share: 46, positive: false,
+      key: 'delays', label: 'Опоздания', icon: 'Clock', share: 51, positive: false,
       examples: [
-        'Ждал троллейбус 12 на остановке — приехал с опозданием',
-        'Заметил, что трамвай 9 сильно выбивается из расписания',
+        'Транспорт не пришёл по расписанию',
+        'Между рейсами бывают долгие интервалы',
       ],
     },
     {
-      key: 'driver', label: 'Манера вождения', icon: 'UserCog', share: 24, positive: false,
+      key: 'crowded', label: 'Переполненность', icon: 'Users', share: 27, positive: false,
       examples: [
-        'Троллейбус 8 резко тормозил на перекрёстке',
+        'Вечером в салоне не хватает мест',
+        'В час пик на маршруте настоящая давка',
       ],
     },
     {
-      key: 'positive', label: 'Позитив', icon: 'Smile', share: 30, positive: true,
+      key: 'positive', label: 'Позитив', icon: 'Smile', share: 22, positive: true,
       examples: [
-        'Трамвай 3 приехал точно по расписанию',
+        'Интервалы движения стали соблюдаться точнее',
+        'Транспорт в целом стал ходить по расписанию',
       ],
     },
   ],
