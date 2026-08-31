@@ -104,6 +104,11 @@ const Index = () => {
     });
   };
 
+  const handleMyRoutesClear = () => {
+    saveMyRoutes([]);
+    setMyRoutesState([]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <TopSection
@@ -137,6 +142,7 @@ const Index = () => {
           onCityDialogOpen={() => setCityDialogOpen(true)}
           myRoutes={myRoutes}
           onMyRoutesOpen={() => setMyRoutesDialogOpen(true)}
+          onMyRoutesClear={handleMyRoutesClear}
         />
       </TopSection>
 

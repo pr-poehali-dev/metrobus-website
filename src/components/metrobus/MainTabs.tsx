@@ -28,6 +28,7 @@ interface MainTabsProps {
   onCityDialogOpen: () => void;
   myRoutes: string[];
   onMyRoutesOpen: () => void;
+  onMyRoutesClear: () => void;
 }
 
 export default function MainTabs({
@@ -51,6 +52,7 @@ export default function MainTabs({
   onCityDialogOpen,
   myRoutes,
   onMyRoutesOpen,
+  onMyRoutesClear,
 }: MainTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="pb-16">
@@ -94,6 +96,7 @@ export default function MainTabs({
           onCityDialogOpen={onCityDialogOpen}
           myRoutes={myRoutes}
           onMyRoutesOpen={onMyRoutesOpen}
+          onMyRoutesClear={onMyRoutesClear}
         />
       </TabsContent>
 

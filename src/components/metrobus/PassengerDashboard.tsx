@@ -63,6 +63,7 @@ interface PassengerDashboardProps {
   onCityDialogOpen: () => void;
   myRoutes: string[];
   onMyRoutesOpen: () => void;
+  onMyRoutesClear: () => void;
 }
 
 export default function PassengerDashboard({
@@ -84,16 +85,19 @@ export default function PassengerDashboard({
   onCityDialogOpen,
   myRoutes,
   onMyRoutesOpen,
+  onMyRoutesClear,
 }: PassengerDashboardProps) {
   return (
     <section id="dashboard" className="scroll-mt-20">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-bold sm:text-3xl">Дашборд</h2>
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
+          <span
+            role="button"
+            tabIndex={0}
             onClick={onMyRoutesOpen}
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+            onKeyDown={(e) => e.key === 'Enter' && onMyRoutesOpen()}
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
               myRoutes.length > 0
                 ? 'bg-primary/10 text-primary hover:bg-primary/15'
                 : 'bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
@@ -101,7 +105,20 @@ export default function PassengerDashboard({
           >
             <Icon name="Milestone" size={12} />
             {myRoutes.length > 0 ? `Маршруты: ${myRoutes.join(', ')}` : 'Мои маршруты'}
-          </button>
+            {myRoutes.length > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMyRoutesClear();
+                }}
+                className="ml-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full hover:bg-primary/20"
+              >
+                <Icon name="X" size={10} />
+                <span className="sr-only">Сбросить фильтр маршрутов</span>
+              </button>
+            )}
+          </span>
           <button
             type="button"
             onClick={onCityDialogOpen}
