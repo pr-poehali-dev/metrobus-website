@@ -97,13 +97,13 @@ export default function PassengerDashboard({
             tabIndex={0}
             onClick={onMyRoutesOpen}
             onKeyDown={(e) => e.key === 'Enter' && onMyRoutesOpen()}
-            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
+            className={`items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
               myRoutes.length > 0
-                ? 'bg-primary/10 text-primary hover:bg-primary/15'
-                : 'bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
+                ? 'flex bg-primary/10 text-primary hover:bg-primary/15'
+                : 'hidden bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground sm:flex'
             }`}
           >
-            <Icon name="Milestone" size={12} className={myRoutes.length > 0 ? '' : 'hidden sm:block'} />
+            <Icon name="Milestone" size={12} />
             {myRoutes.length > 0 ? (
               <span className="hidden sm:inline">{`Маршруты: ${myRoutes.join(', ')}`}</span>
             ) : (
