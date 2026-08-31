@@ -68,7 +68,7 @@ export default function InstallAppBanner() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-background px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] animate-fade-in">
       <div className="mx-auto flex max-w-5xl items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary p-1.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary p-1.5 px-1.5 text-[#ffffff]">
           <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/e378f17a-00b2-4bc0-b839-b5e3187599aa.jpg" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain dark:hidden" />
           <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ad43e99a-45cd-411d-b75d-75d7774f4441.png" alt="МЕТРОБУС.РФ" className="hidden h-full w-full object-contain dark:block" />
         </span>
