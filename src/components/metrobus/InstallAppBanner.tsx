@@ -68,7 +68,7 @@ export default function InstallAppBanner() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-background px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] animate-fade-in">
       <div className="mx-auto flex max-w-5xl items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary p-1.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary p-1.5 text-[#ffffff]">
           <img
             src="/logo-icon.png"
             alt="МЕТРОБУС.РФ"
