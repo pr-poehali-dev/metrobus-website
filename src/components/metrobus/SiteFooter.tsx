@@ -14,7 +14,10 @@ export default function SiteFooter() {
               </span>
               <span className="font-bold">МЕТРОБУС.РФ</span>
             </div>
-            <p className="mt-3 max-w-md text-sm text-muted-foreground">Оплата проезда. Смарт-информирование. Обратная связь.</p>
+            <p className="mt-3 max-w-md text-sm text-muted-foreground">
+              Оплата проезда. Смарт-информирование.
+              <span className="block sm:inline sm:before:content-['_']">Обратная связь.</span>
+            </p>
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground sm:mt-auto">
               <a href={SOCIAL_LINKS.vk} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary hover:underline active:text-primary">ВКонтакте</a>
               <a href={SOCIAL_LINKS.telegram} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary hover:underline active:text-primary">Телеграм</a>
