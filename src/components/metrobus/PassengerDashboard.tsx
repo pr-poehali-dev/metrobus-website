@@ -136,7 +136,9 @@ export default function PassengerDashboard({
       <p className="mt-2 text-sm text-muted-foreground">
         {dataScope === 'mine'
           ? 'Показаны только ваши оценки, сохранённые при последнем визите на ICQR.RU в этом браузере.'
-          : 'Оценки комфорта и удобства в наземном общественном транспорте.'}
+          : viewMode === 'passengers'
+            ? 'Оценки комфорта поездок в наземном общественном транспорте.'
+            : 'Оценки удобства маршрутов наземного общественного транспорта.'}
       </p>
 
       {dataScope === 'mine' && !hasMyToken && (
