@@ -1,9 +1,10 @@
-import { useEffect, useState, KeyboardEvent } from 'react';
+import { useEffect, useState, useMemo, KeyboardEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import { fetchRoutesList } from '@/lib/dashboardApi';
 
 interface MyRoutesDialogProps {
   open: boolean;
@@ -15,19 +16,32 @@ interface MyRoutesDialogProps {
 export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: MyRoutesDialogProps) {
   const [draft, setDraft] = useState<string[]>(routes);
   const [inputValue, setInputValue] = useState('');
+  const [allRoutes, setAllRoutes] = useState<string[]>([]);
+  const [suggestOpen, setSuggestOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
       setDraft(routes);
       setInputValue('');
+      setSuggestOpen(false);
+      fetchRoutesList().then(setAllRoutes);
     }
   }, [open, routes]);
+
+  const suggestions = useMemo(() => {
+    const query = inputValue.trim().toLowerCase();
+    if (!query) return [];
+    return allRoutes
+      .filter((r) => r.toLowerCase().startsWith(query) && !draft.includes(r))
+      .slice(0, 6);
+  }, [inputValue, allRoutes, draft]);
 
   const addRoute = (raw: string) => {
     const value = raw.trim();
     if (!value) return;
     setDraft((prev) => (prev.includes(value) ? prev : [...prev, value]));
     setInputValue('');
+    setSuggestOpen(false);
   };
 
   const removeRoute = (value: string) => {
@@ -40,6 +54,8 @@ export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: 
       addRoute(inputValue);
     } else if (e.key === 'Backspace' && !inputValue && draft.length > 0) {
       setDraft((prev) => prev.slice(0, -1));
+    } else if (e.key === 'Escape') {
+      setSuggestOpen(false);
     }
   };
 
@@ -68,13 +84,36 @@ export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: 
         </DialogHeader>
 
         <div className="space-y-3">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Введите номер и нажмите Enter"
-            autoFocus
-          />
+          <div className="relative">
+            <Input
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                setSuggestOpen(true);
+              }}
+              onFocus={() => setSuggestOpen(true)}
+              onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
+              onKeyDown={handleKeyDown}
+              placeholder="Введите номер и нажмите Enter"
+              autoFocus
+            />
+            {suggestOpen && suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-md border bg-popover shadow-md">
+                {suggestions.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => addRoute(r)}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-secondary"
+                  >
+                    <Icon name="Milestone" size={13} className="text-muted-foreground" />
+                    Маршрут {r}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {draft.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {draft.map((r) => (

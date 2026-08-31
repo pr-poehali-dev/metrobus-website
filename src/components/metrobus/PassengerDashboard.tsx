@@ -167,6 +167,15 @@ export default function PassengerDashboard({
         </div>
       )}
 
+      {myRoutes.length > 0 && !loading && metric1.value === 0 && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm">
+          <Icon name="Info" size={16} className="shrink-0 text-muted-foreground" />
+          <span>
+            По выбранным маршрутам ({myRoutes.join(', ')}) пока нет оценок. Как только появятся новые оценки по этим маршрутам, они отобразятся здесь.
+          </span>
+        </div>
+      )}
+
       {/* KPI: метрика 1 + метрика 2 (зависят от Мои/Все) */}
       <div className={`mt-6 grid gap-4 sm:grid-cols-2 ${metric3 ? 'lg:grid-cols-3' : ''}`}>
         <div className="rounded-xl border border-border p-5">
