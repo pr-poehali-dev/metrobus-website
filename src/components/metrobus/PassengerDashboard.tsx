@@ -32,9 +32,12 @@ const transportImg: Record<TransportType, string> = {
   trolley: '/icons/trolley-transport.png',
 };
 
-function ModeBadge({ viewMode }: { viewMode: ViewMode }) {
+function ModeBadge({ viewMode, setViewMode }: { viewMode: ViewMode; setViewMode?: (v: ViewMode) => void }) {
   return (
-    <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground">
+    <span
+      onClick={setViewMode ? () => setViewMode(viewMode === 'passengers' ? 'observers' : 'passengers') : undefined}
+      className="flex shrink-0 items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground"
+    >
       <Icon name={viewMode === 'passengers' ? 'Bus' : 'Route'} size={12} />
       {viewMode === 'passengers' ? 'Поездки' : 'Маршруты'}
     </span>
@@ -227,7 +230,7 @@ export default function PassengerDashboard({
           <h3 className="font-semibold">
             {dataScope === 'mine' ? 'Мои последние оценки' : 'Последние оценки'}
           </h3>
-          <ModeBadge viewMode={viewMode} />
+          <ModeBadge viewMode={viewMode} setViewMode={setViewMode} />
         </div>
         {records.length === 0 && !loading && (
           <p className="mt-3 text-sm text-muted-foreground">
@@ -299,7 +302,7 @@ export default function PassengerDashboard({
             <Icon name="Trophy" size={18} className="text-muted-foreground" />
             <h3 className="text-lg font-semibold">Топ-10</h3>
           </div>
-          <ModeBadge viewMode={viewMode} />
+          <ModeBadge viewMode={viewMode} setViewMode={setViewMode} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">Используется анонимный идентификатор.</p>
         {topActiveUsers.length === 0 && !loading && (
@@ -342,7 +345,7 @@ export default function PassengerDashboard({
             <Icon name="Sparkles" size={18} className="text-muted-foreground" />
             <h3 className="text-lg font-semibold">О чём пишут пользователи</h3>
           </div>
-          <ModeBadge viewMode={viewMode} />
+          <ModeBadge viewMode={viewMode} setViewMode={setViewMode} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически.</p>
         {clusters.length === 0 && !loading && (
