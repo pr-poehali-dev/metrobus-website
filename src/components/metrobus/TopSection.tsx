@@ -54,10 +54,12 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           </nav>
 
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex" onClick={onMyRatingsOpen}>
-              <Icon name="UserCheck" size={15} />
-              <span>Мои оценки</span>
-            </Button>
+            <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="hidden sm:block">
+              <Button size="sm" variant="outline" className="h-9 gap-1.5 px-3">
+                <Icon name="Star" size={15} />
+                <span>Оценить</span>
+              </Button>
+            </a>
             <ThemeToggle />
             <Button
               size="icon"
@@ -103,12 +105,10 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           <h1 className="text-xl font-bold leading-tight sm:text-4xl">Ваш вклад в транспорт будущего</h1>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">Оценивайте комфорт поездок и удобство маршрутов общественного транспорта - без приложения, регистрации и сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="sm:w-auto">
-              <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto">
-                <Icon name="Star" size={18} />
-                Оценить
-              </Button>
-            </a>
+            <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto" onClick={onMyRatingsOpen}>
+              <Icon name="UserCheck" size={18} />
+              Мои оценки
+            </Button>
             {showDashboardButton && (
               <Button
                 size="lg"
