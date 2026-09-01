@@ -238,7 +238,7 @@ def handler(event: dict, context) -> dict:
             by_type_map.setdefault(key, {
                 'type': key, 'label': TRANSPORT_LABELS[key], 'average': 0, 'count': 0,
             })
-        by_type = [by_type_map['bus'], by_type_map['tram'], by_type_map['trolley']]
+        by_type = [by_type_map['bus'], by_type_map['trolley'], by_type_map['tram']]
 
         cur.execute(
             f"""

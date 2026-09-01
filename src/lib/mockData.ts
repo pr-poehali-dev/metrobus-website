@@ -16,8 +16,8 @@ export const summary: Summary = {
   monthCount: 18742,
   byType: [
     { type: 'bus', label: 'Автобус', average: 4.28, count: 9640 },
-    { type: 'tram', label: 'Трамвай', average: 4.51, count: 4820 },
     { type: 'trolley', label: 'Троллейбус', average: 4.17, count: 4282 },
+    { type: 'tram', label: 'Трамвай', average: 4.51, count: 4820 },
   ],
 };
 

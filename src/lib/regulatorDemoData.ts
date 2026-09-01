@@ -31,13 +31,13 @@ export function regulatorDemoSummary(mode: ViewMode) {
 const byTypeByMode = {
   passengers: [
     { type: 'bus' as const, label: 'Автобус', average: 4.11, count: 9820 },
-    { type: 'tram' as const, label: 'Трамвай', average: 4.46, count: 5124 },
     { type: 'trolley' as const, label: 'Троллейбус', average: 4.09, count: 3698 },
+    { type: 'tram' as const, label: 'Трамвай', average: 4.46, count: 5124 },
   ],
   observers: [
     { type: 'bus' as const, label: 'Автобус', average: 3.74, count: 612 },
-    { type: 'tram' as const, label: 'Трамвай', average: 4.02, count: 318 },
     { type: 'trolley' as const, label: 'Троллейбус', average: 3.79, count: 173 },
+    { type: 'tram' as const, label: 'Трамвай', average: 4.02, count: 318 },
   ],
 };
 
