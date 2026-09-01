@@ -25,10 +25,20 @@ export default function IcqrSyncStatus() {
   const handleSyncRoutes = async () => {
     setSyncingRoutes(true);
     setRoutesResult(null);
-    const res = await triggerRoutesSync();
+    let steps = 0;
+    let last = null as Awaited<ReturnType<typeof triggerRoutesSync>>;
+    while (steps < 20) {
+      steps += 1;
+      last = await triggerRoutesSync();
+      if (!last || last.done) break;
+      setRoutesResult({
+        ok: true,
+        text: `Синхронизация… страница ${last.page ?? '?'} из ${last.totalPages ?? '?'} (${last.directorySynced})`,
+      });
+    }
     setSyncingRoutes(false);
-    if (res) {
-      setRoutesResult({ ok: true, text: `Готово: ${res.directorySynced} маршрутов` });
+    if (last) {
+      setRoutesResult({ ok: true, text: `Готово: ${last.directorySynced} маршрутов` });
     } else {
       setRoutesResult({ ok: false, text: 'Не удалось синхронизировать' });
     }

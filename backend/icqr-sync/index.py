@@ -2,6 +2,7 @@ import json
 import os
 import smtplib
 import ssl
+import time
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -47,66 +48,45 @@ def fetch_routes_page(location: str, page: int, per_page: int = 200):
         return json.loads(resp.read().decode('utf-8'))
 
 
-def fetch_all_routes_list(location: str):
-    '''Постранично выгружает полный список маршрутов ICQR Admin API (get_all_routes) для заданного
-    кода локации. Возвращает список сырых элементов Data.items (id, route_number, title, ...) или
-    пустой список, если запрос не удался/локация неизвестна.'''
-    items = []
-    page = 1
-    per_page = 200
-    while True:
-        payload = fetch_routes_page(location, page, per_page)
-        if payload.get('Request_status', {}).get('Code') != 'Ok':
-            break
-        data = payload.get('Data') or {}
-        page_items = data.get('items') or []
-        items.extend(page_items)
-        pagination = data.get('pagination') or {}
-        total_pages = pagination.get('total_pages') or 1
-        if not page_items or page >= total_pages:
-            break
-        page += 1
-    return items
+ROUTES_LOCATIONS = ('8-812', 'SPB')
 
 
-def sync_routes_list(cur, force: bool = False):
-    '''Раз в сутки полностью пересинхронизирует справочник маршрутов ICQR (get_all_routes) в таблицу
-    transport_routes и заодно обновляет app_settings.total_active_routes_count реальным числом
-    маршрутов (без отдельного лёгкого запроса — используется тот же полный список). Перебирает
-    известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как оба варианта встречаются
-    в данных ICQR. Не дергает Admin API при каждом вызове синхронизации, чтобы не замедлять
-    частый триггер с фронтенда — если force=True (ручной запуск из админ-консоли), суточное
-    ограничение игнорируется. Возвращает кол-во синхронизированных маршрутов при успехе, строку
-    'skipped', если пропущено (недавно обновлялось и force=False), или None, если запрос к ICQR
-    Admin API не удался (обе локации) — это отличается от 'skipped', чтобы вызывающий код мог
-    прислать email-уведомление об ошибке только в случае реального сбоя.'''
-    if not force:
-        cur.execute("SELECT MAX(synced_at) FROM transport_routes")
-        last_synced = cur.fetchone()[0]
-        if last_synced and (datetime.now() - last_synced).total_seconds() < 86400:
-            return 'skipped'
-
-    items = []
-    for location in ('8-812', 'SPB'):
-        try:
-            items = fetch_all_routes_list(location)
-        except Exception:
-            items = []
-        if items:
-            break
-    if not items:
+def get_routes_sync_progress(cur):
+    '''Читает сохранённый прогресс постраничной синхронизации справочника маршрутов
+    (app_settings.routes_sync_progress, JSON) — locationIdx, page, upserted. Отсутствие записи
+    означает, что сейчас не идёт незавершённый цикл синхронизации.'''
+    cur.execute("SELECT value FROM app_settings WHERE key = 'routes_sync_progress'")
+    row = cur.fetchone()
+    if not row or not row[0]:
+        return None
+    try:
+        return json.loads(row[0])
+    except (TypeError, ValueError):
         return None
 
-    seen = set()
+
+def save_routes_sync_progress(cur, progress: dict):
+    cur.execute(
+        """
+        INSERT INTO app_settings (key, value, updated_at) VALUES ('routes_sync_progress', %s, now())
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+        """,
+        (json.dumps(progress),),
+    )
+
+
+def clear_routes_sync_progress(cur):
+    cur.execute("DELETE FROM app_settings WHERE key = 'routes_sync_progress'")
+
+
+def upsert_routes_page(cur, items: list):
+    '''Записывает элементы одной страницы get_all_routes в transport_routes (upsert по route_number
+    + transport_type).'''
     for item in items:
         route_number = str(item.get('route_number') or item.get('number') or '').strip()
         if not route_number:
             continue
         transport_type = (item.get('transport_type') or item.get('type') or '').strip().lower()
-        key = (route_number, transport_type)
-        if key in seen:
-            continue
-        seen.add(key)
         cur.execute(
             """
             INSERT INTO transport_routes (icqr_route_id, route_number, title, transport_type, synced_at)
@@ -119,15 +99,92 @@ def sync_routes_list(cur, force: bool = False):
             (item.get('id'), route_number, item.get('title'), transport_type),
         )
 
-    count = len(seen)
-    cur.execute(
-        """
-        INSERT INTO app_settings (key, value, updated_at) VALUES ('total_active_routes_count', %s, now())
-        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
-        """,
-        (str(count),),
-    )
-    return count
+
+def sync_routes_page(cur, force: bool = False):
+    '''Догружает ОДНУ страницу справочника маршрутов ICQR Admin API (get_all_routes) за один вызов —
+    так справочник из ~624 маршрутов на нескольких страницах (по 200) синхронизируется без обрыва
+    по таймауту облачной функции (5 сек), которым упирался прежний вариант, скачивавший весь
+    справочник за один вызов. Прогресс (текущая локация, номер страницы) хранится в
+    app_settings.routes_sync_progress и переживает между вызовами — каждый следующий вызов
+    (плановый, при обычном триггере синхронизации отзывов с фронтенда, либо ручной — кнопкой
+    "Обновить маршруты" в админ-консоли) продолжает с той страницы, где остановились, вместо
+    повторного скачивания с начала. Перебирает известные коды локаций Санкт-Петербурга ("8-812",
+    "SPB"), пока одна из них не вернёт непустой список. Новый цикл синхронизации стартует не чаще
+    раза в сутки (app_settings.routes_last_full_sync_at) — если force=True (ручной запуск), суточное
+    ограничение игнорируется только для СТАРТА нового цикла; уже начатый цикл всегда продолжается
+    независимо от force.
+    Возвращает dict {done, syncedTotal, page, totalPages} — done=True, когда справочник полностью
+    пересинхронизирован (тогда также обновлены total_active_routes_count и routes_last_full_sync_at);
+    либо строку 'skipped', если новый цикл не стартовал (недавно завершался и force=False); либо
+    None, если запрос к ICQR Admin API не удался на всех локациях.'''
+    progress = get_routes_sync_progress(cur)
+    if progress is None:
+        if not force:
+            cur.execute("SELECT value FROM app_settings WHERE key = 'routes_last_full_sync_at'")
+            row = cur.fetchone()
+            if row and row[0]:
+                try:
+                    last_full = datetime.fromisoformat(row[0])
+                    if (datetime.now() - last_full).total_seconds() < 86400:
+                        return 'skipped'
+                except ValueError:
+                    pass
+        progress = {'locationIdx': 0, 'page': 1}
+
+    loc = ROUTES_LOCATIONS[progress['locationIdx']]
+    try:
+        payload = fetch_routes_page(loc, progress['page'], 200)
+    except Exception:
+        payload = None
+
+    def try_next_location():
+        if progress['locationIdx'] < len(ROUTES_LOCATIONS) - 1:
+            progress['locationIdx'] += 1
+            progress['page'] = 1
+            save_routes_sync_progress(cur, progress)
+            cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+            return {'done': False, 'syncedTotal': int(cur.fetchone()[0]), 'page': None, 'totalPages': None}
+        clear_routes_sync_progress(cur)
+        return None
+
+    if not payload or payload.get('Request_status', {}).get('Code') != 'Ok':
+        return try_next_location()
+
+    data = payload.get('Data') or {}
+    items = data.get('items') or []
+    pagination = data.get('pagination') or {}
+    total_pages = pagination.get('total_pages') or 1
+
+    if not items and progress['page'] == 1:
+        return try_next_location()
+
+    upsert_routes_page(cur, items)
+
+    if not items or progress['page'] >= total_pages:
+        cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+        synced_total = int(cur.fetchone()[0])
+        cur.execute(
+            """
+            INSERT INTO app_settings (key, value, updated_at) VALUES ('total_active_routes_count', %s, now())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+            """,
+            (str(synced_total),),
+        )
+        cur.execute(
+            """
+            INSERT INTO app_settings (key, value, updated_at) VALUES ('routes_last_full_sync_at', %s, now())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+            """,
+            (datetime.now().isoformat(),),
+        )
+        clear_routes_sync_progress(cur)
+        return {'done': True, 'syncedTotal': synced_total, 'page': progress['page'], 'totalPages': total_pages}
+
+    progress['page'] += 1
+    save_routes_sync_progress(cur, progress)
+    cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+    synced_total = int(cur.fetchone()[0])
+    return {'done': False, 'syncedTotal': synced_total, 'page': progress['page'], 'totalPages': total_pages}
 
 
 def fetch_rating_details(rating_id: int):
@@ -398,23 +455,30 @@ def check_routes_directory_health(cur, sync_failed: bool = False, error_message:
 def handler(event: dict, context) -> dict:
     '''Синхронизирует одобренные отзывы пассажиров с ICQR Public API в локальную таблицу transport_passenger_ratings,
     затем дозагружает геоданные (координаты открытия формы и отправки оценки, расстояние между ними) через ICQR Admin API.
-    Не чаще раза в сутки также полностью пересинхронизирует справочник маршрутов ОРГП Санкт-Петербурга
-    (таблица transport_routes) через ICQR Admin API (get_all_routes) — список не зависит от того, есть ли по
-    маршруту одобренные отзывы, и используется для фильтра "Мои маршруты" на дашборде. Заодно обновляет
-    app_settings.total_active_routes_count реальным количеством маршрутов, которое используется на дашборде
-    как знаменатель метрики "покрытие маршрутов".
+    Не чаще раза в сутки также запускает постраничную пересинхронизацию справочника маршрутов ОРГП
+    Санкт-Петербурга (таблица transport_routes) через ICQR Admin API (get_all_routes) — список не
+    зависит от того, есть ли по маршруту одобренные отзывы, и используется для фильтра "Мои маршруты"
+    на дашборде. Справочник (~624 маршрута на нескольких страницах по 200) синхронизируется НЕ за один
+    вызов функции (что раньше упиралось в 5-секундный таймаут), а по ОДНОЙ странице за вызов —
+    прогресс (локация, номер страницы) хранится в app_settings.routes_sync_progress и продолжается
+    при каждом следующем обычном триггере синхронизации с фронтенда, пока весь справочник не будет
+    загружен. По завершении цикла обновляется app_settings.total_active_routes_count (знаменатель
+    метрики "покрытие маршрутов" на дашборде) и routes_last_full_sync_at.
     При GET с параметром status=1 возвращает статус последней синхронизации без запуска новой.
     При GET с параметром syncRoutes=1 запускает ТОЛЬКО принудительную пересинхронизацию справочника
-    маршрутов (get_all_routes), игнорируя суточное ограничение — используется кнопкой ручного
-    запуска в админ-консоли, чтобы не ждать полного цикла синхронизации отзывов.
-    После каждой попытки синхронизации справочника маршрутов (плановой или ручной) фактическое
-    состояние таблицы transport_routes сверяется с ожидаемым total_active_routes_count; если
-    справочник не синхронизирован вовсе или синхронизирован не полностью — администратору
-    (support@icqr.ru) отправляется email через SMTP (реквизиты в секретах SMTP_HOST/SMTP_PORT/
-    SMTP_USER/SMTP_PASS), не чаще раза в час на один и тот же тип проблемы.
+    маршрутов, игнорируя суточное ограничение на СТАРТ нового цикла — используется кнопкой ручного
+    запуска в админ-консоли; в пределах одного вызова догружает подряд столько страниц, сколько
+    успевает за ~3.5 сек (с запасом на таймаут функции), и возвращает done=true, когда весь справочник
+    полностью синхронизирован, иначе done=false — кнопку можно нажать повторно, чтобы продолжить.
+    После каждого вызова (планового или ручного) фактическое состояние таблицы transport_routes
+    сверяется с ожидаемым total_active_routes_count; если справочник не синхронизирован вовсе или
+    синхронизирован не полностью — администратору (support@icqr.ru) отправляется email через SMTP
+    (реквизиты в секретах SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS), не чаще раза в час на один и тот
+    же тип проблемы.
     Args: event - dict с httpMethod, queryStringParameters (status, syncRoutes); context - объект с request_id.
     Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей,
-        актуальным числом синхронизированных маршрутов (если обновлялось) или статусом последней синхронизации.
+        и routesSync — результатом текущего шага синхронизации справочника маршрутов (dict с done/syncedTotal/
+        page/totalPages, либо 'skipped', либо null при ошибке) или статусом последней синхронизации.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -465,22 +529,41 @@ def handler(event: dict, context) -> dict:
             conn.close()
 
     if method == 'GET' and params.get('syncRoutes') == '1':
+        deadline = time.monotonic() + 3.5
         try:
-            routes_count = sync_routes_list(cur, force=True)
-            if routes_count is None:
-                check_routes_directory_health(cur, sync_failed=True, error_message='Не удалось получить ответ от ICQR Admin API (get_all_routes)')
-                return {
-                    'statusCode': 502,
-                    'headers': headers,
-                    'body': json.dumps({'error': 'icqr_routes_sync_failed'}),
-                }
-            cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
-            synced_total = int(cur.fetchone()[0])
-            check_routes_directory_health(cur)
+            result = None
+            done = False
+            while time.monotonic() < deadline:
+                result = sync_routes_page(cur, force=True)
+                if result is None:
+                    check_routes_directory_health(cur, sync_failed=True, error_message='Не удалось получить ответ от ICQR Admin API (get_all_routes)')
+                    return {
+                        'statusCode': 502,
+                        'headers': headers,
+                        'body': json.dumps({'error': 'icqr_routes_sync_failed'}),
+                    }
+                if result == 'skipped':
+                    cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+                    synced_total = int(cur.fetchone()[0])
+                    check_routes_directory_health(cur)
+                    return {
+                        'statusCode': 200,
+                        'headers': headers,
+                        'body': json.dumps({'done': True, 'skipped': True, 'directorySynced': synced_total}),
+                    }
+                if result['done']:
+                    done = True
+                    break
+            check_routes_directory_health(cur, sync_failed=False)
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'activeRoutesCount': routes_count, 'directorySynced': synced_total}),
+                'body': json.dumps({
+                    'done': done,
+                    'directorySynced': result['syncedTotal'] if result else 0,
+                    'page': result.get('page') if result else None,
+                    'totalPages': result.get('totalPages') if result else None,
+                }),
             }
         except Exception as e:
             check_routes_directory_health(cur, sync_failed=True, error_message=str(e))
@@ -564,10 +647,10 @@ def handler(event: dict, context) -> dict:
             geo_error = str(ge)
 
         try:
-            routes_count = sync_routes_list(cur)
-            check_routes_directory_health(cur, sync_failed=(routes_count is None))
+            routes_result = sync_routes_page(cur)
+            check_routes_directory_health(cur, sync_failed=(routes_result is None))
         except Exception as re:
-            routes_count = None
+            routes_result = None
             check_routes_directory_health(cur, sync_failed=True, error_message=str(re))
 
         log_sync_result(cur, 'ok', total_upserted, geo_error)
@@ -577,7 +660,7 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({
                 'synced': total_upserted,
                 'geoEnriched': geo_enriched,
-                'activeRoutesCount': routes_count,
+                'routesSync': routes_result if isinstance(routes_result, dict) else routes_result,
             }),
         }
     except Exception as e:

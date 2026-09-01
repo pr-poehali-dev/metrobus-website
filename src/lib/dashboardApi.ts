@@ -152,8 +152,11 @@ export async function fetchIcqrSyncStatus(): Promise<IcqrSyncStatus | null> {
 }
 
 export interface RoutesSyncResult {
-  activeRoutesCount: number;
+  done: boolean;
+  skipped?: boolean;
   directorySynced: number;
+  page?: number | null;
+  totalPages?: number | null;
 }
 
 export async function triggerRoutesSync(): Promise<RoutesSyncResult | null> {
