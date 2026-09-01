@@ -144,6 +144,21 @@ export async function fetchIcqrSyncStatus(): Promise<IcqrSyncStatus | null> {
   }
 }
 
+export interface RoutesSyncResult {
+  activeRoutesCount: number;
+  directorySynced: number;
+}
+
+export async function triggerRoutesSync(): Promise<RoutesSyncResult | null> {
+  try {
+    const res = await fetch(`${func2url['icqr-sync']}?syncRoutes=1`);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export interface CityGeo {
   city: string | null;
   region: string | null;

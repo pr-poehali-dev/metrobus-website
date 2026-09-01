@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
-import { fetchIcqrSyncStatus, IcqrSyncStatus as IcqrSyncStatusType } from '@/lib/dashboardApi';
+import { Button } from '@/components/ui/button';
+import { fetchIcqrSyncStatus, triggerRoutesSync, IcqrSyncStatus as IcqrSyncStatusType } from '@/lib/dashboardApi';
 
 function formatDate(iso: string | null) {
   if (!iso) return '—';
@@ -11,6 +12,8 @@ function formatDate(iso: string | null) {
 export default function IcqrSyncStatus() {
   const [data, setData] = useState<IcqrSyncStatusType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncingRoutes, setSyncingRoutes] = useState(false);
+  const [routesResult, setRoutesResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     fetchIcqrSyncStatus().then((res) => {
@@ -18,6 +21,39 @@ export default function IcqrSyncStatus() {
       setLoading(false);
     });
   }, []);
+
+  const handleSyncRoutes = async () => {
+    setSyncingRoutes(true);
+    setRoutesResult(null);
+    const res = await triggerRoutesSync();
+    setSyncingRoutes(false);
+    if (res) {
+      setRoutesResult({ ok: true, text: `Готово: ${res.directorySynced} маршрутов` });
+    } else {
+      setRoutesResult({ ok: false, text: 'Не удалось синхронизировать' });
+    }
+  };
+
+  const routesSyncButton = (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleSyncRoutes}
+      disabled={syncingRoutes}
+      className="h-7 gap-1.5 px-2 text-xs"
+      title="Принудительно пересинхронизировать справочник маршрутов из ICQR"
+    >
+      <Icon name={syncingRoutes ? 'Loader2' : 'RefreshCw'} size={12} className={syncingRoutes ? 'animate-spin' : ''} />
+      {syncingRoutes ? 'Синхронизация…' : 'Обновить маршруты'}
+    </Button>
+  );
+
+  const resultBadge = routesResult && (
+    <span className={`inline-flex items-center gap-1 text-xs ${routesResult.ok ? 'text-transport-tram' : 'text-destructive'}`}>
+      <Icon name={routesResult.ok ? 'CircleCheck' : 'CircleAlert'} size={12} />
+      {routesResult.text}
+    </span>
+  );
 
   if (loading) {
     return (
@@ -30,29 +66,41 @@ export default function IcqrSyncStatus() {
 
   if (!data || data.status === null) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Icon name="CircleDashed" size={13} />
-        Синхронизация ICQR ещё не запускалась
-      </span>
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Icon name="CircleDashed" size={13} />
+          Синхронизация ICQR ещё не запускалась
+        </span>
+        {routesSyncButton}
+        {resultBadge}
+      </div>
     );
   }
 
   if (data.status === 'error') {
     return (
-      <span
-        className="inline-flex items-center gap-1.5 text-xs text-destructive"
-        title={data.errorMessage ?? undefined}
-      >
-        <Icon name="CircleAlert" size={13} />
-        Синхронизация ICQR: ошибка ({formatDate(data.lastSyncAt)})
-      </span>
+      <div className="flex items-center gap-3">
+        <span
+          className="inline-flex items-center gap-1.5 text-xs text-destructive"
+          title={data.errorMessage ?? undefined}
+        >
+          <Icon name="CircleAlert" size={13} />
+          Синхронизация ICQR: ошибка ({formatDate(data.lastSyncAt)})
+        </span>
+        {routesSyncButton}
+        {resultBadge}
+      </div>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-      <Icon name="CircleCheck" size={13} className="text-transport-tram" />
-      Синхронизация ICQR: {formatDate(data.lastSyncAt)} · {data.syncedCount} отзывов
-    </span>
+    <div className="flex items-center gap-3">
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon name="CircleCheck" size={13} className="text-transport-tram" />
+        Синхронизация ICQR: {formatDate(data.lastSyncAt)} · {data.syncedCount} отзывов
+      </span>
+      {routesSyncButton}
+      {resultBadge}
+    </div>
   );
 }

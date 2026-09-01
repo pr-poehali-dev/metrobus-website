@@ -64,18 +64,20 @@ def fetch_all_routes_list(location: str):
     return items
 
 
-def sync_routes_list(cur):
+def sync_routes_list(cur, force: bool = False):
     '''Раз в сутки полностью пересинхронизирует справочник маршрутов ICQR (get_all_routes) в таблицу
     transport_routes и заодно обновляет app_settings.total_active_routes_count реальным числом
     маршрутов (без отдельного лёгкого запроса — используется тот же полный список). Перебирает
     известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как оба варианта встречаются
     в данных ICQR. Не дергает Admin API при каждом вызове синхронизации, чтобы не замедлять
-    частый триггер с фронтенда. Возвращает кол-во синхронизированных маршрутов или None, если
-    пропущено (недавно обновлялось) или запрос не удался.'''
-    cur.execute("SELECT MAX(synced_at) FROM transport_routes")
-    last_synced = cur.fetchone()[0]
-    if last_synced and (datetime.now() - last_synced).total_seconds() < 86400:
-        return None
+    частый триггер с фронтенда — если force=True (ручной запуск из админ-консоли), суточное
+    ограничение игнорируется. Возвращает кол-во синхронизированных маршрутов или None, если
+    пропущено (недавно обновлялось и force=False) или запрос не удался.'''
+    if not force:
+        cur.execute("SELECT MAX(synced_at) FROM transport_routes")
+        last_synced = cur.fetchone()[0]
+        if last_synced and (datetime.now() - last_synced).total_seconds() < 86400:
+            return None
 
     items = []
     for location in ('8-812', 'SPB'):
@@ -288,7 +290,10 @@ def handler(event: dict, context) -> dict:
     app_settings.total_active_routes_count реальным количеством маршрутов, которое используется на дашборде
     как знаменатель метрики "покрытие маршрутов".
     При GET с параметром status=1 возвращает статус последней синхронизации без запуска новой.
-    Args: event - dict с httpMethod, queryStringParameters (status); context - объект с request_id.
+    При GET с параметром syncRoutes=1 запускает ТОЛЬКО принудительную пересинхронизацию справочника
+    маршрутов (get_all_routes), игнорируя суточное ограничение — используется кнопкой ручного
+    запуска в админ-консоли, чтобы не ждать полного цикла синхронизации отзывов.
+    Args: event - dict с httpMethod, queryStringParameters (status, syncRoutes); context - объект с request_id.
     Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей,
         актуальным числом синхронизированных маршрутов (если обновлялось) или статусом последней синхронизации.
     '''
@@ -335,6 +340,32 @@ def handler(event: dict, context) -> dict:
                     'errorMessage': row[2],
                     'lastSyncAt': row[3].isoformat() if row[3] else None,
                 }),
+            }
+        finally:
+            cur.close()
+            conn.close()
+
+    if method == 'GET' and params.get('syncRoutes') == '1':
+        try:
+            routes_count = sync_routes_list(cur, force=True)
+            if routes_count is None:
+                return {
+                    'statusCode': 502,
+                    'headers': headers,
+                    'body': json.dumps({'error': 'icqr_routes_sync_failed'}),
+                }
+            cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+            synced_total = int(cur.fetchone()[0])
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({'activeRoutesCount': routes_count, 'directorySynced': synced_total}),
+            }
+        except Exception as e:
+            return {
+                'statusCode': 500,
+                'headers': headers,
+                'body': json.dumps({'error': 'internal_error', 'message': str(e)}),
             }
         finally:
             cur.close()
