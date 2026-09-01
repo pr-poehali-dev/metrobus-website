@@ -128,6 +128,20 @@ export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: 
         </DialogHeader>
 
         <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-transport-bus" />
+              Автобус
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-transport-trolley" />
+              Троллейбус
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-transport-tram" />
+              Трамвай
+            </span>
+          </div>
           <div className="relative">
             <Input
               value={inputValue}
