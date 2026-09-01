@@ -142,7 +142,7 @@ def sync_routes_page(cur, force: bool = False):
             progress['locationIdx'] += 1
             progress['page'] = 1
             save_routes_sync_progress(cur, progress)
-            cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+            cur.execute("SELECT COUNT(DISTINCT (route_number, transport_type)) FROM transport_routes")
             return {'done': False, 'syncedTotal': int(cur.fetchone()[0]), 'page': None, 'totalPages': None}
         clear_routes_sync_progress(cur)
         return None
@@ -161,7 +161,7 @@ def sync_routes_page(cur, force: bool = False):
     upsert_routes_page(cur, items)
 
     if not items or progress['page'] >= total_pages:
-        cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+        cur.execute("SELECT COUNT(DISTINCT (route_number, transport_type)) FROM transport_routes")
         synced_total = int(cur.fetchone()[0])
         cur.execute(
             """
@@ -182,7 +182,7 @@ def sync_routes_page(cur, force: bool = False):
 
     progress['page'] += 1
     save_routes_sync_progress(cur, progress)
-    cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+    cur.execute("SELECT COUNT(DISTINCT (route_number, transport_type)) FROM transport_routes")
     synced_total = int(cur.fetchone()[0])
     return {'done': False, 'syncedTotal': synced_total, 'page': progress['page'], 'totalPages': total_pages}
 
@@ -435,7 +435,7 @@ def check_routes_directory_health(cur, sync_failed: bool = False, error_message:
         maybe_alert_routes_directory(cur, 'error', 0, error_message=error_message)
         return
 
-    cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+    cur.execute("SELECT COUNT(DISTINCT (route_number, transport_type)) FROM transport_routes")
     synced = int(cur.fetchone()[0])
     cur.execute("SELECT value FROM app_settings WHERE key = 'total_active_routes_count'")
     row = cur.fetchone()
@@ -543,7 +543,7 @@ def handler(event: dict, context) -> dict:
                         'body': json.dumps({'error': 'icqr_routes_sync_failed'}),
                     }
                 if result == 'skipped':
-                    cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+                    cur.execute("SELECT COUNT(DISTINCT (route_number, transport_type)) FROM transport_routes")
                     synced_total = int(cur.fetchone()[0])
                     check_routes_directory_health(cur)
                     return {

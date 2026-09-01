@@ -258,7 +258,7 @@ def handler(event: dict, context) -> dict:
         # Статус справочника маршрутов (transport_routes), используемого для подсказок "Мои маршруты"
         # и как знаменатель метрики "Покрытие": сверяем реальное число синхронизированных маршрутов
         # с ожидаемым total_active_routes_count, чтобы показать индикатор неполной синхронизации.
-        cur.execute("SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_routes")
+        cur.execute("SELECT COUNT(DISTINCT (route_number, transport_type)) AS cnt FROM transport_routes")
         directory_synced = int(cur.fetchone()['cnt'])
         cur.execute("SELECT value FROM app_settings WHERE key = 'total_active_routes_count'")
         directory_total_row = cur.fetchone()
