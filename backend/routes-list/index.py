@@ -9,7 +9,8 @@ def handler(event: dict, context) -> dict:
     по маршруту одобренные отзывы или прошли ли они модерацию. Используется на фронтенде для
     подсказки/валидации при вводе номеров маршрутов в фильтре "Мои маршруты".
     Args: event - dict с httpMethod; context - объект с request_id.
-    Returns: HTTP response с JSON { routes: string[] } — отсортированный список уникальных номеров маршрутов.
+    Returns: HTTP response с JSON { routes: { number: string, types: string[] }[] } — отсортированный
+    список уникальных номеров маршрутов с видами транспорта, которые их обслуживают.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -31,8 +32,11 @@ def handler(event: dict, context) -> dict:
     conn = psycopg2.connect(dsn)
     cur = conn.cursor()
     try:
-        cur.execute("SELECT DISTINCT route_number FROM transport_routes ORDER BY route_number")
-        routes = [r[0] for r in cur.fetchall()]
+        cur.execute(
+            "SELECT route_number, array_agg(DISTINCT transport_type ORDER BY transport_type) "
+            "FROM transport_routes WHERE transport_type != '' GROUP BY route_number ORDER BY route_number"
+        )
+        routes = [{'number': r[0], 'types': r[1]} for r in cur.fetchall()]
         return {
             'statusCode': 200,
             'headers': headers,

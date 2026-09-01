@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo, KeyboardEvent } from 'react';
+import { useEffect, useState, useMemo, KeyboardEvent, CSSProperties } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
-import { fetchRoutesList } from '@/lib/dashboardApi';
+import { fetchRoutesList, RouteInfo } from '@/lib/dashboardApi';
+import { TransportType } from '@/lib/mockData';
 
 interface MyRoutesDialogProps {
   open: boolean;
@@ -13,10 +14,47 @@ interface MyRoutesDialogProps {
   onApply: (routes: string[]) => void;
 }
 
+const transportBorderClass: Record<TransportType, string> = {
+  bus: 'border-transport-bus',
+  tram: 'border-transport-tram',
+  trolley: 'border-transport-trolley',
+};
+const transportBgClass: Record<TransportType, string> = {
+  bus: 'bg-transport-bus/10',
+  tram: 'bg-transport-tram/10',
+  trolley: 'bg-transport-trolley/10',
+};
+const transportTextClass: Record<TransportType, string> = {
+  bus: 'text-transport-bus',
+  tram: 'text-transport-tram',
+  trolley: 'text-transport-trolley',
+};
+const transportVar: Record<TransportType, string> = {
+  bus: '--tr-bus',
+  tram: '--tr-tram',
+  trolley: '--tr-trolley',
+};
+
+function getRouteHighlight(types: TransportType[] | undefined): { className: string; style?: CSSProperties } {
+  if (!types || types.length === 0) return { className: '' };
+  if (types.length === 1) {
+    const t = types[0];
+    return { className: `${transportBorderClass[t]} ${transportBgClass[t]} ${transportTextClass[t]}` };
+  }
+  const stop = 100 / types.length;
+  const gradient = types
+    .map((t, i) => `hsl(var(${transportVar[t]}) / 0.12) ${i * stop}%, hsl(var(${transportVar[t]}) / 0.12) ${(i + 1) * stop}%`)
+    .join(', ');
+  return {
+    className: 'border-border',
+    style: { backgroundImage: `linear-gradient(90deg, ${gradient})` },
+  };
+}
+
 export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: MyRoutesDialogProps) {
   const [draft, setDraft] = useState<string[]>(routes);
   const [inputValue, setInputValue] = useState('');
-  const [allRoutes, setAllRoutes] = useState<string[]>([]);
+  const [allRoutes, setAllRoutes] = useState<RouteInfo[]>([]);
   const [suggestOpen, setSuggestOpen] = useState(false);
 
   useEffect(() => {
@@ -28,11 +66,17 @@ export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: 
     }
   }, [open, routes]);
 
+  const routeTypesMap = useMemo(() => {
+    const map = new Map<string, TransportType[]>();
+    allRoutes.forEach((r) => map.set(r.number, r.types));
+    return map;
+  }, [allRoutes]);
+
   const suggestions = useMemo(() => {
     const query = inputValue.trim().toLowerCase();
     if (!query) return [];
     return allRoutes
-      .filter((r) => r.toLowerCase().startsWith(query) && !draft.includes(r))
+      .filter((r) => r.number.toLowerCase().startsWith(query) && !draft.includes(r.number))
       .slice(0, 6);
   }, [inputValue, allRoutes, draft]);
 
@@ -99,36 +143,48 @@ export default function MyRoutesDialog({ open, onOpenChange, routes, onApply }: 
             />
             {suggestOpen && suggestions.length > 0 && (
               <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-md border bg-popover shadow-md">
-                {suggestions.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => addRoute(r)}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-secondary"
-                  >
-                    <Icon name="Milestone" size={13} className="text-muted-foreground" />
-                    Маршрут {r}
-                  </button>
-                ))}
+                {suggestions.map((r) => {
+                  const highlight = getRouteHighlight(r.types);
+                  return (
+                    <button
+                      key={r.number}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => addRoute(r.number)}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-secondary ${highlight.className}`}
+                      style={highlight.style}
+                    >
+                      <Icon name="Milestone" size={13} className="text-muted-foreground" />
+                      Маршрут {r.number}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
           {draft.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {draft.map((r) => (
-                <Badge key={r} variant="secondary" className="gap-1 pr-1.5 text-sm">
-                  {r}
-                  <button
-                    type="button"
-                    onClick={() => removeRoute(r)}
-                    className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full hover:bg-foreground/10"
+              {draft.map((r) => {
+                const highlight = getRouteHighlight(routeTypesMap.get(r));
+                return (
+                  <Badge
+                    key={r}
+                    variant="secondary"
+                    className={`gap-1 border pr-1.5 text-sm ${highlight.className}`}
+                    style={highlight.style}
                   >
-                    <Icon name="X" size={11} />
-                    <span className="sr-only">Убрать маршрут {r}</span>
-                  </button>
-                </Badge>
-              ))}
+                    {r}
+                    <button
+                      type="button"
+                      onClick={() => removeRoute(r)}
+                      className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full hover:bg-foreground/10"
+                    >
+                      <Icon name="X" size={11} />
+                      <span className="sr-only">Убрать маршрут {r}</span>
+                    </button>
+                  </Badge>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">

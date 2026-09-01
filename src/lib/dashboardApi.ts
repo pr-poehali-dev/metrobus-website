@@ -96,7 +96,12 @@ export async function fetchDashboardStats(
   return res.json();
 }
 
-export async function fetchRoutesList(): Promise<string[]> {
+export interface RouteInfo {
+  number: string;
+  types: TransportType[];
+}
+
+export async function fetchRoutesList(): Promise<RouteInfo[]> {
   try {
     const res = await fetch(func2url['routes-list']);
     if (!res.ok) return [];
