@@ -1,13 +1,18 @@
 import json
 import os
+import smtplib
+import ssl
 import urllib.request
 import urllib.parse
 import urllib.error
 from datetime import datetime
+from email.mime.text import MIMEText
 import psycopg2
 
 
 ICQR_BASE_URL = os.environ.get('ICQR_API_BASE_URL', 'https://api.icqr.ru')
+ADMIN_ALERT_EMAIL = 'support@icqr.ru'
+ALERT_THROTTLE_SECONDS = 3600
 
 
 def fetch_page(page: int, per_page: int = 100):
@@ -71,13 +76,15 @@ def sync_routes_list(cur, force: bool = False):
     известные коды локаций Санкт-Петербурга ("8-812", "SPB"), так как оба варианта встречаются
     в данных ICQR. Не дергает Admin API при каждом вызове синхронизации, чтобы не замедлять
     частый триггер с фронтенда — если force=True (ручной запуск из админ-консоли), суточное
-    ограничение игнорируется. Возвращает кол-во синхронизированных маршрутов или None, если
-    пропущено (недавно обновлялось и force=False) или запрос не удался.'''
+    ограничение игнорируется. Возвращает кол-во синхронизированных маршрутов при успехе, строку
+    'skipped', если пропущено (недавно обновлялось и force=False), или None, если запрос к ICQR
+    Admin API не удался (обе локации) — это отличается от 'skipped', чтобы вызывающий код мог
+    прислать email-уведомление об ошибке только в случае реального сбоя.'''
     if not force:
         cur.execute("SELECT MAX(synced_at) FROM transport_routes")
         last_synced = cur.fetchone()[0]
         if last_synced and (datetime.now() - last_synced).total_seconds() < 86400:
-            return None
+            return 'skipped'
 
     items = []
     for location in ('8-812', 'SPB'):
@@ -281,6 +288,113 @@ def log_sync_result(cur, status: str, synced_count: int, error_message: str = No
     )
 
 
+def send_admin_email(subject: str, body: str) -> bool:
+    '''Отправляет письмо администратору (ADMIN_ALERT_EMAIL) через SMTP, используя реквизиты из
+    секретов SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS. Возвращает True при успехе, False при любой
+    ошибке (сеть, авторизация, отсутствие секретов) — вызывающий код не должен падать из-за письма.'''
+    host = os.environ.get('SMTP_HOST')
+    port = os.environ.get('SMTP_PORT')
+    user = os.environ.get('SMTP_USER')
+    password = os.environ.get('SMTP_PASS')
+    if not all((host, port, user, password)):
+        return False
+    try:
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['Subject'] = subject
+        msg['From'] = user
+        msg['To'] = ADMIN_ALERT_EMAIL
+        context = ssl.create_default_context()
+        if int(port) == 465:
+            with smtplib.SMTP_SSL(host, int(port), timeout=10, context=context) as server:
+                server.login(user, password)
+                server.sendmail(user, [ADMIN_ALERT_EMAIL], msg.as_string())
+        else:
+            with smtplib.SMTP(host, int(port), timeout=10) as server:
+                server.starttls(context=context)
+                server.login(user, password)
+                server.sendmail(user, [ADMIN_ALERT_EMAIL], msg.as_string())
+        return True
+    except Exception:
+        return False
+
+
+def maybe_alert_routes_directory(cur, status: str, synced: int, total: int = None, error_message: str = None):
+    '''Отправляет email администратору, если синхронизация справочника маршрутов провалилась
+    (status='error') или завершилась неполной (status='incomplete', synced < total). Троттлится
+    через app_settings.routes_alert_last_sent_at — не чаще раза в час, чтобы не заспамить админа
+    при частых вызовах icqr-sync. При status='ok' (полная синхронизация) сбрасывает троттлинг,
+    чтобы следующая проблема снова прислала письмо сразу.'''
+    if status == 'ok':
+        cur.execute("DELETE FROM app_settings WHERE key = 'routes_alert_last_sent_at'")
+        return
+
+    cur.execute("SELECT value FROM app_settings WHERE key = 'routes_alert_last_sent_at'")
+    row = cur.fetchone()
+    if row and row[0]:
+        try:
+            last_sent = datetime.fromisoformat(row[0])
+            if (datetime.now() - last_sent).total_seconds() < ALERT_THROTTLE_SECONDS:
+                return
+        except ValueError:
+            pass
+
+    if status == 'error':
+        subject = '[МЕТРОБУС] Синхронизация справочника маршрутов не удалась'
+        body = (
+            f"Синхронизация справочника маршрутов ICQR завершилась ошибкой.\n\n"
+            f"Причина: {error_message or 'неизвестна'}\n"
+            f"Время: {datetime.now().isoformat(timespec='seconds')}\n\n"
+            f"Проверьте доступность ICQR Admin API и токен ICQR_API_ADMIN_TOKEN."
+        )
+    else:
+        subject = '[МЕТРОБУС] Справочник маршрутов синхронизирован не полностью'
+        body = (
+            f"Справочник маршрутов ICQR синхронизирован не полностью.\n\n"
+            f"Загружено: {synced} из {total}\n"
+            f"Время: {datetime.now().isoformat(timespec='seconds')}\n\n"
+            f"Часть маршрутов может отсутствовать в подсказках 'Мои маршруты' и в метрике 'Покрытие'.\n"
+            f"Запустите повторную синхронизацию вручную из админ-консоли (кнопка 'Обновить маршруты')."
+        )
+
+    if send_admin_email(subject, body):
+        cur.execute(
+            """
+            INSERT INTO app_settings (key, value, updated_at) VALUES ('routes_alert_last_sent_at', %s, now())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+            """,
+            (datetime.now().isoformat(),),
+        )
+
+
+def check_routes_directory_health(cur, sync_failed: bool = False, error_message: str = None):
+    '''Проверяет фактическое состояние справочника маршрутов после попытки синхронизации и при
+    необходимости отправляет email-уведомление администратору (через maybe_alert_routes_directory).
+    Сравнивает реальное кол-во синхронизированных маршрутов (transport_routes) с ожидаемым
+    (app_settings.total_active_routes_count) — это покрывает не только явный сбой запроса к ICQR
+    Admin API, но и случай, когда синхронизация была прервана таймаутом облачной функции
+    посреди записи в БД (в этом случае total_active_routes_count ещё хранит старое полное число,
+    а транзакция успела дописать только часть маршрутов).'''
+    if sync_failed:
+        maybe_alert_routes_directory(cur, 'error', 0, error_message=error_message)
+        return
+
+    cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
+    synced = int(cur.fetchone()[0])
+    cur.execute("SELECT value FROM app_settings WHERE key = 'total_active_routes_count'")
+    row = cur.fetchone()
+    try:
+        total = int(row[0]) if row and row[0] else None
+    except (TypeError, ValueError):
+        total = None
+
+    if not total:
+        return
+    if synced < total:
+        maybe_alert_routes_directory(cur, 'incomplete', synced, total)
+    else:
+        maybe_alert_routes_directory(cur, 'ok', synced, total)
+
+
 def handler(event: dict, context) -> dict:
     '''Синхронизирует одобренные отзывы пассажиров с ICQR Public API в локальную таблицу transport_passenger_ratings,
     затем дозагружает геоданные (координаты открытия формы и отправки оценки, расстояние между ними) через ICQR Admin API.
@@ -293,6 +407,11 @@ def handler(event: dict, context) -> dict:
     При GET с параметром syncRoutes=1 запускает ТОЛЬКО принудительную пересинхронизацию справочника
     маршрутов (get_all_routes), игнорируя суточное ограничение — используется кнопкой ручного
     запуска в админ-консоли, чтобы не ждать полного цикла синхронизации отзывов.
+    После каждой попытки синхронизации справочника маршрутов (плановой или ручной) фактическое
+    состояние таблицы transport_routes сверяется с ожидаемым total_active_routes_count; если
+    справочник не синхронизирован вовсе или синхронизирован не полностью — администратору
+    (support@icqr.ru) отправляется email через SMTP (реквизиты в секретах SMTP_HOST/SMTP_PORT/
+    SMTP_USER/SMTP_PASS), не чаще раза в час на один и тот же тип проблемы.
     Args: event - dict с httpMethod, queryStringParameters (status, syncRoutes); context - объект с request_id.
     Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей,
         актуальным числом синхронизированных маршрутов (если обновлялось) или статусом последней синхронизации.
@@ -349,6 +468,7 @@ def handler(event: dict, context) -> dict:
         try:
             routes_count = sync_routes_list(cur, force=True)
             if routes_count is None:
+                check_routes_directory_health(cur, sync_failed=True, error_message='Не удалось получить ответ от ICQR Admin API (get_all_routes)')
                 return {
                     'statusCode': 502,
                     'headers': headers,
@@ -356,12 +476,14 @@ def handler(event: dict, context) -> dict:
                 }
             cur.execute("SELECT COUNT(DISTINCT route_number) FROM transport_routes")
             synced_total = int(cur.fetchone()[0])
+            check_routes_directory_health(cur)
             return {
                 'statusCode': 200,
                 'headers': headers,
                 'body': json.dumps({'activeRoutesCount': routes_count, 'directorySynced': synced_total}),
             }
         except Exception as e:
+            check_routes_directory_health(cur, sync_failed=True, error_message=str(e))
             return {
                 'statusCode': 500,
                 'headers': headers,
@@ -441,7 +563,12 @@ def handler(event: dict, context) -> dict:
         except Exception as ge:
             geo_error = str(ge)
 
-        routes_count = sync_routes_list(cur)
+        try:
+            routes_count = sync_routes_list(cur)
+            check_routes_directory_health(cur, sync_failed=(routes_count is None))
+        except Exception as re:
+            routes_count = None
+            check_routes_directory_health(cur, sync_failed=True, error_message=str(re))
 
         log_sync_result(cur, 'ok', total_upserted, geo_error)
         return {
