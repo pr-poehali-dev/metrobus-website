@@ -197,6 +197,24 @@ export default function PassengerDashboard({
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Icon name={dataScope === 'mine' ? 'TrendingUp' : 'Route'} size={15} />
             {metric2.label}
+            {dataScope === 'all' && summary.routesDirectory && (
+              <span
+                className={`ml-0.5 h-2 w-2 shrink-0 rounded-full ${
+                  summary.routesDirectory.synced === 0
+                    ? 'bg-destructive'
+                    : summary.routesDirectory.incomplete
+                      ? 'bg-amber-500'
+                      : 'bg-transport-tram'
+                }`}
+                title={
+                  summary.routesDirectory.synced === 0
+                    ? 'Справочник маршрутов не синхронизирован'
+                    : summary.routesDirectory.incomplete
+                      ? `Справочник маршрутов синхронизирован не полностью: ${summary.routesDirectory.synced} из ${summary.routesDirectory.total}`
+                      : 'Справочник маршрутов синхронизирован полностью'
+                }
+              />
+            )}
           </p>
           {dataScope === 'mine' ? (
             <div className={`mt-2 flex items-center gap-1.5 font-mono-num text-4xl font-bold leading-none ${metric2.value > 0 ? 'text-transport-tram' : ''}`}>
@@ -217,15 +235,6 @@ export default function PassengerDashboard({
                     className="h-full rounded-full bg-primary"
                     style={{ width: `${Math.min(100, (metric2.value / metric2.total) * 100)}%` }}
                   />
-                </div>
-              )}
-              {summary.routesDirectory?.incomplete && (
-                <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-2 text-xs text-amber-600">
-                  <Icon name="AlertTriangle" size={14} className="mt-0.5 shrink-0" />
-                  <span>
-                    Справочник маршрутов синхронизирован не полностью: {summary.routesDirectory.synced} из{' '}
-                    {summary.routesDirectory.total}. Часть маршрутов может отсутствовать в поиске «Мои маршруты».
-                  </span>
                 </div>
               )}
             </>
