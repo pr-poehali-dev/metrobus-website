@@ -16,6 +16,12 @@ function formatRecordDate(iso: string | null) {
   return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
+function formatSyncDate(iso: string | null) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
 const transportClass: Record<TransportType, string> = {
   bus: 'text-transport-bus',
   tram: 'text-transport-tram',
@@ -188,6 +194,24 @@ export default function PassengerDashboard({
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Icon name="CheckCircle2" size={15} />
             {metric1.label}
+            {dataScope === 'all' && summary.ratingsSync && (
+              <span
+                className={`ml-0.5 h-2 w-2 shrink-0 rounded-full ${
+                  summary.ratingsSync.status === 'ok'
+                    ? 'bg-transport-tram'
+                    : summary.ratingsSync.status === 'error'
+                      ? 'bg-destructive'
+                      : 'bg-amber-500'
+                }`}
+                title={
+                  summary.ratingsSync.status === 'ok'
+                    ? `Синхронизация отзывов в порядке: ${formatSyncDate(summary.ratingsSync.lastSyncAt)}`
+                    : summary.ratingsSync.status === 'error'
+                      ? `Синхронизация отзывов завершилась ошибкой: ${summary.ratingsSync.errorMessage ?? 'неизвестно'}`
+                      : 'Синхронизация отзывов ещё не запускалась'
+                }
+              />
+            )}
           </p>
           <div className="mt-2 font-mono-num text-4xl font-bold leading-none">
             {metric1.value.toLocaleString('ru-RU')}

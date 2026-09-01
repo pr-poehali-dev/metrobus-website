@@ -108,6 +108,9 @@ def handler(event: dict, context) -> dict:
         справочника маршрутов transport_routes (synced — сколько маршрутов реально загружено в БД,
         total — ожидаемое кол-во из app_settings.total_active_routes_count, incomplete = true, если
         синхронизация не завершена полностью — используется на фронтенде для предупреждения.
+        summary.ratingsSync = { status, errorMessage, lastSyncAt } — статус последней записи в
+        icqr_sync_log (синхронизация отзывов пассажиров с ICQR) — используется на фронтенде для
+        аналогичного цветового индикатора рядом с метрикой "Оценено".
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -267,6 +270,21 @@ def handler(event: dict, context) -> dict:
             'synced': directory_synced,
             'total': directory_total,
             'incomplete': bool(directory_total) and directory_synced < directory_total,
+        }
+
+        # Статус последней синхронизации отзывов пассажиров с ICQR (icqr_sync_log): используется
+        # для цветового индикатора рядом с метрикой "Оценено" — та же логика светофора, что и у
+        # справочника маршрутов. status=None или 'error' — синхронизация не удалась (красный);
+        # status='ok', но error_message заполнен (например, сбоем дозагрузки геоданных) — частичная
+        # проблема (жёлтый); status='ok' без ошибок — всё в порядке (зелёный).
+        cur.execute(
+            "SELECT status, error_message, created_at FROM icqr_sync_log ORDER BY created_at DESC LIMIT 1"
+        )
+        sync_row = cur.fetchone()
+        ratings_sync = {
+            'status': sync_row['status'] if sync_row else None,
+            'errorMessage': sync_row['error_message'] if sync_row else None,
+            'lastSyncAt': sync_row['created_at'].isoformat() if sync_row and sync_row['created_at'] else None,
         }
 
         cur.execute(
@@ -519,6 +537,7 @@ def handler(event: dict, context) -> dict:
                 'byType': by_type,
                 'routesCount': routes_count,
                 'routesDirectory': routes_directory,
+                'ratingsSync': ratings_sync,
             },
             'timeline': timeline,
             'month': f'{MONTHS[month - 1]}, {year}',

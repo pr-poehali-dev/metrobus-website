@@ -7,6 +7,12 @@ export interface RoutesDirectoryStatus {
   incomplete: boolean;
 }
 
+export interface RatingsSyncStatus {
+  status: 'ok' | 'error' | null;
+  errorMessage: string | null;
+  lastSyncAt: string | null;
+}
+
 export interface DashboardSummary {
   average: number;
   prevAverage: number;
@@ -14,6 +20,7 @@ export interface DashboardSummary {
   routesCount: number;
   byType: { type: TransportType; label: string; average: number; count: number }[];
   routesDirectory?: RoutesDirectoryStatus;
+  ratingsSync?: RatingsSyncStatus;
 }
 
 export interface DashboardMetric {
