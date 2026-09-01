@@ -198,7 +198,7 @@ export default function PassengerDashboard({
               <span
                 className={`ml-0.5 h-2 w-2 shrink-0 rounded-full ${
                   summary.ratingsSync.status === 'ok'
-                    ? 'bg-transport-tram'
+                    ? 'bg-emerald-500'
                     : summary.ratingsSync.status === 'error'
                       ? 'bg-destructive'
                       : 'bg-amber-500'
@@ -228,7 +228,7 @@ export default function PassengerDashboard({
                     ? 'bg-destructive'
                     : summary.routesDirectory.incomplete
                       ? 'bg-amber-500'
-                      : 'bg-transport-tram'
+                      : 'bg-emerald-500'
                 }`}
                 title={
                   summary.routesDirectory.synced === 0
