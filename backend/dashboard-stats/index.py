@@ -104,7 +104,10 @@ def handler(event: dict, context) -> dict:
         routes: опциональный список номеров маршрутов через запятую для фильтра "Мои маршруты");
         context - объект с request_id.
     Returns: HTTP response с JSON { summary, timeline, clusters, viewMode, dataScope, metric1, metric2, metric3,
-        records, topActiveUsers, myRank }.
+        records, topActiveUsers, myRank }. summary.routesDirectory = { synced, total, incomplete } — статус
+        справочника маршрутов transport_routes (synced — сколько маршрутов реально загружено в БД,
+        total — ожидаемое кол-во из app_settings.total_active_routes_count, incomplete = true, если
+        синхронизация не завершена полностью — используется на фронтенде для предупреждения.
     '''
     method = event.get('httpMethod', 'GET')
 
@@ -248,6 +251,23 @@ def handler(event: dict, context) -> dict:
             no_date_params,
         )
         routes_count = int(cur.fetchone()['cnt'])
+
+        # Статус справочника маршрутов (transport_routes), используемого для подсказок "Мои маршруты"
+        # и как знаменатель метрики "Покрытие": сверяем реальное число синхронизированных маршрутов
+        # с ожидаемым total_active_routes_count, чтобы показать индикатор неполной синхронизации.
+        cur.execute("SELECT COUNT(DISTINCT route_number) AS cnt FROM transport_routes")
+        directory_synced = int(cur.fetchone()['cnt'])
+        cur.execute("SELECT value FROM app_settings WHERE key = 'total_active_routes_count'")
+        directory_total_row = cur.fetchone()
+        try:
+            directory_total = int(directory_total_row['value']) if directory_total_row and directory_total_row['value'] else None
+        except (TypeError, ValueError):
+            directory_total = None
+        routes_directory = {
+            'synced': directory_synced,
+            'total': directory_total,
+            'incomplete': bool(directory_total) and directory_synced < directory_total,
+        }
 
         cur.execute(
             f"""
@@ -498,6 +518,7 @@ def handler(event: dict, context) -> dict:
                 'monthCount': month_count,
                 'byType': by_type,
                 'routesCount': routes_count,
+                'routesDirectory': routes_directory,
             },
             'timeline': timeline,
             'month': f'{MONTHS[month - 1]}, {year}',

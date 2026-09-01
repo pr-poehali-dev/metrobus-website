@@ -219,6 +219,15 @@ export default function PassengerDashboard({
                   />
                 </div>
               )}
+              {summary.routesDirectory?.incomplete && (
+                <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-2 text-xs text-amber-600">
+                  <Icon name="AlertTriangle" size={14} className="mt-0.5 shrink-0" />
+                  <span>
+                    Справочник маршрутов синхронизирован не полностью: {summary.routesDirectory.synced} из{' '}
+                    {summary.routesDirectory.total}. Часть маршрутов может отсутствовать в поиске «Мои маршруты».
+                  </span>
+                </div>
+              )}
             </>
           )}
         </div>

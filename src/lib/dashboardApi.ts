@@ -1,12 +1,19 @@
 import func2url from '../../backend/func2url.json';
 import type { TransportType } from '@/lib/mockData';
 
+export interface RoutesDirectoryStatus {
+  synced: number;
+  total: number | null;
+  incomplete: boolean;
+}
+
 export interface DashboardSummary {
   average: number;
   prevAverage: number;
   monthCount: number;
   routesCount: number;
   byType: { type: TransportType; label: string; average: number; count: number }[];
+  routesDirectory?: RoutesDirectoryStatus;
 }
 
 export interface DashboardMetric {
