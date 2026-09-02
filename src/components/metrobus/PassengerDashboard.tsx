@@ -154,7 +154,7 @@ export default function PassengerDashboard({
       {dataScope === 'mine' && !hasMyToken && (
         <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
           <Icon name="Fingerprint" size={16} className="shrink-0 text-amber-600" />
-          <span>Здесь пока пусто. Оценки привязаны к браузеру, в котором вы их ставили — откройте карту на ICQR.RU с того же устройства и нажмите «Дашборд».</span>
+          <span>Оценок нет или они еще не прошли модерацию. Они привязаны к браузеру, в котором вы их ставили — откройте карту на ICQR.RU с того же устройства и нажмите «Дашборд».</span>
         </div>
       )}
 
