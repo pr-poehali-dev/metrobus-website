@@ -77,11 +77,12 @@ export function getMyRatingsToken(): string | null {
 /**
  * Формирует персональную ссылку на дашборд "Мои оценки" с токеном пользователя.
  * Открыв её в любом браузере (например на компьютере), пользователь сразу увидит свои оценки —
- * токен подхватывается функцией captureMyRatingsTokenFromUrl().
+ * токен подхватывается функцией captureMyRatingsTokenFromUrl(). Использует параметр
+ * rating_client_id — тот же формат, которым реально делится кнопка "Дашборд" на ICQR.RU.
  */
 export function buildMyRatingsShareUrl(token: string): string {
   const url = new URL(window.location.origin + '/');
-  url.searchParams.set(URL_PARAM, token);
+  url.searchParams.set(EXTRA_QUERY_PARAMS[0], token);
   url.hash = DASHBOARD_HASH;
   return url.toString();
 }
