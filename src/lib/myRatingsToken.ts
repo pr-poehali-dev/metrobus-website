@@ -2,6 +2,9 @@ const TOKEN_KEY = 'mb_my_ratings_token';
 const URL_PARAM = 'my_token';
 const HASH_PARAM = 'client_id';
 const DASHBOARD_HASH = 'dashboard';
+// Дополнительные имена параметра, которыми ICQR.RU может передать идентификатор пользователя
+// в обычной query-строке (не в hash) — например ?rating_client_id=... с кнопки "Дашборд".
+const EXTRA_QUERY_PARAMS = ['rating_client_id', 'client_id'];
 
 export interface CaptureTokenResult {
   /** Нужно проскроллить к секции #dashboard (переход по ссылке вида #dashboard?client_id=...) */
@@ -12,9 +15,10 @@ export interface CaptureTokenResult {
 
 /**
  * Разбирает идентификатор пользователя ICQR.RU из ссылки и сохраняет его в localStorage.
- * Поддерживает два формата:
+ * Поддерживает несколько форматов:
  *  - обычный query-параметр: ?my_token=...
- *  - ссылка из интерфейса ICQR.RU с параметром внутри hash-фрагмента: #dashboard?client_id=...
+ *  - query-параметры, которыми реально передаёт кнопка "Дашборд" на ICQR.RU: ?rating_client_id=... или ?client_id=...
+ *  - ссылка с параметром внутри hash-фрагмента: #dashboard?client_id=...
  * После разбора очищает найденные параметры из адресной строки (оставляя якорь #dashboard, если он был).
  */
 export function captureMyRatingsTokenFromUrl(): CaptureTokenResult {
@@ -28,6 +32,16 @@ export function captureMyRatingsTokenFromUrl(): CaptureTokenResult {
       localStorage.setItem(TOKEN_KEY, queryToken);
       tokenCaptured = true;
       url.searchParams.delete(URL_PARAM);
+    } else {
+      for (const paramName of EXTRA_QUERY_PARAMS) {
+        const extraToken = url.searchParams.get(paramName);
+        if (extraToken) {
+          localStorage.setItem(TOKEN_KEY, extraToken);
+          tokenCaptured = true;
+          url.searchParams.delete(paramName);
+          break;
+        }
+      }
     }
 
     const rawHash = url.hash.replace(/^#/, '');
