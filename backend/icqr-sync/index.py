@@ -17,6 +17,10 @@ ALERT_THROTTLE_SECONDS = 3600
 
 MOSCOW_OFFSET_HOURS = 3
 MODERATION_DIGEST_SENT_KEY = 'moderation_digest_sent_date'
+MODERATION_DIGEST_FIRST_FAILURE_KEY = 'moderation_digest_first_failure_at'
+MODERATION_DIGEST_FAIL_ALERT_SENT_KEY = 'moderation_digest_fail_alert_sent_at'
+MODERATION_DIGEST_FAIL_ALERT_THRESHOLD_DAYS = 2
+MODERATION_DIGEST_FAIL_ALERT_THROTTLE_SECONDS = 86400
 ADMIN_CONSOLE_URL = 'https://xn--90aivcdt6a.xn--p1ai/service/mb-console'
 TRANSPORT_LABELS = {'bus': 'Автобус', 'tram': 'Трамвай', 'trolley': 'Троллейбус'}
 
@@ -460,6 +464,71 @@ def fetch_icqr_pending_count(date_from: str = None, date_to: str = None):
         return None
 
 
+def record_moderation_digest_failure(cur, today_msk):
+    '''Фиксирует неудачную попытку отправки ежедневного отчёта о модерации. Запоминает дату ПЕРВОГО дня,
+    когда отправка не удалась (app_settings.moderation_digest_first_failure_at) — если запись уже есть,
+    не перезаписывает её, чтобы отсчитывать именно непрерывную серию неудач. Как только серия неудач
+    достигает MODERATION_DIGEST_FAIL_ALERT_THRESHOLD_DAYS дней подряд, отправляет администратору
+    отдельное email-предупреждение "рассылка отчётов не работает N дней" (не чаще раза в сутки,
+    через app_settings.moderation_digest_fail_alert_sent_at) — на случай, если сама проблема связана,
+    например, с ошибкой в логике формирования отчёта, а не с SMTP (иначе это письмо тоже не дойдёт,
+    но попытка ни на что не влияет — best-effort, как и остальные технические алерты).'''
+    cur.execute("SELECT value FROM app_settings WHERE key = %s", (MODERATION_DIGEST_FIRST_FAILURE_KEY,))
+    row = cur.fetchone()
+    if row and row[0]:
+        try:
+            first_failure_date = datetime.fromisoformat(row[0]).date()
+        except ValueError:
+            first_failure_date = today_msk
+    else:
+        first_failure_date = today_msk
+        cur.execute(
+            """
+            INSERT INTO app_settings (key, value, updated_at) VALUES (%s, %s, now())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+            """,
+            (MODERATION_DIGEST_FIRST_FAILURE_KEY, first_failure_date.isoformat()),
+        )
+
+    days_failing = (today_msk - first_failure_date).days + 1
+    if days_failing < MODERATION_DIGEST_FAIL_ALERT_THRESHOLD_DAYS:
+        return
+
+    cur.execute("SELECT value FROM app_settings WHERE key = %s", (MODERATION_DIGEST_FAIL_ALERT_SENT_KEY,))
+    row = cur.fetchone()
+    if row and row[0]:
+        try:
+            last_sent = datetime.fromisoformat(row[0])
+            if (datetime.now() - last_sent).total_seconds() < MODERATION_DIGEST_FAIL_ALERT_THROTTLE_SECONDS:
+                return
+        except ValueError:
+            pass
+
+    subject = f"[МЕТРОБУС] Ежедневный отчёт по модерации не отправляется уже {days_failing} дн."
+    body = (
+        f"Автоматический ежедневный отчёт по модерации отзывов не удаётся отправить {days_failing} дней подряд "
+        f"(с {first_failure_date.strftime('%d.%m.%Y')}).\n\n"
+        f"Возможные причины: не настроены или устарели секреты SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS, "
+        f"SMTP-сервер недоступен, либо сбой при формировании отчёта.\n\n"
+        f"Проверьте секреты проекта и логи функции icqr-sync."
+    )
+    if send_admin_email(subject, body):
+        cur.execute(
+            """
+            INSERT INTO app_settings (key, value, updated_at) VALUES (%s, %s, now())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+            """,
+            (MODERATION_DIGEST_FAIL_ALERT_SENT_KEY, datetime.now().isoformat()),
+        )
+
+
+def clear_moderation_digest_failure(cur):
+    cur.execute(
+        "DELETE FROM app_settings WHERE key IN (%s, %s)",
+        (MODERATION_DIGEST_FIRST_FAILURE_KEY, MODERATION_DIGEST_FAIL_ALERT_SENT_KEY),
+    )
+
+
 def maybe_send_moderation_digest(cur):
     '''Раз в сутки (не чаще) отправляет администратору (support@icqr.ru) email с коротким отчётом о том,
     что требует модерации: новые оценки, полученные за предыдущий календарный день по московскому времени
@@ -469,7 +538,8 @@ def maybe_send_moderation_digest(cur):
     "наступил ли новый день" выполняется на каждом вызове, а фактическая отправка — не чаще одного раза за
     календарный день по МСК, отслеживается через app_settings.moderation_digest_sent_date. Если отправка письма
     не удалась (нет SMTP-секретов, сбой сети), дата не запоминается — попытка повторится при следующем визите
-    в тот же день.'''
+    в тот же день; неудача фиксируется через record_moderation_digest_failure, и если отправка не работает
+    несколько дней подряд — администратору уходит отдельное предупреждение об этом.'''
     moscow_now = datetime.utcnow() + timedelta(hours=MOSCOW_OFFSET_HOURS)
     today_msk = moscow_now.date()
 
@@ -554,6 +624,9 @@ def maybe_send_moderation_digest(cur):
             """,
             (MODERATION_DIGEST_SENT_KEY, today_msk.isoformat()),
         )
+        clear_moderation_digest_failure(cur)
+    else:
+        record_moderation_digest_failure(cur, today_msk)
 
 
 def check_routes_directory_health(cur, sync_failed: bool = False, error_message: str = None):
