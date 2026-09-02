@@ -6,7 +6,7 @@ import time
 import urllib.request
 import urllib.parse
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 import psycopg2
 
@@ -14,6 +14,11 @@ import psycopg2
 ICQR_BASE_URL = os.environ.get('ICQR_API_BASE_URL', 'https://api.icqr.ru')
 ADMIN_ALERT_EMAIL = 'support@icqr.ru'
 ALERT_THROTTLE_SECONDS = 3600
+
+MOSCOW_OFFSET_HOURS = 3
+MODERATION_DIGEST_SENT_KEY = 'moderation_digest_sent_date'
+ADMIN_CONSOLE_URL = 'https://xn--90aivcdt6a.xn--p1ai/service/mb-console'
+TRANSPORT_LABELS = {'bus': 'Автобус', 'tram': 'Трамвай', 'trolley': 'Троллейбус'}
 
 
 def fetch_page(page: int, per_page: int = 100):
@@ -423,6 +428,134 @@ def maybe_alert_routes_directory(cur, status: str, synced: int, total: int = Non
         )
 
 
+def fetch_icqr_pending_count(date_from: str = None, date_to: str = None):
+    '''Запрашивает у ICQR Admin API (list_ratings, moderation_status=pending) только количество отзывов
+    в очереди на модерацию (per_page=1, читается только pagination.total) — без выгрузки самих записей.
+    Если указаны date_from/date_to (даты в формате YYYY-MM-DD), считает только отзывы за этот период.
+    Возвращает None при любой ошибке связи с ICQR Admin API.'''
+    try:
+        token = os.environ['ICQR_API_ADMIN_TOKEN']
+        command_params = {'moderation_status': 'pending', 'page': 1, 'per_page': 1}
+        if date_from:
+            command_params['date_from'] = date_from
+        if date_to:
+            command_params['date_to'] = date_to
+        body = json.dumps({'Command': 'list_ratings', 'Command_params': command_params}).encode('utf-8')
+        req = urllib.request.Request(
+            f"{ICQR_BASE_URL}/api/index.php",
+            data=body,
+            method='POST',
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {token}',
+                'Accept': 'application/json',
+            },
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            payload = json.loads(resp.read().decode('utf-8'))
+        if payload.get('Request_status', {}).get('Code') != 'Ok':
+            return None
+        return payload.get('Data', {}).get('pagination', {}).get('total')
+    except Exception:
+        return None
+
+
+def maybe_send_moderation_digest(cur):
+    '''Раз в сутки (не чаще) отправляет администратору (support@icqr.ru) email с коротким отчётом о том,
+    что требует модерации: новые оценки, полученные за предыдущий календарный день по московскому времени
+    (разбивка по видам транспорта), непроверенные вручную комментарии за этот день и общий остаток, а также
+    размер очереди на модерацию ICQR (approve/reject). Запускается при обычном автоматическом триггере
+    синхронизации (при заходе на сайт) — выделенного планировщика задач (cron) в проекте нет, поэтому проверка
+    "наступил ли новый день" выполняется на каждом вызове, а фактическая отправка — не чаще одного раза за
+    календарный день по МСК, отслеживается через app_settings.moderation_digest_sent_date. Если отправка письма
+    не удалась (нет SMTP-секретов, сбой сети), дата не запоминается — попытка повторится при следующем визите
+    в тот же день.'''
+    moscow_now = datetime.utcnow() + timedelta(hours=MOSCOW_OFFSET_HOURS)
+    today_msk = moscow_now.date()
+
+    cur.execute("SELECT value FROM app_settings WHERE key = %s", (MODERATION_DIGEST_SENT_KEY,))
+    row = cur.fetchone()
+    if row and row[0] == today_msk.isoformat():
+        return
+
+    yesterday_msk = today_msk - timedelta(days=1)
+    yesterday_start_utc = datetime(yesterday_msk.year, yesterday_msk.month, yesterday_msk.day) - timedelta(hours=MOSCOW_OFFSET_HOURS)
+    today_start_utc = yesterday_start_utc + timedelta(days=1)
+
+    cur.execute(
+        """
+        SELECT transport_type, COUNT(*), ROUND(AVG(rating)::numeric, 2)
+        FROM transport_passenger_ratings
+        WHERE synced_at >= %s AND synced_at < %s AND is_draft = false
+        GROUP BY transport_type
+        ORDER BY transport_type
+        """,
+        (yesterday_start_utc, today_start_utc),
+    )
+    by_type_rows = cur.fetchall()
+    total_new = sum(r[1] for r in by_type_rows)
+
+    cur.execute(
+        """
+        SELECT COUNT(*) FROM transport_passenger_ratings
+        WHERE synced_at >= %s AND synced_at < %s AND is_draft = false
+          AND comment IS NOT NULL AND comment != '' AND comment_verified = false
+        """,
+        (yesterday_start_utc, today_start_utc),
+    )
+    unverified_yesterday = cur.fetchone()[0]
+
+    cur.execute(
+        """
+        SELECT COUNT(*) FROM transport_passenger_ratings
+        WHERE is_draft = false AND comment IS NOT NULL AND comment != '' AND comment_verified = false
+        """
+    )
+    unverified_total = cur.fetchone()[0]
+
+    date_str = yesterday_msk.isoformat()
+    pending_new = fetch_icqr_pending_count(date_str, date_str)
+    pending_total = fetch_icqr_pending_count()
+
+    day_label = yesterday_msk.strftime('%d.%m.%Y')
+    lines = [
+        f"Ежедневный отчёт по модерации отзывов — МЕТРОБУС.РФ",
+        f"Отчётный день: {day_label}",
+        "",
+        "НОВЫЕ ОЦЕНКИ ЗА ДЕНЬ",
+        f"Получено новых оценок: {total_new}",
+    ]
+    if by_type_rows:
+        for transport_type, count, avg_rating in by_type_rows:
+            label = TRANSPORT_LABELS.get(transport_type, transport_type or 'без типа')
+            lines.append(f"  {label}: {count} (средний балл {avg_rating})")
+    lines.append("")
+    lines.append("ТРЕБУЕТ ВНИМАНИЯ МОДЕРАТОРА")
+    lines.append(f"Непроверенные комментарии за день: {unverified_yesterday}")
+    lines.append(f"Всего непроверенных комментариев (остаток): {unverified_total}")
+    if pending_new is not None:
+        lines.append(f"Новых отзывов в очереди ICQR за день: {pending_new}")
+    if pending_total is not None:
+        lines.append(f"Всего в очереди ICQR ожидает решения: {pending_total}")
+    else:
+        lines.append("Не удалось получить размер очереди ICQR (сбой ICQR Admin API)")
+    lines.append("")
+    lines.append(f"Перейти к модерации: {ADMIN_CONSOLE_URL}")
+    lines.append("")
+    lines.append("Письмо сформировано автоматически, отправляется не чаще раза в сутки.")
+    body = "\n".join(lines)
+
+    subject = f"[МЕТРОБУС] Отчёт по модерации за {day_label}"
+    if send_admin_email(subject, body):
+        cur.execute(
+            """
+            INSERT INTO app_settings (key, value, updated_at) VALUES (%s, %s, now())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+            """,
+            (MODERATION_DIGEST_SENT_KEY, today_msk.isoformat()),
+        )
+
+
 def check_routes_directory_health(cur, sync_failed: bool = False, error_message: str = None):
     '''Проверяет фактическое состояние справочника маршрутов после попытки синхронизации и при
     необходимости отправляет email-уведомление администратору (через maybe_alert_routes_directory).
@@ -475,6 +608,12 @@ def handler(event: dict, context) -> dict:
     синхронизирован не полностью — администратору (support@icqr.ru) отправляется email через SMTP
     (реквизиты в секретах SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS), не чаще раза в час на один и тот
     же тип проблемы.
+    После успешной синхронизации также раз в сутки (по московскому времени) отправляет администратору
+    (support@icqr.ru) короткий email-отчёт о том, что требует модерации: кол-во новых оценок за
+    предыдущий день (разбивка по видам транспорта), непроверенные вручную комментарии за день и остаток,
+    размер очереди ICQR на модерацию — см. maybe_send_moderation_digest. Отправка отслеживается через
+    app_settings.moderation_digest_sent_date, фактическое время отправки зависит от того, когда на сайт
+    заходит первый посетитель нового дня (выделенного планировщика задач в проекте нет).
     Args: event - dict с httpMethod, queryStringParameters (status, syncRoutes); context - объект с request_id.
     Returns: HTTP response с количеством загруженных/обновлённых отзывов, кол-вом обогащённых геоданными записей,
         и routesSync — результатом текущего шага синхронизации справочника маршрутов (dict с done/syncedTotal/
@@ -654,6 +793,12 @@ def handler(event: dict, context) -> dict:
             check_routes_directory_health(cur, sync_failed=True, error_message=str(re))
 
         log_sync_result(cur, 'ok', total_upserted, geo_error)
+
+        try:
+            maybe_send_moderation_digest(cur)
+        except Exception:
+            pass
+
         return {
             'statusCode': 200,
             'headers': headers,
