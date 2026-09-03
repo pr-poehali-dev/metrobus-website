@@ -96,8 +96,31 @@ export default function ModerationQueue() {
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [routeNumber, setRouteNumber] = useState('');
   const [role, setRole] = useState<'all' | 'passenger' | 'observer'>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 20;
+
+  const todayStr = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const showToday = () => {
+    const t = todayStr();
+    setDateFrom(t);
+    setDateTo(t);
+    setPage(1);
+  };
+
+  const clearDateFilter = () => {
+    setDateFrom('');
+    setDateTo('');
+    setPage(1);
+  };
 
   const [selected, setSelected] = useState<Record<string, unknown> | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -110,6 +133,8 @@ export default function ModerationQueue() {
     const res = await fetchModerationList({
       status,
       routeNumber: routeNumber || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
       page,
       perPage,
     });
@@ -122,7 +147,7 @@ export default function ModerationQueue() {
       setPagination(res.pagination);
     }
     setLoading(false);
-  }, [status, routeNumber, page]);
+  }, [status, routeNumber, dateFrom, dateTo, page]);
 
   useEffect(() => {
     load();
@@ -192,7 +217,7 @@ export default function ModerationQueue() {
         </div>
       )}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Select value={status} onValueChange={(v) => { setStatus(v as typeof status); setPage(1); }}>
           <SelectTrigger><SelectValue placeholder="Статус" /></SelectTrigger>
           <SelectContent>
@@ -225,6 +250,45 @@ export default function ModerationQueue() {
         <Button variant="outline" onClick={() => load()} className="gap-1.5">
           <Icon name="RefreshCw" size={14} />
           Обновить
+        </Button>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+          className="w-auto"
+        />
+        <span className="text-sm text-muted-foreground">—</span>
+        <Input
+          type="date"
+          value={dateTo}
+          onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+          className="w-auto"
+        />
+        <Button variant="secondary" size="sm" onClick={showToday} className="gap-1.5">
+          <Icon name="CalendarDays" size={14} />
+          Сегодня
+        </Button>
+        {(dateFrom || dateTo) && (
+          <Button variant="ghost" size="sm" onClick={clearDateFilter} className="gap-1.5 text-muted-foreground">
+            <Icon name="X" size={14} />
+            Сбросить даты
+          </Button>
+        )}
+        <span className="ml-auto text-xs text-muted-foreground">
+          Очередь ICQR отсортирована от старых к новым — новые записи на последних страницах
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={loading || totalPages <= 1}
+          onClick={() => setPage(totalPages)}
+          className="gap-1.5"
+        >
+          <Icon name="ChevronsRight" size={14} />
+          В конец (новые)
         </Button>
       </div>
 
