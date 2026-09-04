@@ -102,15 +102,12 @@ export default function ModerationFilters({
             Сбросить даты
           </Button>
         )}
-        <span className="ml-auto text-xs text-muted-foreground">
-          Очередь ICQR отсортирована от старых к новым — новые записи на последних страницах
-        </span>
         <Button
           variant="outline"
           size="sm"
           disabled={loading || totalPages <= 1}
           onClick={onGoToLastPage}
-          className="gap-1.5"
+          className="ml-auto gap-1.5"
         >
           <Icon name="ChevronsRight" size={14} />
           В конец (новые)
