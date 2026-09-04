@@ -17,9 +17,6 @@ interface ModerationFiltersProps {
   onReload: () => void;
   onShowToday: () => void;
   onClearDateFilter: () => void;
-  loading: boolean;
-  totalPages: number;
-  onGoToLastPage: () => void;
 }
 
 export default function ModerationFilters({
@@ -36,9 +33,6 @@ export default function ModerationFilters({
   onReload,
   onShowToday,
   onClearDateFilter,
-  loading,
-  totalPages,
-  onGoToLastPage,
 }: ModerationFiltersProps) {
   return (
     <>
@@ -102,16 +96,6 @@ export default function ModerationFilters({
             Сбросить даты
           </Button>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={loading || totalPages <= 1}
-          onClick={onGoToLastPage}
-          className="ml-auto gap-1.5"
-        >
-          <Icon name="ChevronsRight" size={14} />
-          В конец (новые)
-        </Button>
       </div>
     </>
   );

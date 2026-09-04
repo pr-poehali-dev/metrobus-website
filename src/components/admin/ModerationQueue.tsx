@@ -157,9 +157,6 @@ export default function ModerationQueue() {
         onReload={() => load()}
         onShowToday={showToday}
         onClearDateFilter={clearDateFilter}
-        loading={loading}
-        totalPages={totalPages}
-        onGoToLastPage={() => setPage(totalPages)}
       />
 
       <ModerationTable
