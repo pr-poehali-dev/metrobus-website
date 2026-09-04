@@ -266,38 +266,38 @@ export default function AdminConsole() {
         )}
 
         {/* Фильтры */}
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="relative lg:col-span-2">
-            <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Поиск по комментарию, маршруту, остановке…"
-              className="pl-9"
-            />
+        <div className="mb-4 flex flex-wrap items-start gap-3">
+          <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="relative lg:col-span-2">
+              <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                placeholder="Поиск по комментарию, маршруту, остановке…"
+                className="pl-9"
+              />
+            </div>
+
+            <Select value={transportType} onValueChange={(v) => { setTransportType(v); setPage(1); }}>
+              <SelectTrigger><SelectValue placeholder="Вид транспорта" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все виды транспорта</SelectItem>
+                <SelectItem value="bus">Автобус</SelectItem>
+                <SelectItem value="tram">Трамвай</SelectItem>
+                <SelectItem value="trolley">Троллейбус</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={role} onValueChange={(v) => { setRole(v); setPage(1); }}>
+              <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Пассажир и пользователь</SelectItem>
+                <SelectItem value="passenger">Пассажир</SelectItem>
+                <SelectItem value="observer">Пользователь</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <Select value={transportType} onValueChange={(v) => { setTransportType(v); setPage(1); }}>
-            <SelectTrigger><SelectValue placeholder="Вид транспорта" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все виды транспорта</SelectItem>
-              <SelectItem value="bus">Автобус</SelectItem>
-              <SelectItem value="tram">Трамвай</SelectItem>
-              <SelectItem value="trolley">Троллейбус</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={role} onValueChange={(v) => { setRole(v); setPage(1); }}>
-            <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Пассажир и пользователь</SelectItem>
-              <SelectItem value="passenger">Пассажир</SelectItem>
-              <SelectItem value="observer">Пользователь</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="mb-4 flex items-center justify-end">
           <Button
             variant="outline"
             size="sm"
