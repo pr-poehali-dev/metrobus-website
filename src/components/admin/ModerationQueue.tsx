@@ -12,7 +12,12 @@ import ModerationTable from './moderation/ModerationTable';
 import ModerationDetailDialog from './moderation/ModerationDetailDialog';
 import { toBoolLike } from './moderation/moderationUtils';
 
-export default function ModerationQueue() {
+interface ModerationQueueProps {
+  dateFrom: string;
+  dateTo: string;
+}
+
+export default function ModerationQueue({ dateFrom, dateTo }: ModerationQueueProps) {
   const { toast } = useToast();
   const [items, setItems] = useState<ModerationListItem[]>([]);
   const [pagination, setPagination] = useState({ page: 1, per_page: 20, total: 0, total_pages: 1 });
@@ -22,31 +27,8 @@ export default function ModerationQueue() {
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [routeNumber, setRouteNumber] = useState('');
   const [role, setRole] = useState<'all' | 'passenger' | 'observer'>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 20;
-
-  const todayStr = () => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
-
-  const showToday = () => {
-    const t = todayStr();
-    setDateFrom(t);
-    setDateTo(t);
-    setPage(1);
-  };
-
-  const clearDateFilter = () => {
-    setDateFrom('');
-    setDateTo('');
-    setPage(1);
-  };
 
   const [selected, setSelected] = useState<Record<string, unknown> | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -150,13 +132,7 @@ export default function ModerationQueue() {
         setRole={(v) => { setRole(v); setPage(1); }}
         routeNumber={routeNumber}
         setRouteNumber={(v) => { setRouteNumber(v); setPage(1); }}
-        dateFrom={dateFrom}
-        setDateFrom={(v) => { setDateFrom(v); setPage(1); }}
-        dateTo={dateTo}
-        setDateTo={(v) => { setDateTo(v); setPage(1); }}
         onReload={() => load()}
-        onShowToday={showToday}
-        onClearDateFilter={clearDateFilter}
       />
 
       <ModerationTable

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -19,11 +18,14 @@ const STATUS_LABELS: Record<string, string> = {
   UNKNOWN: 'Неизвестно',
 };
 
-export default function SalesStats() {
+interface SalesStatsProps {
+  dateFrom: string;
+  dateTo: string;
+}
+
+export default function SalesStats({ dateFrom, dateTo }: SalesStatsProps) {
   const [data, setData] = useState<SalesStatsResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,8 +43,6 @@ export default function SalesStats() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-auto" />
-        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-auto" />
         <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-1.5">
           <Icon name="RefreshCw" size={14} />
           Обновить

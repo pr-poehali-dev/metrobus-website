@@ -217,24 +217,43 @@ export default function AdminConsole() {
             if (value === 'registry') load();
           }}
         >
-          <TabsList className="mb-4">
-            <TabsTrigger value="registry" className="gap-1.5">
-              <Icon name="List" size={14} />
-              Реестр отзывов
-            </TabsTrigger>
-            <TabsTrigger value="moderation" className="gap-1.5">
-              <Icon name="ShieldQuestion" size={14} />
-              Модерация ICQR
-            </TabsTrigger>
-            <TabsTrigger value="sales" className="gap-1.5">
-              <Icon name="Wallet" size={14} />
-              Касса и продажи
-            </TabsTrigger>
-            <TabsTrigger value="changelog" className="gap-1.5">
-              <Icon name="History" size={14} />
-              История обновлений
-            </TabsTrigger>
-          </TabsList>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <TabsList>
+              <TabsTrigger value="registry" className="gap-1.5">
+                <Icon name="List" size={14} />
+                Реестр отзывов
+              </TabsTrigger>
+              <TabsTrigger value="moderation" className="gap-1.5">
+                <Icon name="ShieldQuestion" size={14} />
+                Модерация ICQR
+              </TabsTrigger>
+              <TabsTrigger value="sales" className="gap-1.5">
+                <Icon name="Wallet" size={14} />
+                Касса и продажи
+              </TabsTrigger>
+              <TabsTrigger value="changelog" className="gap-1.5">
+                <Icon name="History" size={14} />
+                История обновлений
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex items-center gap-2">
+              <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} className="w-auto" />
+              <span className="text-sm text-muted-foreground">—</span>
+              <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} className="w-auto" />
+              {(dateFrom || dateTo) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setDateFrom(''); setDateTo(''); setPage(1); }}
+                  className="gap-1.5 text-muted-foreground"
+                >
+                  <Icon name="X" size={14} />
+                  Сбросить даты
+                </Button>
+              )}
+            </div>
+          </div>
 
           <TabsContent value="registry">
         {anomalyTotal > 0 && (
@@ -247,7 +266,7 @@ export default function AdminConsole() {
         )}
 
         {/* Фильтры */}
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="relative lg:col-span-2">
             <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -276,9 +295,6 @@ export default function AdminConsole() {
               <SelectItem value="observer">Пользователь</SelectItem>
             </SelectContent>
           </Select>
-
-          <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
-          <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
         </div>
 
         <div className="mb-4 flex items-center justify-end">
@@ -407,11 +423,11 @@ export default function AdminConsole() {
           </TabsContent>
 
           <TabsContent value="moderation">
-            <ModerationQueue />
+            <ModerationQueue dateFrom={dateFrom} dateTo={dateTo} />
           </TabsContent>
 
           <TabsContent value="sales">
-            <SalesStats />
+            <SalesStats dateFrom={dateFrom} dateTo={dateTo} />
           </TabsContent>
 
           <TabsContent value="changelog">

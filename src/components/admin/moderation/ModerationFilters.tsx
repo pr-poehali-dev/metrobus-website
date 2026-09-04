@@ -10,13 +10,7 @@ interface ModerationFiltersProps {
   setRole: (v: 'all' | 'passenger' | 'observer') => void;
   routeNumber: string;
   setRouteNumber: (v: string) => void;
-  dateFrom: string;
-  setDateFrom: (v: string) => void;
-  dateTo: string;
-  setDateTo: (v: string) => void;
   onReload: () => void;
-  onShowToday: () => void;
-  onClearDateFilter: () => void;
 }
 
 export default function ModerationFilters({
@@ -26,77 +20,43 @@ export default function ModerationFilters({
   setRole,
   routeNumber,
   setRouteNumber,
-  dateFrom,
-  setDateFrom,
-  dateTo,
-  setDateTo,
   onReload,
-  onShowToday,
-  onClearDateFilter,
 }: ModerationFiltersProps) {
   return (
-    <>
-      <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
-          <SelectTrigger><SelectValue placeholder="Статус" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="pending">На модерации</SelectItem>
-            <SelectItem value="approved">Одобренные</SelectItem>
-            <SelectItem value="rejected">Отклонённые</SelectItem>
-            <SelectItem value="all">Все</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
+        <SelectTrigger><SelectValue placeholder="Статус" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="pending">На модерации</SelectItem>
+          <SelectItem value="approved">Одобренные</SelectItem>
+          <SelectItem value="rejected">Отклонённые</SelectItem>
+          <SelectItem value="all">Все</SelectItem>
+        </SelectContent>
+      </Select>
 
-        <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
-          <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Пассажир и пользователь</SelectItem>
-            <SelectItem value="passenger">Пассажир</SelectItem>
-            <SelectItem value="observer">Пользователь</SelectItem>
-          </SelectContent>
-        </Select>
+      <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
+        <SelectTrigger><SelectValue placeholder="Роль" /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Пассажир и пользователь</SelectItem>
+          <SelectItem value="passenger">Пассажир</SelectItem>
+          <SelectItem value="observer">Пользователь</SelectItem>
+        </SelectContent>
+      </Select>
 
-        <div className="relative">
-          <Icon name="Route" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={routeNumber}
-            onChange={(e) => setRouteNumber(e.target.value)}
-            placeholder="Фильтр по маршруту…"
-            className="pl-9"
-          />
-        </div>
-
-        <Button variant="outline" onClick={onReload} className="gap-1.5">
-          <Icon name="RefreshCw" size={14} />
-          Обновить
-        </Button>
+      <div className="relative">
+        <Icon name="Route" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={routeNumber}
+          onChange={(e) => setRouteNumber(e.target.value)}
+          placeholder="Фильтр по маршруту…"
+          className="pl-9"
+        />
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="w-auto"
-        />
-        <span className="text-sm text-muted-foreground">—</span>
-        <Input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="w-auto"
-        />
-        <Button variant="secondary" size="sm" onClick={onShowToday} className="gap-1.5">
-          <Icon name="CalendarDays" size={14} />
-          Сегодня
-        </Button>
-        {(dateFrom || dateTo) && (
-          <Button variant="ghost" size="sm" onClick={onClearDateFilter} className="gap-1.5 text-muted-foreground">
-            <Icon name="X" size={14} />
-            Сбросить даты
-          </Button>
-        )}
-      </div>
-    </>
+      <Button variant="outline" onClick={onReload} className="gap-1.5">
+        <Icon name="RefreshCw" size={14} />
+        Обновить
+      </Button>
+    </div>
   );
 }
