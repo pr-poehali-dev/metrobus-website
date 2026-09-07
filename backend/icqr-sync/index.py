@@ -531,15 +531,18 @@ def clear_moderation_digest_failure(cur):
 
 def maybe_send_moderation_digest(cur):
     '''Раз в сутки (не чаще) отправляет администратору (support@icqr.ru) email с коротким отчётом о том,
-    что требует модерации: новые оценки, полученные за предыдущий календарный день по московскому времени
+    что требует модерации: новые оценки за предыдущий календарный день по московскому времени
     (разбивка по видам транспорта), непроверенные вручную комментарии за этот день и общий остаток, а также
-    размер очереди на модерацию ICQR (approve/reject). Запускается при обычном автоматическом триггере
-    синхронизации (при заходе на сайт) — выделенного планировщика задач (cron) в проекте нет, поэтому проверка
-    "наступил ли новый день" выполняется на каждом вызове, а фактическая отправка — не чаще одного раза за
-    календарный день по МСК, отслеживается через app_settings.moderation_digest_sent_date. Если отправка письма
-    не удалась (нет SMTP-секретов, сбой сети), дата не запоминается — попытка повторится при следующем визите
-    в тот же день; неудача фиксируется через record_moderation_digest_failure, и если отправка не работает
-    несколько дней подряд — администратору уходит отдельное предупреждение об этом.'''
+    размер очереди на модерацию ICQR (approve/reject). Период считается по дате самой оценки (rated_at —
+    когда пассажир её поставил), а не по дате синхронизации с ICQR (synced_at) — иначе оценки, которые
+    синхронизировались с задержкой (например, после сбоя связи с ICQR API), выпадали бы из отчёта за
+    свой фактический день. Запускается при обычном автоматическом триггере синхронизации (при заходе на
+    сайт) — выделенного планировщика задач (cron) в проекте нет, поэтому проверка "наступил ли новый день"
+    выполняется на каждом вызове, а фактическая отправка — не чаще одного раза за календарный день по МСК,
+    отслеживается через app_settings.moderation_digest_sent_date. Если отправка письма не удалась (нет
+    SMTP-секретов, сбой сети), дата не запоминается — попытка повторится при следующем визите в тот же
+    день; неудача фиксируется через record_moderation_digest_failure, и если отправка не работает несколько
+    дней подряд — администратору уходит отдельное предупреждение об этом.'''
     moscow_now = datetime.utcnow() + timedelta(hours=MOSCOW_OFFSET_HOURS)
     today_msk = moscow_now.date()
 
@@ -556,7 +559,7 @@ def maybe_send_moderation_digest(cur):
         """
         SELECT transport_type, COUNT(*), ROUND(AVG(rating)::numeric, 2)
         FROM transport_passenger_ratings
-        WHERE synced_at >= %s AND synced_at < %s AND is_draft = false
+        WHERE rated_at >= %s AND rated_at < %s AND is_draft = false
         GROUP BY transport_type
         ORDER BY transport_type
         """,
@@ -568,7 +571,7 @@ def maybe_send_moderation_digest(cur):
     cur.execute(
         """
         SELECT COUNT(*) FROM transport_passenger_ratings
-        WHERE synced_at >= %s AND synced_at < %s AND is_draft = false
+        WHERE rated_at >= %s AND rated_at < %s AND is_draft = false
           AND comment IS NOT NULL AND comment != '' AND comment_verified = false
         """,
         (yesterday_start_utc, today_start_utc),
