@@ -107,7 +107,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
               <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto">
-                <Icon name="Star" size={18} />
+                <Icon name="Search" size={18} />
                 Перейти в QR-поиск
               </Button>
             </a>
