@@ -54,16 +54,18 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           </nav>
 
           <div className="flex items-center gap-2">
-            <a href={icqrUrl} target="_blank" rel="noopener noreferrer">
-              <Button size="icon" variant="outline" className="h-9 w-9 sm:hidden">
-                <Icon name="Star" size={16} />
-                <span className="sr-only">Оценить</span>
-              </Button>
-              <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex">
-                <Icon name="Star" size={15} />
-                <span>Оценить</span>
-              </Button>
-            </a>
+            {showDashboardButton && (
+              <>
+                <Button size="icon" variant="outline" className="h-9 w-9 sm:hidden" onClick={onMyRoutesOpen}>
+                  <Icon name="Milestone" size={16} />
+                  <span className="sr-only">Мои маршруты</span>
+                </Button>
+                <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex" onClick={onMyRoutesOpen}>
+                  <Icon name="Milestone" size={15} />
+                  <span>Мои маршруты</span>
+                </Button>
+              </>
+            )}
             <ThemeToggle />
             <Button
               size="icon"
@@ -113,17 +115,12 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
               <Icon name="UserCheck" size={18} />
               Мои оценки
             </Button>
-            {showDashboardButton && (
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-12 w-full gap-2 text-base sm:w-auto"
-                onClick={onMyRoutesOpen}
-              >
-                <Icon name="Milestone" size={18} />
-                Мои маршруты
+            <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="h-12 w-full gap-2 text-base sm:w-auto">
+                <Icon name="Star" size={18} />
+                Оценить
               </Button>
-            )}
+            </a>
           </div>
         </div>
       </section>
