@@ -106,12 +106,12 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
           <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">Оценивайте комфорт поездок и удобство маршрутов общественного транспорта - без приложения, регистрации и сканирования QR-кодов.</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={icqrUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="h-12 w-full gap-2 text-base sm:w-auto">
+              <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto">
                 <Icon name="Star" size={18} />
                 Оценить
               </Button>
             </a>
-            <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto" onClick={onMyRatingsOpen}>
+            <Button size="lg" variant="outline" className="h-12 w-full gap-2 text-base sm:w-auto" onClick={onMyRatingsOpen}>
               <Icon name="UserCheck" size={18} />
               Мои оценки
             </Button>
