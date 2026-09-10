@@ -55,16 +55,10 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
 
           <div className="flex items-center gap-2">
             {showDashboardButton && (
-              <>
-                <Button size="icon" variant="outline" className="h-9 w-9 sm:hidden" onClick={onMyRoutesOpen}>
-                  <Icon name="Milestone" size={16} />
-                  <span className="sr-only">Мои маршруты</span>
-                </Button>
-                <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex" onClick={onMyRoutesOpen}>
-                  <Icon name="Milestone" size={15} />
-                  <span>Мои маршруты</span>
-                </Button>
-              </>
+              <Button size="sm" variant="outline" className="hidden h-9 gap-1.5 px-3 sm:flex" onClick={onMyRoutesOpen}>
+                <Icon name="Milestone" size={15} />
+                <span>Мои маршруты</span>
+              </Button>
             )}
             <ThemeToggle />
             <Button
