@@ -9,34 +9,36 @@ export default function TransportModeTabs({
   onChange: (v: ViewMode) => void;
 }) {
   return (
-    <div role="tablist" className="flex items-center gap-4 border-b border-border">
+    <div role="tablist" className="flex h-8 items-center gap-4 border-b border-border">
       <button
         type="button"
         role="tab"
         aria-selected={value === 'passengers'}
         onClick={() => onChange('passengers')}
-        className={`flex items-center gap-1.5 border-b-2 pb-2 text-sm font-medium transition-colors ${
+        className={`relative flex h-8 items-center gap-1.5 text-sm font-medium transition-colors ${
           value === 'passengers'
-            ? 'border-primary text-foreground'
-            : 'border-transparent text-muted-foreground hover:text-foreground'
+            ? 'text-foreground'
+            : 'text-muted-foreground hover:text-foreground'
         }`}
       >
         <Icon name="Bus" size={14} />
         Поездки
+        {value === 'passengers' && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />}
       </button>
       <button
         type="button"
         role="tab"
         aria-selected={value === 'observers'}
         onClick={() => onChange('observers')}
-        className={`flex items-center gap-1.5 border-b-2 pb-2 text-sm font-medium transition-colors ${
+        className={`relative flex h-8 items-center gap-1.5 text-sm font-medium transition-colors ${
           value === 'observers'
-            ? 'border-primary text-foreground'
-            : 'border-transparent text-muted-foreground hover:text-foreground'
+            ? 'text-foreground'
+            : 'text-muted-foreground hover:text-foreground'
         }`}
       >
         <Icon name="Route" size={14} />
         Маршруты
+        {value === 'observers' && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />}
       </button>
     </div>
   );

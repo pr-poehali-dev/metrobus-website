@@ -18,14 +18,14 @@ export default function ViewModeToggle({
       type="single"
       value={dataScope}
       onValueChange={(v) => v && onDataScopeChange(v as DataScope)}
-      className="rounded-lg bg-secondary p-1"
+      className="h-8 rounded-lg bg-secondary p-0.5"
     >
-      <ToggleGroupItem value="mine" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
+      <ToggleGroupItem value="mine" className="h-7 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
         <Icon name="User" size={13} />
         <span className="sm:hidden">Мои</span>
         <span className="hidden sm:inline">Мои оценки</span>
       </ToggleGroupItem>
-      <ToggleGroupItem value="all" className="h-8 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
+      <ToggleGroupItem value="all" className="h-7 gap-1.5 rounded-md px-3 text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm">
         <Icon name="Users" size={13} />
         <span className="sm:hidden">Все</span>
         <span className="hidden sm:inline">Все оценки</span>
