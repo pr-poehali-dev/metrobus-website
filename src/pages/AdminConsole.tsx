@@ -20,6 +20,7 @@ import {
   AdminReviewItem,
   AdminReviewsQuery,
 } from '@/lib/adminApi';
+import { triggerIcqrSync } from '@/lib/dashboardApi';
 
 const TRANSPORT_LABELS: Record<string, string> = {
   bus: 'Автобус',
@@ -110,6 +111,7 @@ export default function AdminConsole() {
   const [sort, setSort] = useState('rated_at');
   const [order, setOrder] = useState<'ASC' | 'DESC'>('DESC');
   const [selectedItem, setSelectedItem] = useState<AdminReviewItem | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     verifySession().then((ok) => setAuthed(ok));
@@ -166,6 +168,13 @@ export default function AdminConsole() {
     if (!ok) {
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, commentVerified: !next } : i)));
     }
+  };
+
+  const handleRefresh = async () => {
+    setSyncing(true);
+    await triggerIcqrSync();
+    await load();
+    setSyncing(false);
   };
 
   const hasActiveFilters = Boolean(search || transportType !== 'all' || role !== 'all' || dateFrom || dateTo);
@@ -297,6 +306,17 @@ export default function AdminConsole() {
               </SelectContent>
             </Select>
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={syncing || loading}
+            className="gap-1.5"
+          >
+            <Icon name={syncing ? 'Loader2' : 'RefreshCw'} size={14} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Обновление…' : 'Обновить'}
+          </Button>
 
           <Button
             variant="outline"
