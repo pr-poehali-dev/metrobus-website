@@ -536,7 +536,11 @@ def maybe_send_moderation_digest(cur):
     размер очереди на модерацию ICQR (approve/reject). Период считается по дате самой оценки (rated_at —
     когда пассажир её поставил), а не по дате синхронизации с ICQR (synced_at) — иначе оценки, которые
     синхронизировались с задержкой (например, после сбоя связи с ICQR API), выпадали бы из отчёта за
-    свой фактический день. Запускается при обычном автоматическом триггере синхронизации (при заходе на
+    свой фактический день. Если такая задержанная оценка всё же приходит уже ПОСЛЕ отправки отчёта за
+    свой день (synced_at попадает в текущие сутки, а rated_at — в более ранний день), она в тот отчёт
+    задним числом не попадёт — вместо этого письмо содержит отдельный блок "ДОНЕСЛОСЬ С ОПОЗДАНИЕМ" с
+    количеством и датой самой старой такой оценки за истёкшие сутки, чтобы админ не терял их из виду.
+    Запускается при обычном автоматическом триггере синхронизации (при заходе на
     сайт) — выделенного планировщика задач (cron) в проекте нет, поэтому проверка "наступил ли новый день"
     выполняется на каждом вызове, а фактическая отправка — не чаще одного раза за календарный день по МСК,
     отслеживается через app_settings.moderation_digest_sent_date. Если отправка письма не удалась (нет
@@ -586,6 +590,16 @@ def maybe_send_moderation_digest(cur):
     )
     unverified_total = cur.fetchone()[0]
 
+    cur.execute(
+        """
+        SELECT COUNT(*), MIN(rated_at)
+        FROM transport_passenger_ratings
+        WHERE synced_at >= %s AND synced_at < %s AND rated_at < %s AND is_draft = false
+        """,
+        (yesterday_start_utc, today_start_utc, yesterday_start_utc),
+    )
+    belated_count, belated_oldest = cur.fetchone()
+
     date_str = yesterday_msk.isoformat()
     pending_new = fetch_icqr_pending_count(date_str, date_str)
     pending_total = fetch_icqr_pending_count()
@@ -612,6 +626,14 @@ def maybe_send_moderation_digest(cur):
         lines.append(f"Всего в очереди ICQR ожидает решения: {pending_total}")
     else:
         lines.append("Не удалось получить размер очереди ICQR (сбой ICQR Admin API)")
+    if belated_count:
+        oldest_label = belated_oldest.strftime('%d.%m.%Y') if belated_oldest else '—'
+        lines.append("")
+        lines.append("ДОНЕСЛОСЬ С ОПОЗДАНИЕМ")
+        lines.append(
+            f"За последние сутки синхронизировано {belated_count} оценок, датированных более ранними днями "
+            f"(самая старая — {oldest_label}). Они не попали в отчёты за свои дни, т.к. пришли из ICQR с задержкой."
+        )
     lines.append("")
     lines.append(f"Перейти к модерации: {ADMIN_CONSOLE_URL}")
     lines.append("")
