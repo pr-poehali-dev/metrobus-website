@@ -7,12 +7,12 @@ export default function SiteFooter() {
       <div className="mx-auto max-w-5xl px-4 py-10">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="flex flex-col sm:h-full">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-primary">
+            <div className="flex items-center gap-1">
+              <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center bg-primary">
                 <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain dark:hidden" />
                 <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ad43e99a-45cd-411d-b75d-75d7774f4441.png" alt="МЕТРОБУС.РФ" className="hidden h-full w-full object-contain dark:block" />
               </span>
-              <span className="font-bold">МЕТРОБУС.РФ</span>
+              <span className="text-xs font-bold">МЕТРОБУС.РФ</span>
             </div>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">
               Оплата проезда. Смарт-информирование.
