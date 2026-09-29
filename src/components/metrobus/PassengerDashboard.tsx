@@ -2,6 +2,7 @@ import Icon from '@/components/ui/icon';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import TransportModeTabs from '@/components/metrobus/TransportModeTabs';
 import ShareMyRatingsButton from '@/components/metrobus/ShareMyRatingsButton';
+import ServiceInfoBlock from '@/components/metrobus/ServiceInfoBlock';
 import { TransportType } from '@/lib/mockData';
 import { DashboardSummary, Cluster, DashboardMetric, DashboardRecord, TopActiveUser, MyRank } from '@/lib/dashboardApi';
 
@@ -155,27 +156,6 @@ export default function PassengerDashboard({
         <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
           <Icon name="Fingerprint" size={16} className="shrink-0 text-amber-600" />
           <span>Оценок нет или еще не прошли модерацию. Они привязаны к браузеру, в котором вы их ставили — откройте карту на ICQR.RU с того же устройства и нажмите «Дашборд».</span>
-        </div>
-      )}
-
-      {dataScope === 'mine' && hasMyToken && myToken && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm">
-          <span className="text-muted-foreground">Хотите посмотреть свои оценки на компьютере, в комфортной обстановке?</span>
-          <ShareMyRatingsButton token={myToken} />
-        </div>
-      )}
-
-      {dataScope === 'mine' && myRank && (
-        <div className="mt-4 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono-num text-base font-bold text-primary">
-            {myRank.rank}
-          </span>
-          <span>
-            Ваше место в общегородском рейтинге активности:{' '}
-            <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
-            ({myRank.count.toLocaleString('ru-RU')}{' '}
-            {myRank.count === 1 ? 'оценка' : 'оценок'})
-          </span>
         </div>
       )}
 
@@ -430,6 +410,31 @@ export default function PassengerDashboard({
         )}
       </div>
 
+      {dataScope === 'mine' && ((hasMyToken && myToken) || myRank) && (
+        <ServiceInfoBlock storageKey="my_ratings_info">
+          {hasMyToken && myToken && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm">
+              <span className="text-muted-foreground">Хотите посмотреть свои оценки на компьютере, в комфортной обстановке?</span>
+              <ShareMyRatingsButton token={myToken} />
+            </div>
+          )}
+
+          {myRank && (
+            <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono-num text-base font-bold text-primary">
+                {myRank.rank}
+              </span>
+              <span>
+                Ваше место в общегородском рейтинге активности:{' '}
+                <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
+                ({myRank.count.toLocaleString('ru-RU')}{' '}
+                {myRank.count === 1 ? 'оценка' : 'оценок'})
+              </span>
+            </div>
+          )}
+        </ServiceInfoBlock>
+      )}
+
       {/* AI-кластеры */}
       <div className="mt-8 hidden sm:block">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -468,12 +473,15 @@ export default function PassengerDashboard({
         </div>
       </div>
 
-      {/* Заглушка для мобильной версии */}
-      <div className="mt-8 flex items-center gap-3 rounded-xl border border-border p-4 sm:hidden">
-        <Icon name="Monitor" size={18} className="shrink-0 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          В версии для компьютера информация представлена более полно и подробно.
-        </p>
+      <div className="sm:hidden">
+        <ServiceInfoBlock storageKey="mobile_desktop_hint">
+          <div className="flex items-center gap-3 rounded-xl border border-border p-4">
+            <Icon name="Monitor" size={18} className="shrink-0 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              В версии для компьютера информация представлена более полно и подробно.
+            </p>
+          </div>
+        </ServiceInfoBlock>
       </div>
     </section>
   );
