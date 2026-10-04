@@ -331,10 +331,12 @@ def handler(event: dict, context) -> dict:
         )
         comments = [r['comment'] for r in cur.fetchall()]
         cluster_rules = CLUSTER_RULES_TRIPS if view_mode == 'passengers' else CLUSTER_RULES_ROUTES
+        other_rule = {'key': 'other', 'label': 'Другое', 'icon': 'MessageCircle', 'positive': False, 'words': []}
+        cluster_rules = cluster_rules + [other_rule]
         cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in cluster_rules}
         classified_total = 0
         for c in comments:
-            match = classify_comment(c, cluster_rules)
+            match = classify_comment(c, cluster_rules) or other_rule
             if match:
                 bucket = cluster_counts[match['key']]
                 bucket['count'] += 1
