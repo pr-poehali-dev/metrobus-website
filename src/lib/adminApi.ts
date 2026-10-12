@@ -397,3 +397,76 @@ export async function moderateRating(
   }
   return res.json();
 }
+export interface QualityRow {
+  id: number;
+  created_at: string | null;
+  route_number: string | null;
+  vehicle_number: string | number | null;
+  transport_type: string | null;
+  rating: number | null;
+  result_false: string | null;
+  page_opened_accuracy_m: number | null;
+  submit_clicked_accuracy_m: number | null;
+  distance_to_route_m: number | null;
+  nearest_stop_distance_m: number | null;
+  nearest_stop_name: string | null;
+  source_screen: string | null;
+  is_passanger: number | null;
+  moderation_status: string | null;
+  geo: 'full' | 'partial' | 'none';
+  distance_bucket: string;
+  client: string | null;
+}
+
+export interface QualityGroup {
+  attempts: number;
+  rejected: number;
+  routes: string[];
+  vehicle?: string;
+  clients?: number;
+  client?: string;
+  vehicles?: string[];
+  noGeo?: number;
+}
+
+export interface QualityReport {
+  error?: string;
+  period: { dateFrom: string; dateTo: string | null };
+  total: number;
+  analyzed: number;
+  truncated: boolean;
+  pendingDetails?: number;
+  accepted: number;
+  rejected: number;
+  reasons: Record<string, number>;
+  noGeo: number;
+  noGeoRejected: number;
+  partialGeo: number;
+  poorAccuracy: number;
+  passengers: number;
+  observers: number;
+  distanceBuckets: Record<string, number>;
+  rejectedDistanceBuckets: Record<string, number>;
+  uniqueClients: number;
+  uniqueVehicles: number;
+  topVehicles: QualityGroup[];
+  suspiciousVehicles: QualityGroup[];
+  topClients: QualityGroup[];
+  rows: QualityRow[];
+}
+
+export async function fetchQualityReport(dateFrom?: string, dateTo?: string): Promise<QualityReport | null> {
+  const token = getAdminToken();
+  if (!token) return null;
+  const params = new URLSearchParams({ action: 'quality' });
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
+  const res = await fetch(`${func2url['icqr-moderation']}?${params.toString()}`, {
+    headers: { 'X-Admin-Token': token },
+  });
+  if (res.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+  return res.json();
+}

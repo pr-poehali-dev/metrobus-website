@@ -10,6 +10,7 @@ import ModerationQueue from '@/components/admin/ModerationQueue';
 import SalesStats from '@/components/admin/SalesStats';
 import IcqrSyncStatus from '@/components/admin/IcqrSyncStatus';
 import ChangelogManager from '@/components/admin/ChangelogManager';
+import AttemptsQuality from '@/components/admin/AttemptsQuality';
 import ReviewDetailDialog from '@/components/admin/ReviewDetailDialog';
 import {
   loginWithPin,
@@ -236,6 +237,10 @@ export default function AdminConsole() {
                 <Icon name="ShieldQuestion" size={14} />
                 Модерация ICQR
               </TabsTrigger>
+              <TabsTrigger value="quality" className="gap-1.5">
+                <Icon name="MapPinOff" size={14} />
+                Качество попыток
+              </TabsTrigger>
               <TabsTrigger value="sales" className="gap-1.5">
                 <Icon name="Wallet" size={14} />
                 Касса и продажи
@@ -444,6 +449,10 @@ export default function AdminConsole() {
 
           <TabsContent value="moderation">
             <ModerationQueue dateFrom={dateFrom} dateTo={dateTo} />
+          </TabsContent>
+
+          <TabsContent value="quality">
+            <AttemptsQuality dateFrom={dateFrom} dateTo={dateTo} />
           </TabsContent>
 
           <TabsContent value="sales">
