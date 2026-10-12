@@ -819,6 +819,18 @@ def handler(event: dict, context) -> dict:
             cur.close()
             conn.close()
 
+    cur.execute(
+        "SELECT created_at FROM icqr_sync_log WHERE status = 'ok' AND created_at > now() - interval '2 minutes' LIMIT 1"
+    )
+    if cur.fetchone():
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({'skipped': True}),
+        }
+
     total_upserted = 0
     page = 1
     total_pages = 1
@@ -848,13 +860,30 @@ def handler(event: dict, context) -> dict:
             pagination = payload.get('pagination', {})
             total_pages = pagination.get('total_pages', 1)
 
+            batch = {}
             for item in items:
+                batch[item['id']] = (
+                    item['id'],
+                    item['rating'],
+                    item.get('comment'),
+                    item.get('route_number'),
+                    item.get('transport_type'),
+                    item.get('direction_name'),
+                    item.get('nearest_stop_name'),
+                    item.get('stop_to_name'),
+                    item['created_at'],
+                )
+            if batch:
+                values_sql = ','.join(
+                    cur.mogrify('(%s, %s, %s, %s, %s, %s, %s, %s, %s, now())', r).decode('utf-8')
+                    for r in batch.values()
+                )
                 cur.execute(
                     """
                     INSERT INTO transport_passenger_ratings
                         (icqr_id, rating, comment, route_number, transport_type,
                          direction_name, nearest_stop_name, stop_to_name, rated_at, synced_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+                    VALUES """ + values_sql + """
                     ON CONFLICT (icqr_id) DO UPDATE SET
                         rating = EXCLUDED.rating,
                         comment = EXCLUDED.comment,
@@ -865,20 +894,9 @@ def handler(event: dict, context) -> dict:
                         stop_to_name = EXCLUDED.stop_to_name,
                         rated_at = EXCLUDED.rated_at,
                         synced_at = now()
-                    """,
-                    (
-                        item['id'],
-                        item['rating'],
-                        item.get('comment'),
-                        item.get('route_number'),
-                        item.get('transport_type'),
-                        item.get('direction_name'),
-                        item.get('nearest_stop_name'),
-                        item.get('stop_to_name'),
-                        item['created_at'],
-                    ),
+                    """
                 )
-                total_upserted += 1
+                total_upserted += len(batch)
 
             page += 1
 

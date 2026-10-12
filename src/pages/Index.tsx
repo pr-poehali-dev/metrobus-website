@@ -28,7 +28,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('passengers');
 
   useEffect(() => {
-    triggerIcqrSync();
+    const syncTimer = setTimeout(() => triggerIcqrSync(), 4000);
     const { scrollToDashboard, tokenCaptured } = captureMyRatingsTokenFromUrl();
     setMyToken(getMyRatingsToken());
     setMyRoutesState(getMyRoutes());
@@ -44,6 +44,7 @@ const Index = () => {
         });
       });
     }
+    return () => clearTimeout(syncTimer);
   }, []);
 
   useEffect(() => {

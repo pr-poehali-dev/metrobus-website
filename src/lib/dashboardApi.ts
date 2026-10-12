@@ -105,9 +105,18 @@ export async function fetchDashboardStats(
     params.set('routes', myRoutes.join(','));
   }
   const url = `${func2url['dashboard-stats']}?${params.toString()}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('dashboard_stats_failed');
-  return res.json();
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 800 * attempt));
+    try {
+      const res = await fetch(url);
+      if (res.ok) return res.json();
+      lastError = new Error('dashboard_stats_failed');
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError ?? new Error('dashboard_stats_failed');
 }
 
 export interface RouteInfo {
