@@ -91,22 +91,28 @@ def clear_routes_sync_progress(cur):
 def upsert_routes_page(cur, items: list):
     '''Записывает элементы одной страницы get_all_routes в transport_routes (upsert по route_number
     + transport_type).'''
+    rows = {}
     for item in items:
         route_number = str(item.get('route_number') or item.get('number') or '').strip()
         if not route_number:
             continue
         transport_type = (item.get('transport_type') or item.get('type') or '').strip().lower()
-        cur.execute(
-            """
-            INSERT INTO transport_routes (icqr_route_id, route_number, title, transport_type, synced_at)
-            VALUES (%s, %s, %s, %s, now())
-            ON CONFLICT (route_number, transport_type) DO UPDATE SET
-                icqr_route_id = EXCLUDED.icqr_route_id,
-                title = EXCLUDED.title,
-                synced_at = now()
-            """,
-            (item.get('id'), route_number, item.get('title'), transport_type),
-        )
+        rows[(route_number, transport_type)] = (item.get('id'), route_number, item.get('title'), transport_type)
+    if not rows:
+        return
+    values_sql = ','.join(
+        cur.mogrify('(%s, %s, %s, %s, now())', r).decode('utf-8') for r in rows.values()
+    )
+    cur.execute(
+        "INSERT INTO transport_routes (icqr_route_id, route_number, title, transport_type, synced_at) VALUES "
+        + values_sql
+        + """
+        ON CONFLICT (route_number, transport_type) DO UPDATE SET
+            icqr_route_id = EXCLUDED.icqr_route_id,
+            title = EXCLUDED.title,
+            synced_at = now()
+        """
+    )
 
 
 def sync_routes_page(cur, force: bool = False):
