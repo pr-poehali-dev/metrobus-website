@@ -37,6 +37,36 @@ export default function DashboardInsights({
       return !prev;
     });
   };
+  const visibleTop = top10Expanded ? topActiveUsers : topActiveUsers.slice(0, 3);
+  const meInTop = topActiveUsers.find((u) => u.isMe);
+  const myExtraRow: TopActiveUser | null =
+    myRank && !visibleTop.some((u) => u.isMe)
+      ? { rank: myRank.rank, count: myRank.count, label: meInTop?.label ?? 'Ваш результат', isMe: true }
+      : null;
+  const renderTopRow = (u: TopActiveUser) => (
+    <div
+      key={u.rank}
+      className={`flex items-center gap-3 rounded-xl border p-3 sm:p-4 ${
+        u.isMe ? 'border-primary bg-primary/5' : 'border-border'
+      }`}
+    >
+      <span
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono-num text-sm font-bold ${
+          u.rank <= 3 ? 'bg-amber-500/15 text-amber-600' : 'bg-secondary text-muted-foreground'
+        }`}
+      >
+        {u.rank}
+      </span>
+      <span className="flex-1 truncate font-medium">
+        {u.label}
+        {u.isMe && <span className="ml-2 text-xs font-normal text-primary">Это вы</span>}
+      </span>
+      <span className="flex shrink-0 items-center gap-1.5 font-mono-num text-sm font-semibold">
+        <Icon name="Star" size={14} className="fill-amber-500 text-amber-500" />
+        {u.count.toLocaleString('ru-RU')}
+      </span>
+    </div>
+  );
   const visibleClusters = clusters.filter((c) => c.share > 0 || c.examples.length > 0);
   const showMineInfo = dataScope === 'mine' && ((hasMyToken && !!myToken) || !!myRank);
   return (
@@ -56,30 +86,15 @@ export default function DashboardInsights({
         )}
         {topActiveUsers.length > 0 && (
           <div className="mt-4 space-y-2">
-            {(top10Expanded ? topActiveUsers : topActiveUsers.slice(0, 3)).map((u) => (
-              <div
-                key={u.rank}
-                className={`flex items-center gap-3 rounded-xl border p-3 sm:p-4 ${
-                  u.isMe ? 'border-primary bg-primary/5' : 'border-border'
-                }`}
-              >
-                <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono-num text-sm font-bold ${
-                    u.rank <= 3 ? 'bg-amber-500/15 text-amber-600' : 'bg-secondary text-muted-foreground'
-                  }`}
-                >
-                  {u.rank}
-                </span>
-                <span className="flex-1 truncate font-medium">
-                  {u.label}
-                  {u.isMe && <span className="ml-2 text-xs font-normal text-primary">Это вы</span>}
-                </span>
-                <span className="flex shrink-0 items-center gap-1.5 font-mono-num text-sm font-semibold">
-                  <Icon name="Star" size={14} className="fill-amber-500 text-amber-500" />
-                  {u.count.toLocaleString('ru-RU')}
-                </span>
-              </div>
-            ))}
+            {visibleTop.map(renderTopRow)}
+            {myExtraRow && (
+              <>
+                <div className="flex justify-center text-muted-foreground" aria-hidden>
+                  <Icon name="MoreVertical" size={16} />
+                </div>
+                {renderTopRow(myExtraRow)}
+              </>
+            )}
             {topActiveUsers.length > 3 && (
               <button
                 type="button"
