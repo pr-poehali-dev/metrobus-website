@@ -397,24 +397,24 @@ export async function moderateRating(
   }
   return res.json();
 }
+export type QualityReason = 'ok' | 'draft' | 'far' | 'no_geo' | 'not_found' | 'other';
+
 export interface QualityRow {
   id: number;
   created_at: string | null;
   route_number: string | null;
   vehicle_number: string | number | null;
-  transport_type: string | null;
   rating: number | null;
   result_false: string | null;
+  reason: QualityReason;
   page_opened_accuracy_m: number | null;
   submit_clicked_accuracy_m: number | null;
   distance_to_route_m: number | null;
-  nearest_stop_distance_m: number | null;
-  nearest_stop_name: string | null;
   source_screen: string | null;
   is_passanger: number | null;
-  moderation_status: string | null;
-  geo: 'full' | 'partial' | 'none';
-  distance_bucket: string;
+  geo: 'real' | 'fallback' | 'none';
+  lat: number | null;
+  lng: number | null;
   client: string | null;
 }
 
@@ -429,24 +429,47 @@ export interface QualityGroup {
   noGeo?: number;
 }
 
+export type QualityReasonCounts = Record<QualityReason, number>;
+
+export interface QualityBreakdown extends QualityReasonCounts {
+  total: number;
+  source?: string;
+  day?: string;
+}
+
+export interface QualityPlace {
+  lat: number;
+  lng: number;
+  attempts: number;
+  ok: number;
+  far: number;
+  not_found: number;
+  draft: number;
+  routes: string[];
+}
+
 export interface QualityReport {
   error?: string;
-  period: { dateFrom: string; dateTo: string | null };
-  total: number;
-  analyzed: number;
+  period: { dateFrom: string | null; dateTo: string | null };
+  scan: { complete: boolean; maxId: number; holesLeft: number };
   truncated: boolean;
-  pendingDetails?: number;
+  total: number;
   accepted: number;
+  drafts: number;
   rejected: number;
-  reasons: Record<string, number>;
+  reasonCounts: QualityReasonCounts;
+  otherReasons: Record<string, number>;
   noGeo: number;
   noGeoRejected: number;
-  partialGeo: number;
+  notFoundNoGeo: number;
   poorAccuracy: number;
   passengers: number;
   observers: number;
   distanceBuckets: Record<string, number>;
   rejectedDistanceBuckets: Record<string, number>;
+  bySource: QualityBreakdown[];
+  byDay: QualityBreakdown[];
+  topPlaces: QualityPlace[];
   uniqueClients: number;
   uniqueVehicles: number;
   topVehicles: QualityGroup[];
