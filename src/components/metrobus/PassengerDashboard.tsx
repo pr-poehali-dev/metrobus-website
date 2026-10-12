@@ -94,6 +94,7 @@ export default function PassengerDashboard({
   onMyRoutesOpen,
   onMyRoutesClear,
 }: PassengerDashboardProps) {
+  const visibleClusters = clusters.filter((c) => c.share > 0 || c.examples.length > 0);
   const showMineInfo = dataScope === 'mine' && ((hasMyToken && !!myToken) || !!myRank);
   return (
     <section id="dashboard" className="scroll-mt-20">
@@ -421,11 +422,11 @@ export default function PassengerDashboard({
           <ModeBadge viewMode={viewMode} setViewMode={setViewMode} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически.</p>
-        {clusters.length === 0 && !loading && (
+        {visibleClusters.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока нет отзывов с комментариями.</p>
         )}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {clusters.map((c) => (
+          {visibleClusters.map((c) => (
             <div key={c.key} className="rounded-xl border border-border p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">

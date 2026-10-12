@@ -18,6 +18,20 @@ export default function PassengersIntro() {
           </div>
         ))}
       </div>
+
+      <div className="mt-4 flex gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15">
+          <Icon name="MapPin" size={20} className="text-primary" />
+        </span>
+        <div className="text-sm">
+          <p className="font-semibold">Оценивайте поездку, находясь в транспорте или на остановке</p>
+          <p className="mt-1 text-muted-foreground">
+            Геопозиция нужна только для того, чтобы убедиться: вы действительно рядом с маршрутом. Так оценки остаются честными, а не
+            «с дивана». Мы не сохраняем ваш путь и не узнаём, кто вы. Без доступа к геопозиции или вдали от маршрута (дальше 300 м)
+            оценка не будет принята.
+          </p>
+        </div>
+      </div>
     </section>
   );
 }
