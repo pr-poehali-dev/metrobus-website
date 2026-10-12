@@ -56,7 +56,7 @@ export default function DashboardInsights({
         )}
         {topActiveUsers.length > 0 && (
           <div className="mt-4 space-y-2">
-            {(top10Expanded ? topActiveUsers : topActiveUsers.slice(0, 5)).map((u) => (
+            {(top10Expanded ? topActiveUsers : topActiveUsers.slice(0, 3)).map((u) => (
               <div
                 key={u.rank}
                 className={`flex items-center gap-3 rounded-xl border p-3 sm:p-4 ${
@@ -80,13 +80,13 @@ export default function DashboardInsights({
                 </span>
               </div>
             ))}
-            {topActiveUsers.length > 5 && (
+            {topActiveUsers.length > 3 && (
               <button
                 type="button"
                 onClick={toggleTop10}
                 className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
               >
-                {top10Expanded ? 'Свернуть' : `Показать ещё ${topActiveUsers.length - 5}`}
+                {top10Expanded ? 'Свернуть' : `Показать ещё ${topActiveUsers.length - 3}`}
                 <Icon name={top10Expanded ? 'ChevronUp' : 'ChevronDown'} size={16} />
               </button>
             )}
