@@ -17,11 +17,13 @@ export default function PassengersIntro() {
           { icon: 'Megaphone', title: 'Эффективно', text: 'Ваши оценки увидят и перевозчики, и заказчики пассажирских перевозок, а мы будем держать вас в курсе.' },
         ].map((b) => (
           <div key={b.title} className="rounded-xl border border-border p-5">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-              <Icon name={b.icon} size={20} className="text-foreground" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                <Icon name={b.icon} size={20} className="text-foreground" />
+              </div>
+              <h3 className="font-semibold">{b.title}</h3>
             </div>
-            <h3 className="font-semibold">{b.title}</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">{b.text}</p>
+            <p className="mt-3 text-sm text-muted-foreground">{b.text}</p>
           </div>
         ))}
       </div>
