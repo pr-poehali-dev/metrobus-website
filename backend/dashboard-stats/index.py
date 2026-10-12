@@ -20,15 +20,27 @@ MONTHS = [
 
 CLUSTER_RULES_TRIPS = [
     {'key': 'delays', 'label': 'Опоздания', 'icon': 'Clock', 'positive': False,
-     'words': ['опозд', 'задерж', 'долго ждал', 'не приход', 'жд']},
+     'words': ['опозд', 'задерж', 'долго ждал', 'долго жд', 'не приход', 'не пришел', 'не пришёл',
+               'график', 'расписан', 'интервал', 'редко ход', 'ходит редко', 'ожидан']},
     {'key': 'crowded', 'label': 'Переполненность', 'icon': 'Users', 'positive': False,
-     'words': ['перепол', 'битком', 'толчея', 'зажат', 'не влез']},
+     'words': ['перепол', 'битком', 'толчея', 'толкуч', 'давк', 'зажат', 'не влез', 'много народ',
+               'много людей', 'мест мало', 'мало мест', 'нет мест', 'негде сесть']},
     {'key': 'driver', 'label': 'Водитель', 'icon': 'UserCog', 'positive': False,
-     'words': ['водител', 'резко', 'грубо', 'хамств']},
+     'words': ['водител', 'вагоновож', 'кондуктор', 'резко', 'грубо', 'хамств', 'хамит', 'тормоз']},
     {'key': 'clean', 'label': 'Чистота', 'icon': 'Sparkles', 'positive': True,
-     'words': ['чист', 'опрятн', 'аккуратн', 'новый салон']},
+     'words': ['чист', 'опрятн', 'аккуратн', 'новый салон', 'грязн', 'грязь', 'мусор', 'пыль',
+               'пыли', 'запах', 'воня', 'вонь', 'убира', 'уборк', 'липк']},
+    {'key': 'vehicle', 'label': 'Состояние транспорта', 'icon': 'Bus', 'positive': False,
+     'words': ['старый', 'старая', 'старое', 'старые', 'старье', 'устарел', 'ссср', 'заменить', 'шум', 'гремит', 'трясёт', 'трясет', 'холодно', 'жарко',
+               'духот', 'кондиционер', 'печк', 'отоплен', 'сломан', 'не работает']},
+    {'key': 'payment', 'label': 'Оплата', 'icon': 'CreditCard', 'positive': False,
+     'words': ['оплат', 'подорожник', 'валидатор', 'терминал', 'проездн', 'карт', 'билет']},
     {'key': 'positive', 'label': 'Позитив', 'icon': 'Smile', 'positive': True,
-     'words': ['спасибо', 'вежлив', 'отличн', 'вовремя', 'комфорт', 'доволен']},
+     'words': ['спасибо', 'вежлив', 'отличн', 'вовремя', 'комфорт', 'доволен', 'довольн', 'супер',
+               'класс', 'хорош', 'быстр', 'удобн', 'нравит', 'понравил', 'приятн', 'без приключен',
+               'всё ок', 'все ок', 'прекрасн', 'замечательн', 'новый трамвай', 'новый автобус',
+               'новый троллейбус', 'молодц', 'норм', '👍'],
+     'exact': ['ок', 'ok', 'окей', 'норм', 'хорошо', 'отлично', 'супер']},
 ]
 
 CLUSTER_RULES_ROUTES = [
@@ -54,15 +66,16 @@ def normalize_transport(t: str) -> str:
     return t or 'bus'
 
 
-def classify_comment(comment: str, rules: list):
+def classify_comment(comment: str, rules: list) -> list:
     if not comment:
-        return None
-    text = comment.lower()
+        return []
+    text = comment.lower().replace('ё', 'е')
+    bare = ''.join(ch for ch in text if ch.isalnum() or ch == ' ').strip()
+    matched = []
     for rule in rules:
-        for w in rule['words']:
-            if w in text:
-                return rule
-    return None
+        if bare in rule.get('exact', []) or any(w.replace('ё', 'е') in text for w in rule['words']):
+            matched.append(rule)
+    return matched
 
 
 STATUS_LABELS = {True: 'draft', False: 'published'}
@@ -336,8 +349,8 @@ def handler(event: dict, context) -> dict:
         cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in cluster_rules}
         classified_total = 0
         for c in comments:
-            match = classify_comment(c, cluster_rules) or other_rule
-            if match:
+            matches = classify_comment(c, cluster_rules) or [other_rule]
+            for match in matches:
                 bucket = cluster_counts[match['key']]
                 bucket['count'] += 1
                 classified_total += 1
