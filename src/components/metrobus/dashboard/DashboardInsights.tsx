@@ -118,9 +118,15 @@ export default function DashboardInsights({
                   <span className="font-semibold">{c.label}</span>
                 </div>
                 <span className="flex shrink-0 items-baseline gap-1.5">
-                  <span className="font-mono-num text-lg font-bold">{c.share}%</span>
-                  {typeof c.count === 'number' && typeof c.total === 'number' && (
-                    <span className="font-mono-num text-xs text-muted-foreground">{c.count} из {c.total}</span>
+                  {typeof c.count === 'number' && typeof c.total === 'number' && c.total < 10 ? (
+                    <span className="font-mono-num text-lg font-bold">{c.count} из {c.total}</span>
+                  ) : (
+                    <>
+                      <span className="font-mono-num text-lg font-bold">{c.share}%</span>
+                      {typeof c.count === 'number' && typeof c.total === 'number' && (
+                        <span className="font-mono-num text-xs text-muted-foreground">{c.count} из {c.total}</span>
+                      )}
+                    </>
                   )}
                 </span>
               </div>
