@@ -55,6 +55,8 @@ export interface Cluster {
   label: string;
   icon: string;
   share: number;
+  count?: number;
+  total?: number;
   positive: boolean;
   examples: string[];
 }

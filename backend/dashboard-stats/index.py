@@ -347,26 +347,27 @@ def handler(event: dict, context) -> dict:
         other_rule = {'key': 'other', 'label': 'Другое', 'icon': 'MessageCircle', 'positive': False, 'words': []}
         cluster_rules = cluster_rules + [other_rule]
         cluster_counts = {r['key']: {'rule': r, 'count': 0, 'examples': []} for r in cluster_rules}
-        classified_total = 0
+        total_comments = len(comments)
         for c in comments:
             matches = classify_comment(c, cluster_rules) or [other_rule]
             for match in matches:
                 bucket = cluster_counts[match['key']]
                 bucket['count'] += 1
-                classified_total += 1
                 if len(bucket['examples']) < 3:
                     bucket['examples'].append(c)
 
         clusters = []
         for rule in cluster_rules:
             bucket = cluster_counts[rule['key']]
-            share = round((bucket['count'] / classified_total) * 100) if classified_total else 0
+            share = round((bucket['count'] / total_comments) * 100) if total_comments else 0
             clusters.append({
                 'key': rule['key'],
                 'label': rule['label'],
                 'icon': rule['icon'],
                 'positive': rule['positive'],
                 'share': share,
+                'count': bucket['count'],
+                'total': total_comments,
                 'examples': bucket['examples'],
             })
 

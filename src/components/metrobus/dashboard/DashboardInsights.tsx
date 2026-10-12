@@ -103,7 +103,7 @@ export default function DashboardInsights({
           </div>
           <ModeBadge viewMode={viewMode} setViewMode={setViewMode} />
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Комментарии сгруппированы автоматически. Доля — от всех отзывов с комментариями; один отзыв может касаться нескольких тем.</p>
         {visibleClusters.length === 0 && !loading && (
           <p className="mt-4 text-sm text-muted-foreground">Пока нет отзывов с комментариями.</p>
         )}
@@ -117,7 +117,12 @@ export default function DashboardInsights({
                   </span>
                   <span className="font-semibold">{c.label}</span>
                 </div>
-                <span className="font-mono-num text-lg font-bold">{c.share}%</span>
+                <span className="flex shrink-0 items-baseline gap-1.5">
+                  <span className="font-mono-num text-lg font-bold">{c.share}%</span>
+                  {typeof c.count === 'number' && typeof c.total === 'number' && (
+                    <span className="font-mono-num text-xs text-muted-foreground">{c.count} из {c.total}</span>
+                  )}
+                </span>
               </div>
               <ul className="mt-3 space-y-2">
                 {c.examples.map((ex, i) => (
