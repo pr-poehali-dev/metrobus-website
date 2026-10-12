@@ -1,6 +1,13 @@
+import { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import { getCollapsedPref, setCollapsedPref } from '@/lib/uiPrefs';
 
 export default function PassengersIntro() {
+  const [showGeoHint, setShowGeoHint] = useState(() => !getCollapsedPref('geo_hint_closed'));
+  const closeGeoHint = () => {
+    setCollapsedPref('geo_hint_closed', true);
+    setShowGeoHint(false);
+  };
   return (
     <section>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -19,19 +26,23 @@ export default function PassengersIntro() {
         ))}
       </div>
 
-      <div className="mt-4 flex gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-          <Icon name="MapPin" size={20} className="text-primary" />
-        </span>
-        <div className="text-sm">
-          <p className="font-semibold">Оценивайте поездку, находясь в транспорте или на остановке</p>
-          <p className="mt-1 text-muted-foreground">
-            Геопозиция нужна только для того, чтобы убедиться: вы действительно рядом с маршрутом. Так оценки остаются честными, а не
-            «с дивана». Мы не сохраняем ваш путь и не узнаём, кто вы. Без доступа к геопозиции или вдали от маршрута (дальше 300 м)
-            оценка не будет принята.
+      {showGeoHint && (
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+          <Icon name="MapPin" size={18} className="mt-0.5 shrink-0 text-primary" />
+          <p className="flex-1 text-sm">
+            <span className="font-semibold">Оценивайте, находясь в транспорте или на остановке.</span>{' '}
+            <span className="text-muted-foreground">Геопозиция нужна, чтобы подтвердить, что вы рядом с маршрутом, — иначе оценка не будет принята.</span>
           </p>
+          <button
+            type="button"
+            onClick={closeGeoHint}
+            aria-label="Закрыть подсказку"
+            className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <Icon name="X" size={16} />
+          </button>
         </div>
-      </div>
+      )}
     </section>
   );
 }

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { getCollapsedPref, setCollapsedPref } from '@/lib/uiPrefs';
 import Icon from '@/components/ui/icon';
 import ViewModeToggle, { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
 import TransportModeTabs from '@/components/metrobus/TransportModeTabs';
@@ -94,6 +96,13 @@ export default function PassengerDashboard({
   onMyRoutesOpen,
   onMyRoutesClear,
 }: PassengerDashboardProps) {
+  const [top10Expanded, setTop10Expanded] = useState(() => !getCollapsedPref('top10_rest', true));
+  const toggleTop10 = () => {
+    setTop10Expanded((prev) => {
+      setCollapsedPref('top10_rest', prev);
+      return !prev;
+    });
+  };
   const visibleClusters = clusters.filter((c) => c.share > 0 || c.examples.length > 0);
   const showMineInfo = dataScope === 'mine' && ((hasMyToken && !!myToken) || !!myRank);
   return (
@@ -384,7 +393,7 @@ export default function PassengerDashboard({
         )}
         {topActiveUsers.length > 0 && (
           <div className="mt-4 space-y-2">
-            {topActiveUsers.map((u) => (
+            {(top10Expanded ? topActiveUsers : topActiveUsers.slice(0, 5)).map((u) => (
               <div
                 key={u.rank}
                 className={`flex items-center gap-3 rounded-xl border p-3 sm:p-4 ${
@@ -408,6 +417,16 @@ export default function PassengerDashboard({
                 </span>
               </div>
             ))}
+            {topActiveUsers.length > 5 && (
+              <button
+                type="button"
+                onClick={toggleTop10}
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                {top10Expanded ? 'Свернуть' : `Показать ещё ${topActiveUsers.length - 5}`}
+                <Icon name={top10Expanded ? 'ChevronUp' : 'ChevronDown'} size={16} />
+              </button>
+            )}
           </div>
         )}
       </div>
