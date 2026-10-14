@@ -98,7 +98,7 @@ export default function TopSection({ icqrUrl, onAboutOpen, showDashboardButton, 
       </Sheet>
 
       {/* HERO */}
-      <section id="top" className="relative overflow-hidden scroll-mt-16 bg-gradient-to-b from-[#447BBA]/[0.14] via-[#447BBA]/[0.04] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
+      <section id="top" className="relative overflow-hidden scroll-mt-16 bg-gradient-to-b from-[#0376BB]/[0.14] via-[#0376BB]/[0.04] to-transparent pt-10 pb-8 sm:pt-16 sm:pb-12">
         <div className="mx-auto max-w-5xl px-4">
           <h1 className="text-xl font-bold leading-tight sm:text-4xl">Ваш вклад в транспорт будущего</h1>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">Оценивайте комфорт поездок и удобство маршрутов общественного транспорта - без приложения, регистрации и сканирования QR-кодов.</p>
