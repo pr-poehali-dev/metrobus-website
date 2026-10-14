@@ -50,9 +50,8 @@ export default function CarrierDemo() {
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary">
-              <img src="/logo-icon.png" alt="МЕТРОБУС.РФ" className="h-full w-full object-contain" />
-            </span>
+            <img src="/logo-blue.png" alt="МЕТРОБУС.РФ" className="h-8 w-8 shrink-0 object-contain dark:hidden" />
+            <img src="https://cdn.poehali.dev/projects/b9388cc3-9182-4a68-8712-f47fb43ea878/bucket/ad43e99a-45cd-411d-b75d-75d7774f4441.png" alt="МЕТРОБУС.РФ" className="hidden h-8 w-8 shrink-0 object-contain dark:block" />
             <span className="flex flex-col leading-tight">
               <span className="text-[15px] font-bold tracking-tight">МЕТРОБУС<span>.РФ</span></span>
               <span className="text-[11px] font-medium text-muted-foreground">Личный кабинет перевозчика</span>
