@@ -68,7 +68,7 @@ export default function DashboardInsights({
     </div>
   );
   const visibleClusters = clusters.filter((c) => c.share > 0 || c.examples.length > 0);
-  const showMineInfo = dataScope === 'mine' && ((hasMyToken && !!myToken) || !!myRank);
+  const showMineInfo = dataScope === 'mine' && hasMyToken && !!myToken;
   return (
     <>
       {/* Рейтинг самых активных пользователей */}
@@ -167,19 +167,6 @@ export default function DashboardInsights({
             </div>
           )}
 
-          {myRank && (
-            <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono-num text-base font-bold text-primary">
-                {myRank.rank}
-              </span>
-              <span>
-                Ваше место в общегородском рейтинге активности:{' '}
-                <span className="font-semibold">{myRank.rank}</span> из {myRank.totalUsers.toLocaleString('ru-RU')}{' '}
-                ({myRank.count.toLocaleString('ru-RU')}{' '}
-                {myRank.count === 1 ? 'оценка' : 'оценок'})
-              </span>
-            </div>
-          )}
           <div className="flex items-center gap-3 rounded-xl border border-border p-4 sm:hidden">
             <Icon name="Monitor" size={18} className="shrink-0 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
