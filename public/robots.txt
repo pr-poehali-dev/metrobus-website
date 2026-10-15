@@ -12,6 +12,54 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: GPTBot
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: Claude-User
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: YandexAdditional
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: YandexAdditionalBot
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /service/mb-console
+
+User-agent: DeepSeekBot
+Allow: /
+Disallow: /service/mb-console
+
 User-agent: *
 Allow: /
 Disallow: /service/mb-console
