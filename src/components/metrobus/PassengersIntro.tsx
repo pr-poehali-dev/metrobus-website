@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { getCollapsedPref, setCollapsedPref } from '@/lib/uiPrefs';
 
 export default function PassengersIntro() {
-  const [showGeoHint, setShowGeoHint] = useState(() => !getCollapsedPref('geo_hint_closed'));
+  const [showGeoHint, setShowGeoHint] = useState(true);
+  useEffect(() => {
+    setShowGeoHint(!getCollapsedPref('geo_hint_closed'));
+  }, []);
   const closeGeoHint = () => {
     setCollapsedPref('geo_hint_closed', true);
     setShowGeoHint(false);

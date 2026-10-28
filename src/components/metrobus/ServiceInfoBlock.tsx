@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { getCollapsedPref, setCollapsedPref } from '@/lib/uiPrefs';
 
@@ -12,7 +12,10 @@ interface ServiceInfoBlockProps {
  * которую можно свернуть — состояние сохраняется в localStorage по storageKey.
  */
 export default function ServiceInfoBlock({ storageKey, children }: ServiceInfoBlockProps) {
-  const [collapsed, setCollapsed] = useState(() => getCollapsedPref(storageKey));
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    setCollapsed(getCollapsedPref(storageKey));
+  }, [storageKey]);
 
   const toggle = () => {
     setCollapsed((prev) => {

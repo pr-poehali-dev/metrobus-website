@@ -1,5 +1,3 @@
-import { Helmet } from 'react-helmet-async';
-
 interface SeoHeadProps {
   title: string;
   description: string;
@@ -8,19 +6,19 @@ interface SeoHeadProps {
 
 const SITE_URL = 'https://xn--90aivcdt6a.xn--p1ai';
 
-export default function SeoHead({ title, description, path }: SeoHeadProps) {
+/** Мета-теги страницы для head() маршрута (раньше — компонент на react-helmet-async). */
+export function seoHead({ title, description, path }: SeoHeadProps) {
   const url = `${SITE_URL}${path}`;
-
-  return (
-    <Helmet>
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <link rel="canonical" href={url} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={url} />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-    </Helmet>
-  );
+  return {
+    meta: [
+      { title },
+      { name: 'description', content: description },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:url', content: url },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: description },
+    ],
+    links: [{ rel: 'canonical', href: url }],
+  };
 }

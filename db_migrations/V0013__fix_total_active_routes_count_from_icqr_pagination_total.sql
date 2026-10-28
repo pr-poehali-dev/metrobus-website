@@ -1,1 +1,0 @@
-UPDATE app_settings SET value = '624', updated_at = now() WHERE key = 'total_active_routes_count';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCollapsedPref, setCollapsedPref } from '@/lib/uiPrefs';
 import Icon from '@/components/ui/icon';
 import { ViewMode, DataScope } from '@/components/metrobus/ViewModeToggle';
@@ -30,7 +30,10 @@ export default function DashboardInsights({
   topActiveUsers,
   myRank,
 }: DashboardInsightsProps) {
-  const [top10Expanded, setTop10Expanded] = useState(() => !getCollapsedPref('top10_rest', true));
+  const [top10Expanded, setTop10Expanded] = useState(false);
+  useEffect(() => {
+    setTop10Expanded(!getCollapsedPref('top10_rest', true));
+  }, []);
   const toggleTop10 = () => {
     setTop10Expanded((prev) => {
       setCollapsedPref('top10_rest', prev);

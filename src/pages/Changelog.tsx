@@ -4,19 +4,26 @@ import Breadcrumbs from '@/components/metrobus/Breadcrumbs';
 import { fetchChangelogPublic, ChangelogEntry } from '@/lib/adminApi';
 
 function formatDate(iso: string) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (m) return `${m[3]}.${m[2]}.${m[1]}`;
   const d = new Date(iso);
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-const Changelog = () => {
-  const [entries, setEntries] = useState<ChangelogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ChangelogProps {
+  initialEntries?: ChangelogEntry[] | null;
+}
+
+const Changelog = ({ initialEntries }: ChangelogProps) => {
+  const [entries, setEntries] = useState<ChangelogEntry[]>(initialEntries ?? []);
+  const [loading, setLoading] = useState(!initialEntries);
 
   useEffect(() => {
+    if (initialEntries) return;
     fetchChangelogPublic()
       .then(setEntries)
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialEntries]);
 
   return (
     <div className="min-h-screen bg-background">
